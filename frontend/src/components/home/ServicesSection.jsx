@@ -89,51 +89,53 @@ export const ServicesSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="group relative flex flex-col justify-between rounded-3xl bg-white border border-slate-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.18)] hover:border-blue-500 transition-all duration-300 hover:-translate-y-2 overflow-hidden"
+                className="h-full"
               >
-                {/* Top Image Visual */}
-                <div className="relative h-44 w-full overflow-hidden bg-slate-900">
-                  <img
-                    src={service.image}
-                    alt={service.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                <Link
+                  to={service.link}
+                  className="group relative flex flex-col justify-between h-full rounded-3xl bg-white border border-slate-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.18)] hover:border-blue-500 transition-all duration-300 hover:-translate-y-2 overflow-hidden cursor-pointer block"
+                >
+                  {/* Top Image Visual */}
+                  <div className="relative h-44 w-full overflow-hidden bg-slate-900">
+                    <img
+                      src={service.image}
+                      alt={service.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
 
-                  {/* Tag Pill */}
-                  <div className="absolute top-3 left-3">
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-blue-300">
-                      {service.tag}
-                    </span>
+                    {/* Tag Pill */}
+                    <div className="absolute top-3 left-3">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-blue-300">
+                        {service.tag}
+                      </span>
+                    </div>
+
+                    {/* Icon Badge */}
+                    <div className="absolute -bottom-4 right-4 w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-800 text-white flex items-center justify-center shadow-lg border-2 border-white group-hover:scale-110 transition-transform duration-300">
+                      <Icon className="w-5 h-5" />
+                    </div>
                   </div>
 
-                  {/* Icon Badge */}
-                  <div className="absolute -bottom-4 right-4 w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-800 text-white flex items-center justify-center shadow-lg border-2 border-white group-hover:scale-110 transition-transform duration-300">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                </div>
+                  {/* Body Content */}
+                  <div className="p-5 pt-7 flex-1 flex flex-col justify-between space-y-4">
+                    <div className="space-y-1.5">
+                      <h3 className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors">
+                        {service.title}
+                      </h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                        {service.description}
+                      </p>
+                    </div>
 
-                {/* Body Content */}
-                <div className="p-5 pt-7 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-1.5">
-                    <h3 className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors">
-                      {service.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                      {service.description}
-                    </p>
+                    {/* CTA Action */}
+                    <div className="inline-flex items-center justify-between w-full pt-3 border-t border-slate-100 text-xs font-black text-blue-600 group-hover:text-blue-700 transition-colors">
+                      <span>{service.ctaText}</span>
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </div>
                   </div>
-
-                  {/* CTA Action */}
-                  <Link
-                    to={service.link}
-                    className="inline-flex items-center justify-between w-full pt-3 border-t border-slate-100 text-xs font-black text-blue-600 group-hover:text-blue-700 transition-colors"
-                  >
-                    <span>{service.ctaText}</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </div>
+                </Link>
               </motion.div>
             );
           })}

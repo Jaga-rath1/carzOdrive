@@ -109,12 +109,12 @@ export const ALL_TOUR_PACKAGES = [
     category: 'Luxury',
     image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1000&auto=format&fit=crop',
     highlights: [
-      'Mercedes-Maybach or BMW 7 Series chauffeured convoy',
+      'Toyota Fortuner 4x4 or Innova Crysta VIP chauffeured convoy',
       'Exclusive royal palace royal suite accommodations',
       'Private sit-down royal dining with royal family history curator',
       'High-speed brass bell artisan craft village tour',
     ],
-    inclusions: ['Top-Tier Mercedes/BMW Vehicle', 'Royal Heritage Suite', '5-Course Gourmet Meals', 'Chauffeur in Formal Livery'],
+    inclusions: ['Toyota Fortuner 4x4 or Innova Crysta VIP Vehicle', 'Royal Heritage Suite', '5-Course Gourmet Meals', 'Chauffeur in Formal Livery'],
     itinerary: [
       { day: 'Day 1', title: 'Royal Welcome & Palace Stay', desc: 'Chauffeured arrival with welcome ceremony. Private tour of royal weapons and antique collections. Royal dinner.' },
       { day: 'Day 2', title: 'Artisan Heritage & Return Cruise', desc: 'Dokra metal craft village walkthrough. Champagne luncheon before sunset executive return.' },

@@ -7,7 +7,7 @@ import { CarDriverBookingBar } from '../../components/car-driver/CarDriverBookin
 
 export const CarWithDriverPage = () => {
   const { handleOpenQuickBook } = useOutletContext() || {};
-  const [selectedCar, setSelectedCar] = useState('Mercedes-Benz S-Class Maybach');
+  const [selectedCar, setSelectedCar] = useState('Hyundai Creta (2026)');
 
   const handleSelectCar = (carName) => {
     setSelectedCar(carName);

@@ -149,14 +149,14 @@ export const QuickBookingModal = ({
   const { currentItemName, currentItemImage, ratePerDay, deposit, isAvailable, itemSubtitle } = useMemo(() => {
     switch (selectedService) {
       case 'car-with-driver': {
-        const parsed = parseInt(String(selectedChauffeurCar?.price || '4499').replace(/[^0-9]/g, ''), 10) || 4499;
+        const parsed = parseInt(String(selectedChauffeurCar?.price || '3499').replace(/[^0-9]/g, ''), 10) || 3499;
         return {
-          currentItemName: selectedChauffeurCar?.name || 'Toyota Innova Crysta',
-          currentItemImage: selectedChauffeurCar?.image || '/images/vehicles/toyota-innova.jpg',
+          currentItemName: selectedChauffeurCar?.name || 'Hyundai Creta (2026)',
+          currentItemImage: selectedChauffeurCar?.image || '/images/vehicles/hyundai-creta-white.jpg',
           ratePerDay: parsed,
           deposit: '₹0 (Zero Deposit)',
-          isAvailable: true,
-          itemSubtitle: `${selectedChauffeurCar?.seats || '7 Seats'} • Driver: Provided by Company`
+          isAvailable: selectedChauffeurCar?.isAvailable !== false,
+          itemSubtitle: `${selectedChauffeurCar?.seats || '5 Seats'} • Driver: Provided by Company`
         };
       }
       case 'driver-only': {
@@ -364,8 +364,14 @@ export const QuickBookingModal = ({
                     className="w-full bg-white border border-slate-300 text-xs text-slate-900 font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none cursor-pointer truncate shadow-sm"
                   >
                     {CHAUFFEUR_CARS.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        🟢 {c.name} ({c.price}) • Driver: Provided by Company
+                      <option
+                        key={c.id}
+                        value={c.id}
+                        disabled={c.isAvailable === false}
+                      >
+                        {c.isAvailable !== false
+                          ? `🟢 ${c.name} (${c.price}) • Available`
+                          : `🔴 ${c.name} — Currently Unavailable`}
                       </option>
                     ))}
                   </select>

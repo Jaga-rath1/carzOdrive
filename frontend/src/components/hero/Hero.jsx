@@ -38,7 +38,7 @@ export const Hero = ({ onOpenQuickBook }) => {
 
   // 2. Specific Item Selection based on Service
   const [selectedCarId, setSelectedCarId] = useState(AVAILABLE_CARS[0]?.id || 'car-swift-2026');
-  const [selectedChauffeurId, setSelectedChauffeurId] = useState(CHAUFFEUR_CARS[0]?.id || 'ch-car-1');
+  const [selectedChauffeurId, setSelectedChauffeurId] = useState(CHAUFFEUR_CARS[0]?.id || 'ch-creta-2026');
   const [selectedDriverId, setSelectedDriverId] = useState(DRIVERS[0]?.id || 'driver-1');
   const [selectedBikeId, setSelectedBikeId] = useState(ALL_BIKES[0]?.id || 'bike-1');
   const [selectedTourId, setSelectedTourId] = useState(ALL_TOUR_PACKAGES[0]?.id || 'tour-1');
@@ -228,9 +228,18 @@ export const Hero = ({ onOpenQuickBook }) => {
                   Instant Availability & Booking — <span className="text-blue-600 font-extrabold">{currentTabObj.label}</span>
                 </span>
               </div>
-              <span className="text-xs text-slate-500 font-medium hidden sm:inline">
-                Select your service, fleet & Bhubaneswar location below
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-slate-500 font-medium hidden md:inline">
+                  Select your service, fleet & Bhubaneswar location below
+                </span>
+                <Link
+                  to={currentTabObj.route}
+                  className="inline-flex items-center gap-1 text-xs font-black text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  <span>Open {currentTabObj.label} Page</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             </div>
 
             {/* SEARCH FORM INPUTS */}
@@ -300,8 +309,14 @@ export const Hero = ({ onOpenQuickBook }) => {
                       className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate"
                     >
                       {CHAUFFEUR_CARS.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          🟢 {c.name} ({c.price}) • Driver: Provided by Company
+                        <option
+                          key={c.id}
+                          value={c.id}
+                          disabled={c.isAvailable === false}
+                        >
+                          {c.isAvailable !== false
+                            ? `🟢 ${c.name} (${c.price}) • Available`
+                            : `🔴 ${c.name} — Currently Unavailable`}
                         </option>
                       ))}
                     </select>
