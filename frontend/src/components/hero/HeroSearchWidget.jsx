@@ -10,7 +10,6 @@ import {
   Clock, 
   ArrowRight,
 } from 'lucide-react';
-import { Button } from '../common/Button';
 import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
 
 export const HeroSearchWidget = ({ 
@@ -38,9 +37,9 @@ export const HeroSearchWidget = ({
 
   const tabs = [
     { id: 'self-drive', label: 'Self Drive', icon: Car, route: '/car-self-ride' },
-    { id: 'car-rental', label: 'Car Rental', icon: Car, route: '/car-self-ride' },
-    { id: 'bike-rental', label: 'Bike Rental (Coming Soon)', icon: Bike, route: '/bike-rental' },
-    { id: 'drive-rental', label: 'Drive Rental', icon: Shield, route: '/car-with-driver' },
+    { id: 'car-rental', label: 'Car Rental', icon: Car, route: '/car-with-driver' },
+    { id: 'bike-rental', label: 'Bike Rental', icon: Bike, route: '/bike-rental' },
+    { id: 'drive-rental', label: 'Driver Rental', icon: Shield, route: '/driver-only' },
     { id: 'tour-package', label: 'Tour Package', icon: UserCheck, route: '/tours-packages' },
   ];
 
