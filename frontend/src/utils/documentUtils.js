@@ -3,7 +3,12 @@
  * Handles Cloudinary assets, local uploads, PDF image rasterization, and secure cross-origin display
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const rawApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').trim().replace(/\/+$/, '');
+const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
+  ? rawApiUrl
+  : rawApiUrl.endsWith('/api')
+  ? `${rawApiUrl}/v1`
+  : `${rawApiUrl}/api/v1`;
 
 // Base server origin (e.g., http://localhost:5000)
 export const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, '');

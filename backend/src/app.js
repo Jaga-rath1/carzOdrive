@@ -109,7 +109,7 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use('/api/v1/auth', authLimiter);
+app.use(['/api/v1/auth', '/api/auth', '/auth'], authLimiter);
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -123,10 +123,12 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use('/api/v1', generalLimiter);
+app.use(['/api/v1', '/api'], generalLimiter);
 
-// 8. Main API Router
+// 8. Main API Router (Supports /api/v1, /api, and direct paths like /auth, /vehicles)
 app.use('/api/v1', router);
+app.use('/api', router);
+app.use('/', router);
 
 // 9. Root Health Route
 app.get('/', (req, res) => {
