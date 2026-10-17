@@ -3,8 +3,8 @@ require('dotenv').config();
 const env = {
   port: parseInt(process.env.PORT, 10) || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
-  mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/carzodrive',
-  partnerMongodbUri: process.env.PARTNER_MONGODB_URI || 'mongodb://localhost:27017/carzodrive_partners',
+  mongodbUri: process.env.MONGODB_URI || 'mongodb+srv://jagankumarrath72_db_user:jk1234@cluster0.osk4ogm.mongodb.net/carzOdrive?retryWrites=true&w=majority',
+  partnerMongodbUri: process.env.PARTNER_MONGODB_URI || 'mongodb+srv://jagankumarrath72_db_user:jk12@cluster0.vtfqaff.mongodb.net/carzoDrive_Partner',
   jwt: {
     secret: process.env.JWT_SECRET || 'dev_jwt_secret_carzodrive_2026_super_secure_key_32chars',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev_jwt_refresh_secret_carzodrive_2026_super_secure_key_32chars',
@@ -12,6 +12,7 @@ const env = {
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '60d',
   },
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  backendUrl: process.env.BACKEND_URL || process.env.API_URL || `http://localhost:${parseInt(process.env.PORT, 10) || 5000}`,
   cashfree: {
     appId: process.env.CASHFREE_APP_ID || 'test_app_id',
     secretKey: process.env.CASHFREE_SECRET_KEY || 'test_secret_key',

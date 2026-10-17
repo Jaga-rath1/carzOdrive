@@ -55,8 +55,17 @@ app.use(
   })
 );
 
-// 5. Body Parsers with limits
-app.use(express.json({ limit: '10mb' }));
+// 5. Body Parsers with limits (preserves rawBody for payment webhooks)
+app.use(
+  express.json({
+    limit: '10mb',
+    verify: (req, res, buf) => {
+      if (req.originalUrl && req.originalUrl.includes('/webhook')) {
+        req.rawBody = buf.toString('utf8');
+      }
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 const path = require('path');

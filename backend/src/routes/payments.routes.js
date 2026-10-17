@@ -6,12 +6,12 @@ const router = express.Router();
 
 const ADMINS = ['SUPER_ADMIN', 'OPERATIONS_ADMIN', 'FINANCE_ADMIN', 'SUPPORT_ADMIN', 'STAFF_ADMIN', 'ADMIN'];
 
-// Webhook — must capture raw body before JSON parsing
+// Webhook — signature validated in service (rawBody captured by app-level verify callback)
 router.post('/webhook/cashfree',
-  express.raw({ type: 'application/json' }),
   (req, res, next) => {
-    // Store raw body string for signature validation
-    req.rawBody = req.body.toString('utf8');
+    if (!req.rawBody) {
+      req.rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+    }
     next();
   },
   controller.cashfreeWebhook

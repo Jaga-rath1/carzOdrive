@@ -19,46 +19,42 @@ async function seedAdmin() {
   await mongoose.connect(env.mongodbUri);
   console.log('Connected to MongoDB');
 
-  const existing = await User.findOne({ role: 'SUPER_ADMIN' });
-  if (existing) {
-    existing.permissions = [
-      'manage_cars',
-      'manage_bikes',
-      'manage_drivers',
-      'manage_bookings',
-      'manage_staff',
-      'manage_rates',
-      'view_analytics',
-      'manage_vendors',
-      'approve_vendor_fleet',
-    ];
-    await existing.save();
-    console.log(`Updated permissions for existing Super Admin: ${existing.email}`);
-    await mongoose.disconnect();
-    return;
+  const targetEmail = env.superAdmin.email.toLowerCase().trim();
+  let user = await User.findOne({ email: targetEmail });
+
+  const allPerms = [
+    'manage_cars',
+    'manage_bikes',
+    'manage_drivers',
+    'manage_bookings',
+    'manage_staff',
+    'manage_rates',
+    'view_analytics',
+    'manage_vendors',
+    'approve_vendor_fleet',
+    'manage_packages',
+  ];
+
+  if (user) {
+    user.name = env.superAdmin.name || user.name || 'CARZODRIVE Admin';
+    user.role = 'SUPER_ADMIN';
+    user.status = 'ACTIVE';
+    user.password = env.superAdmin.password;
+    user.permissions = allPerms;
+    await user.save();
+    console.log(`✓ Super Admin password and permissions successfully updated for: ${user.email}`);
+  } else {
+    user = await User.create({
+      name: env.superAdmin.name || 'CARZODRIVE Admin',
+      email: targetEmail,
+      password: env.superAdmin.password,
+      role: 'SUPER_ADMIN',
+      status: 'ACTIVE',
+      permissions: allPerms,
+    });
+    console.log(`✓ Super Admin successfully created: ${user.email}`);
   }
 
-  const admin = await User.create({
-    name: env.superAdmin.name || 'Super Admin',
-    email: env.superAdmin.email,
-    password: env.superAdmin.password,
-    role: 'SUPER_ADMIN',
-    status: 'ACTIVE',
-    permissions: [
-      'manage_cars',
-      'manage_bikes',
-      'manage_drivers',
-      'manage_bookings',
-      'manage_staff',
-      'manage_rates',
-      'view_analytics',
-      'manage_vendors',
-      'approve_vendor_fleet',
-    ],
-  });
-
-  console.log(`Super Admin created: ${admin.email}`);
-  console.log('IMPORTANT: Change the password after first login.');
   await mongoose.disconnect();
 }
 
