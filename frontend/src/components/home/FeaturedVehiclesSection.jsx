@@ -6,6 +6,7 @@ import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { vehiclesAPI, bikesAPI } from '../../services/api';
+import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 
 export const FeaturedVehiclesSection = ({ onQuickBook }) => {
   const [activeCategory, setActiveCategory] = useState('Available Now');
@@ -38,7 +39,7 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
           year: v.year || 2024,
           availableCount: v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0),
           isAvailable: v.isAvailable !== false && (v.availableCount ?? v.count ?? 1) > 0 && v.availabilityStatus !== 'UNAVAILABLE',
-          image: (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg',
+          image: resolveVehicleImageUrl((v.images && v.images[0]) || v.image, '/images/vehicles/swift-2026-grey.jpg'),
           seats: `${v.seats || 5} Seats`,
           fuel: v.fuelType ? v.fuelType.charAt(0).toUpperCase() + v.fuelType.slice(1) : 'Petrol',
           transmission: v.transmission ? v.transmission.charAt(0).toUpperCase() + v.transmission.slice(1) : 'Manual / AMT',
@@ -61,7 +62,7 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
           year: b.year || 2024,
           availableCount: b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0),
           isAvailable: b.isAvailable !== false && (b.availableCount ?? b.count ?? 1) > 0 && b.availabilityStatus !== 'UNAVAILABLE',
-          image: (b.images && b.images[0]) || b.image || '/images/vehicles/hero-splendor.jpg',
+          image: resolveVehicleImageUrl((b.images && b.images[0]) || b.image, '/images/vehicles/hero-splendor.jpg'),
           seats: '2 Seats',
           fuel: 'Petrol',
           transmission: b.transmission || 'Manual',
@@ -195,8 +196,12 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
                       <img
                         src={vehicle.image}
                         alt={vehicle.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
                         loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = vehicle.vehicleType === 'bike' ? '/images/vehicles/hero-splendor.jpg' : '/images/vehicles/swift-2026-grey.jpg';
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
 

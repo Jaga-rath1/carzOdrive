@@ -10,8 +10,24 @@ const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
   ? `${rawApiUrl}/v1`
   : `${rawApiUrl}/api/v1`;
 
-// Base server origin (e.g., http://localhost:5000)
+// Base server origin (e.g., http://localhost:5000 or https://carzodrive-1.onrender.com)
 export const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+
+/**
+ * Universal resolver for car, bike, and package vehicle images.
+ * Handles Cloudinary CDN URLs, local /uploads paths from backend, and high-res defaults.
+ */
+export function resolveVehicleImageUrl(url, fallback = '/images/vehicles/swift-2026-grey.jpg') {
+  if (!url || typeof url !== 'string') return fallback;
+  const trimmed = url.trim();
+  if (!trimmed) return fallback;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if (trimmed.startsWith('/uploads') || trimmed.startsWith('uploads/')) {
+    const clean = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    return `${SERVER_ORIGIN}${clean}`;
+  }
+  return trimmed;
+}
 
 /**
  * Extracts clean filename from any local or remote URL
