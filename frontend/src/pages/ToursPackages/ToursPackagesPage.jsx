@@ -2,9 +2,7 @@ import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { ToursHero } from '../../components/packages/ToursHero';
 import { ToursExperience } from '../../components/packages/ToursExperience';
-import { ToursGrid, ALL_TOUR_PACKAGES } from '../../components/packages/ToursGrid';
-
-export { ALL_TOUR_PACKAGES };
+import { ToursGrid } from '../../components/packages/ToursGrid';
 
 export const ToursPackagesPage = () => {
   const { handleOpenQuickBook } = useOutletContext() || {};

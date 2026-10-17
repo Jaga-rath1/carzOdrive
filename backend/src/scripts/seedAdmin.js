@@ -6,7 +6,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const { env, validateEnv } = require('../config/env');
-const { User } = require('../modules/auth/auth.model');
+const { User } = require('../models/user.model');
 
 async function seedAdmin() {
   validateEnv();
@@ -21,7 +21,19 @@ async function seedAdmin() {
 
   const existing = await User.findOne({ role: 'SUPER_ADMIN' });
   if (existing) {
-    console.log(`Super Admin already exists: ${existing.email}`);
+    existing.permissions = [
+      'manage_cars',
+      'manage_bikes',
+      'manage_drivers',
+      'manage_bookings',
+      'manage_staff',
+      'manage_rates',
+      'view_analytics',
+      'manage_vendors',
+      'approve_vendor_fleet',
+    ];
+    await existing.save();
+    console.log(`Updated permissions for existing Super Admin: ${existing.email}`);
     await mongoose.disconnect();
     return;
   }
@@ -32,6 +44,17 @@ async function seedAdmin() {
     password: env.superAdmin.password,
     role: 'SUPER_ADMIN',
     status: 'ACTIVE',
+    permissions: [
+      'manage_cars',
+      'manage_bikes',
+      'manage_drivers',
+      'manage_bookings',
+      'manage_staff',
+      'manage_rates',
+      'view_analytics',
+      'manage_vendors',
+      'approve_vendor_fleet',
+    ],
   });
 
   console.log(`Super Admin created: ${admin.email}`);

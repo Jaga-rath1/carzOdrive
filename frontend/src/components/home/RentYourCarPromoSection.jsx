@@ -6,9 +6,9 @@ import { Container } from '../common/Container';
 
 export const RentYourCarPromoSection = () => {
   return (
-    <section className="py-16 sm:py-24 bg-white relative">
+    <section className="py-10 sm:py-14 bg-white relative">
       <Container>
-        <div className="relative rounded-3xl sm:rounded-[36px] overflow-hidden bg-gradient-to-br from-[#020617] via-[#09153a] to-[#040c24] text-white p-8 sm:p-12 lg:p-16 border border-blue-500/20 shadow-[0_25px_60px_rgba(0,0,0,0.3)]">
+        <div className="relative rounded-3xl sm:rounded-[36px] overflow-hidden bg-gradient-to-br from-[#020617] via-[#09153a] to-[#040c24] text-white p-6 sm:p-10 lg:p-12 border border-blue-500/20 shadow-[0_25px_60px_rgba(0,0,0,0.3)]">
           {/* Subtle Ambient Lighting Aura */}
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[140px] pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/15 rounded-full blur-[120px] pointer-events-none" />

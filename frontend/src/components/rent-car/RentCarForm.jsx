@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
-import { Upload, CheckCircle2, ArrowRight } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Loader2, AlertCircle, Lock } from 'lucide-react';
+import { vendorsAPI, uploadsAPI } from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
+import { AuthRequiredNotice } from '../common/AuthRequiredNotice';
+import { RentCarOwnerDetails } from './RentCarOwnerDetails';
+import { RentCarVehicleDetails } from './RentCarVehicleDetails';
+import { RentCarDocuments } from './RentCarDocuments';
+import { RentCarSuccess } from './RentCarSuccess';
 
 export const RentCarForm = () => {
+  const { currentUser, isAuthenticated, openAuthModal } = useAuth();
   const [formData, setFormData] = useState({
     ownerName: '',
     phone: '',
@@ -13,260 +22,255 @@ export const RentCarForm = () => {
     manufacturingYear: '2023',
     city: 'Bhubaneswar',
     expectedDailyPrice: '3500',
+    imageUrl: '',
+    rcDocumentUrl: '',
+    insuranceDocumentUrl: '',
+    idProofUrl: '',
   });
-  const [photoSelected, setPhotoSelected] = useState(false);
+
+  // Auto-prefill authenticated user details
+  useEffect(() => {
+    if (currentUser) {
+      setFormData((prev) => ({
+        ...prev,
+        ownerName: prev.ownerName || currentUser.name || '',
+        phone: prev.phone || currentUser.phone || '',
+        email: prev.email || currentUser.email || '',
+      }));
+    }
+  }, [currentUser]);
+
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const [uploadingDoc, setUploadingDoc] = useState({});
+  const [docErrors, setDocErrors] = useState({});
+
   const [submitted, setSubmitted] = useState(false);
+  const [submittedItem, setSubmittedItem] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fileInputRef = useRef(null);
+  const rcFileInputRef = useRef(null);
+  const insuranceFileInputRef = useRef(null);
+  const idProofFileInputRef = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingPhoto(true);
+    setUploadError(null);
+    try {
+      const res = await uploadsAPI.uploadImage(file, { folder: 'carzodrive/cars', prefix: 'car' });
+      if (res?.data?.url) {
+        setFormData((prev) => ({ ...prev, imageUrl: res.data.url }));
+      }
+    } catch (err) {
+      console.error('Photo upload failed:', err);
+      setUploadError(err.message || 'Failed to upload photo to Cloudinary');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleDocUpload = async (field, file) => {
+    if (!file) return;
+    setUploadingDoc((prev) => ({ ...prev, [field]: true }));
+    setDocErrors((prev) => ({ ...prev, [field]: null }));
+
+    try {
+      const res = await uploadsAPI.uploadImage(file, {
+        folder: 'carzodrive/vendor-docs',
+        prefix: field.replace('Url', ''),
+      });
+      if (res?.data?.url) {
+        setFormData((prev) => ({ ...prev, [field]: res.data.url }));
+      }
+    } catch (err) {
+      console.error(`Upload error for ${field}:`, err);
+      setDocErrors((prev) => ({ ...prev, [field]: err.message || 'Upload failed' }));
+    } finally {
+      setUploadingDoc((prev) => ({ ...prev, [field]: false }));
+    }
+  };
+
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await vendorsAPI.attachCar({
+        ownerName: formData.ownerName,
+        phone: formData.phone,
+        email: formData.email,
+        city: formData.city,
+        vehicleBrand: formData.vehicleBrand,
+        vehicleModel: formData.vehicleModel,
+        vehicleNumber: formData.vehicleNumber,
+        vehicleType: formData.vehicleType,
+        manufacturingYear: formData.manufacturingYear,
+        expectedDailyPrice: formData.expectedDailyPrice,
+        image: formData.imageUrl || undefined,
+        rcDocumentUrl: formData.rcDocumentUrl || undefined,
+        insuranceDocumentUrl: formData.insuranceDocumentUrl || undefined,
+        idProofUrl: formData.idProofUrl || undefined,
+      });
+
+      setSubmittedItem(res?.data || null);
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Car hosting submission error:', err);
+      setError(err.message || 'Failed to submit car listing application. Please check your network and inputs.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setSubmitted(false);
+    setFormData({
+      ownerName: currentUser?.name || '',
+      phone: currentUser?.phone || '',
+      email: currentUser?.email || '',
+      vehicleBrand: '',
+      vehicleModel: '',
+      vehicleNumber: '',
+      vehicleType: 'Sedan',
+      manufacturingYear: '2023',
+      city: 'Bhubaneswar',
+      expectedDailyPrice: '3500',
+      imageUrl: '',
+      rcDocumentUrl: '',
+      insuranceDocumentUrl: '',
+      idProofUrl: '',
+    });
   };
 
   return (
-    <div className="p-7 sm:p-10 rounded-3xl bg-white border border-slate-200/90 shadow-card">
-      <div className="mb-6">
-        <span className="text-xs font-black text-blue-600 uppercase tracking-widest block">
-          VEHICLE ENROLLMENT
-        </span>
-        <h3 className="text-2xl sm:text-3xl font-black text-slate-950 mt-1">
-          List Your Vehicle
-        </h3>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Submit your vehicle details for a free background verification and onboarding call.
-        </p>
-      </div>
-
+    <div className="p-7 sm:p-10 rounded-3xl bg-white border border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.06)] max-w-2xl mx-auto">
       {submitted ? (
-        <div className="p-8 rounded-2xl bg-emerald-50 border border-emerald-300 text-center space-y-4">
-          <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-8 h-8" />
-          </div>
-          <h4 className="text-xl font-bold text-slate-950">Registration Submitted!</h4>
-          <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
-            Thank you, <strong className="text-slate-900">{formData.ownerName || 'Host'}</strong>. We have received your car listing details for <strong className="text-slate-900">{formData.vehicleBrand} {formData.vehicleModel}</strong>. A dedicated partner manager will contact you at {formData.phone} within 24 hours.
-          </p>
-          <button
-            onClick={() => setSubmitted(false)}
-            className="text-xs font-bold text-blue-600 hover:underline pt-2 cursor-pointer"
-          >
-            Submit another vehicle
-          </button>
-        </div>
+        <RentCarSuccess
+          formData={formData}
+          submittedItem={submittedItem}
+          onReset={resetForm}
+        />
       ) : (
         <form onSubmit={handleFormSubmit} className="space-y-4">
-          {/* Owner Info */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-bold text-slate-800 block mb-1">
-                Owner Full Name *
-              </label>
-              <input
-                type="text"
-                required
-                name="ownerName"
-                value={formData.ownerName}
-                onChange={handleInputChange}
-                placeholder="e.g. Rajesh Kumar"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-medium focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-800 block mb-1">
-                Phone Number *
-              </label>
-              <input
-                type="tel"
-                required
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                placeholder="+91 XXXXX XXXXX"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-medium focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-              />
-            </div>
-          </div>
-
           <div>
-            <label className="text-xs font-bold text-slate-800 block mb-1">
-              Email Address *
-            </label>
-            <input
-              type="email"
-              required
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="rajesh@example.com"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-medium focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-            />
+            <span className="text-xs font-black text-blue-600 uppercase tracking-widest">
+              Vendor Fleet Enrollment
+            </span>
+            <h2 className="text-2xl font-black text-slate-950 mt-1">
+              Rent Your Car to CARZODRIVE
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Earn guaranteed daily or monthly income with verified corporate and tourist rentals.
+            </p>
           </div>
 
-          {/* Vehicle Info */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-bold text-slate-800 block mb-1">
-                Vehicle Brand *
-              </label>
-              <select
-                required
-                name="vehicleBrand"
-                value={formData.vehicleBrand}
-                onChange={handleInputChange}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-semibold focus:outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer"
+          <AuthRequiredNotice
+            title="Login Required to Rent Your Car"
+            message="Please sign in or create an account to list your vehicle on the CARZODRIVE network. Your application will be safely linked to your host profile."
+            className="mb-2"
+          />
+
+          {error && (
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <RentCarOwnerDetails
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+
+          <RentCarVehicleDetails
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+
+          <RentCarDocuments
+            formData={formData}
+            fileInputRef={fileInputRef}
+            rcFileInputRef={rcFileInputRef}
+            insuranceFileInputRef={insuranceFileInputRef}
+            idProofFileInputRef={idProofFileInputRef}
+            uploadingPhoto={uploadingPhoto}
+            uploadError={uploadError}
+            uploadingDoc={uploadingDoc}
+            docErrors={docErrors}
+            onFileChange={handleFileChange}
+            onDocUpload={handleDocUpload}
+          />
+
+          {/* Submit CTA */}
+          <div className="pt-2">
+            {!isAuthenticated ? (
+              <div className="space-y-2">
+                <Link
+                  to="/login"
+                  state={{ returnTo: '/rent-your-car' }}
+                  className="w-full py-3.5 px-6 rounded-xl font-bold text-sm text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 text-center"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Login to Submit Car Listing</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <div className="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium flex-wrap">
+                  <span>New host partner?</span>
+                  <Link
+                    to="/signup"
+                    state={{ returnTo: '/rent-your-car' }}
+                    className="text-blue-600 hover:underline font-bold"
+                  >
+                    Register / Sign Up
+                  </Link>
+                  <span>•</span>
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('login')}
+                    className="text-amber-700 hover:underline font-bold cursor-pointer"
+                  >
+                    Quick Popup Login
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="submit"
+                disabled={loading || uploadingPhoto}
+                className="w-full py-3.5 px-6 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-wait"
               >
-                <option value="">Select Brand</option>
-                <option value="Hyundai">Hyundai</option>
-                <option value="Tata">Tata Motors</option>
-                <option value="Mahindra">Mahindra</option>
-                <option value="Toyota">Toyota</option>
-                <option value="Kia">Kia</option>
-                <option value="Honda">Honda</option>
-                <option value="BMW">BMW</option>
-                <option value="Mercedes-Benz">Mercedes-Benz</option>
-                <option value="Audi">Audi</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-800 block mb-1">
-                Vehicle Model *
-              </label>
-              <input
-                type="text"
-                required
-                name="vehicleModel"
-                value={formData.vehicleModel}
-                onChange={handleInputChange}
-                placeholder="e.g. Creta SX / Thar / Fortuner"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-medium focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-              />
-            </div>
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Submitting Application to Super Admin...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Submit Car for Verification & Listing</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            )}
+            <p className="text-[11px] text-slate-400 text-center mt-2">
+              By submitting, you confirm ownership or authority to lease this vehicle.
+            </p>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="text-xs font-bold text-slate-800 block mb-1">
-                Registration Number *
-              </label>
-              <input
-                type="text"
-                required
-                name="vehicleNumber"
-                value={formData.vehicleNumber}
-                onChange={handleInputChange}
-                placeholder="OD-02-AB-1234"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-mono font-bold focus:outline-none focus:border-blue-500 focus:bg-white transition-all uppercase"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-800 block mb-1">
-                Body Type *
-              </label>
-              <select
-                name="vehicleType"
-                value={formData.vehicleType}
-                onChange={handleInputChange}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer"
-              >
-                <option value="Hatchback">Hatchback</option>
-                <option value="Sedan">Sedan</option>
-                <option value="Compact SUV">Compact SUV</option>
-                <option value="Full SUV">Full-Size SUV (7 Seater)</option>
-                <option value="Luxury">Luxury Sedan / Convertible</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-800 block mb-1">
-                Mfg Year *
-              </label>
-              <select
-                name="manufacturingYear"
-                value={formData.manufacturingYear}
-                onChange={handleInputChange}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer"
-              >
-                <option value="2026">2026</option>
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-                <option value="2021">2021</option>
-                <option value="2020">2020</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-bold text-slate-800 block mb-1">
-                City *
-              </label>
-              <select
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer"
-              >
-                <option value="Bhubaneswar">Bhubaneswar, Odisha</option>
-                <option value="Cuttack">Cuttack, Odisha</option>
-                <option value="Puri">Puri, Odisha</option>
-                <option value="Rourkela">Rourkela, Odisha</option>
-                <option value="Kolkata">Kolkata, WB</option>
-                <option value="Bengaluru">Bengaluru, KA</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-800 block mb-1">
-                Expected Daily Price (₹) *
-              </label>
-              <input
-                type="number"
-                name="expectedDailyPrice"
-                value={formData.expectedDailyPrice}
-                onChange={handleInputChange}
-                placeholder="3500"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-mono font-bold focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Photo Upload (Simulated) */}
-          <div>
-            <label className="text-xs font-bold text-slate-800 block mb-1">
-              Upload Vehicle Photos (Front, Interior, Odometer)
-            </label>
-            <div
-              onClick={() => setPhotoSelected(true)}
-              className={`p-4 rounded-xl border-2 border-dashed transition-all cursor-pointer text-center ${
-                photoSelected
-                  ? 'border-emerald-500 bg-emerald-50/50 text-emerald-700'
-                  : 'border-slate-300 hover:border-blue-400 bg-slate-50 text-slate-600'
-              }`}
-            >
-              <Upload className="w-5 h-5 mx-auto mb-1 text-slate-400" />
-              <span className="text-xs font-bold block">
-                {photoSelected ? '✓ 4 Photos Selected (car_photos.zip)' : 'Click to Browse Photos (JPG / PNG)'}
-              </span>
-              <span className="text-[11px] text-slate-500">Max file size: 25MB</span>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-500/20 inline-flex items-center justify-center gap-2 cursor-pointer mt-2"
-          >
-            <span>List My Vehicle</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
         </form>
       )}
     </div>

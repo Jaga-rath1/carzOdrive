@@ -1,126 +1,61 @@
-import React from 'react';
-import { Award, Star, Globe, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Award, Star, Globe, ArrowRight, Loader2 } from 'lucide-react';
 import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
-
-export const CHAUFFEUR_CARS = [
-  {
-    id: 'ch-creta-2026',
-    name: 'Hyundai Creta (2026)',
-    type: 'Mid-Size Executive SUV',
-    seats: '5 Luxury Seats',
-    price: '₹3,499 / day',
-    image: '/images/vehicles/hyundai-creta-white.jpg',
-    color: 'Atlas White',
-    badge: 'Flagship Family SUV',
-    isAvailable: true,
-    availabilityStatus: 'Available',
-    driver: {
-      name: 'Provided by Company',
-      experience: '10+ Years Experience',
-      rating: 4.99,
-      languages: 'Odia, Hindi, English',
-      availability: 'Assigned by Company',
-    },
-  },
-  {
-    id: 'ch-sonet-2023',
-    name: 'Kia Sonet (2023)',
-    type: 'Premium Compact SUV',
-    seats: '5 Seats',
-    price: '₹2,999 / day',
-    image: '/images/vehicles/kia-sonet-black.jpg',
-    color: 'Aurora Black',
-    badge: 'Tech-Loaded SUV',
-    isAvailable: true,
-    availabilityStatus: 'Available',
-    driver: {
-      name: 'Provided by Company',
-      experience: '8+ Years Experience',
-      rating: 4.97,
-      languages: 'Odia, Hindi, English',
-      availability: 'Assigned by Company',
-    },
-  },
-  {
-    id: 'ch-swift-2026',
-    name: 'Maruti Suzuki Swift (2026)',
-    type: 'Sporty Hatchback',
-    seats: '5 Seats',
-    price: '₹2,399 / day',
-    image: '/images/vehicles/swift-2026-grey.jpg',
-    color: 'Magma Grey',
-    badge: 'All-New 2026 Model',
-    isAvailable: true,
-    availabilityStatus: 'Available',
-    driver: {
-      name: 'Provided by Company',
-      experience: '7+ Years Experience',
-      rating: 4.98,
-      languages: 'Odia, Hindi',
-      availability: 'Assigned by Company',
-    },
-  },
-  {
-    id: 'ch-swift-2021',
-    name: 'Maruti Suzuki Swift (2021)',
-    type: 'Reliable Hatchback',
-    seats: '5 Seats',
-    price: '₹2,199 / day',
-    image: '/images/vehicles/swift-2021-grey.jpg',
-    color: 'Metallic Grey',
-    badge: 'Best Economy Value',
-    isAvailable: true,
-    availabilityStatus: 'Available',
-    driver: {
-      name: 'Provided by Company',
-      experience: '9+ Years Experience',
-      rating: 4.95,
-      languages: 'Odia, Hindi',
-      availability: 'Assigned by Company',
-    },
-  },
-  {
-    id: 'ch-innova',
-    name: 'Toyota Innova Crysta',
-    type: 'VIP Executive MPV',
-    seats: '7 Recliner Captain Seats',
-    price: '₹4,499 / day',
-    image: '/images/vehicles/toyota-innova.jpg',
-    color: 'Super White',
-    badge: '7-Seater VIP MPV',
-    isAvailable: false,
-    availabilityStatus: 'Currently Unavailable',
-    driver: {
-      name: 'Provided by Company',
-      experience: '12+ Years Experience',
-      rating: 4.98,
-      languages: 'Odia, Hindi, English',
-      availability: 'Currently Unavailable',
-    },
-  },
-  {
-    id: 'ch-fortuner',
-    name: 'Toyota Fortuner 4x4',
-    type: 'Flagship Dignitary SUV',
-    seats: '7 Luxury Seats',
-    price: '₹6,999 / day',
-    image: '/images/vehicles/toyota-fortuner.jpg',
-    color: 'Attitude Black',
-    badge: 'Dignitary Escort 4x4',
-    isAvailable: false,
-    availabilityStatus: 'Currently Unavailable',
-    driver: {
-      name: 'Provided by Company',
-      experience: '14+ Years Experience',
-      rating: 4.99,
-      languages: 'Odia, Hindi, English',
-      availability: 'Currently Unavailable',
-    },
-  },
-];
-
+import { vehiclesAPI } from '../../services/api';
 export const CarDriverFleetGrid = ({ onSelectCar }) => {
+  const [chauffeurCars, setChauffeurCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    vehiclesAPI
+      .getAll()
+      .then((res) => {
+        if (isMounted && res?.data && res.data.length > 0) {
+          const mapped = res.data.map((v) => {
+            const baseRate = v.pricing?.dailyRate || v.pricePerDay || 1499;
+            const chauffeurRate = v.pricing?.dailyRateWithFuel || (baseRate + 800);
+            const image = (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg';
+
+            return {
+              id: v.slug || v._id || v.id,
+              rawId: v._id || v.id,
+              name: v.name,
+              type: v.type || v.model || `${v.category || 'Executive'} Sedan`,
+              seats: `${v.seats || 5} Seats`,
+              price: `₹${chauffeurRate.toLocaleString('en-IN')} / day`,
+              priceNumeric: chauffeurRate,
+              image: image,
+              color: v.color || 'Executive Finish',
+              badge: v.badge || (v.isAvailable !== false ? 'Verified Chauffeur' : 'Reserved'),
+              isAvailable: v.isAvailable !== false,
+              availabilityStatus: v.isAvailable !== false ? 'Available' : 'Currently Unavailable',
+              driver: {
+                name: 'Professional Odisha Chauffeur',
+                experience: '8+ Years Experience',
+                rating: 4.98,
+                languages: 'Odia, Hindi, English',
+                availability: 'Assigned with vehicle',
+              },
+              rawVehicle: v,
+            };
+          });
+          setChauffeurCars(mapped);
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load cars with driver from DB:', err);
+        setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section className="py-16 sm:py-24">
       <Container>
@@ -129,12 +64,22 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
             Prestige Cars & Master Chauffeurs
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-medium">
-            Hand-picked executive vehicles paired with experienced, vetted drivers.
+            Hand-picked executive vehicles paired with experienced, vetted drivers directly from our database.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {CHAUFFEUR_CARS.map((item) => {
+        {loading ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <p className="text-sm font-bold text-slate-500">Loading chauffeur vehicles from database...</p>
+          </div>
+        ) : chauffeurCars.length === 0 ? (
+          <div className="py-16 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-8">
+            <p className="text-slate-600 font-bold text-sm">No vehicles currently available for chauffeur service.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {chauffeurCars.map((item) => {
             const isUnavailable = item.isAvailable === false;
 
             return (
@@ -262,6 +207,7 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
             );
           })}
         </div>
+        )}
       </Container>
     </section>
   );

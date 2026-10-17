@@ -1,33 +1,67 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar, Clock, Car, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { MapPin, Calendar, Clock, Car, CheckCircle2, ArrowRight, Lock } from 'lucide-react';
 import { Container } from '../common/Container';
-import { CHAUFFEUR_CARS } from './CarDriverFleetGrid';
+import { vehiclesAPI } from '../../services/api';
 import { WhatsAppButton } from '../common/WhatsAppButton';
+import { useAuth } from '../../hooks/useAuth';
+import { AuthRequiredNotice } from '../common/AuthRequiredNotice';
 
 export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
+  const { isAuthenticated, openAuthModal } = useAuth();
+  const [fleet, setFleet] = useState([]);
   const [pickup, setPickup] = useState('');
   const [destination, setDestination] = useState('');
   const [date, setDate] = useState('2026-10-14');
   const [time, setTime] = useState('10:00');
-  const firstAvailableCar = CHAUFFEUR_CARS.find((c) => c.isAvailable !== false)?.name || 'Hyundai Creta (2026)';
-  const [carType, setCarType] = useState(
-    selectedCar && CHAUFFEUR_CARS.find((c) => c.name === selectedCar && c.isAvailable !== false)
-      ? selectedCar
-      : firstAvailableCar
-  );
+  const [carType, setCarType] = useState(selectedCar || '');
   const [bookedSubmitted, setBookedSubmitted] = useState(false);
 
-  // Sync selectedCar prop when changed from vehicle cards (only if available)
   useEffect(() => {
-    if (selectedCar && CHAUFFEUR_CARS.find((c) => c.name === selectedCar && c.isAvailable !== false)) {
+    let isMounted = true;
+    async function loadFleet() {
+      try {
+        const res = await vehiclesAPI.getAll();
+        if (res?.data && isMounted) {
+          const list = res.data.map((c) => ({
+            id: c.slug || c._id,
+            _id: c._id,
+            name: c.name,
+            price: `₹${(c.pricing?.withDriver?.daily || (c.pricePerDay ? c.pricePerDay + 500 : 3499)).toLocaleString('en-IN')}/day`,
+            type: c.type || c.category || 'Executive Sedan',
+            isAvailable: c.isAvailable !== false,
+            rawVehicle: c,
+          }));
+          setFleet(list);
+          if (list.length > 0 && !carType) {
+            setCarType(selectedCar || list[0].name);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load chauffeur fleet for booking bar:', err);
+      }
+    }
+    loadFleet();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Sync selectedCar prop when changed from vehicle cards
+  useEffect(() => {
+    if (selectedCar && fleet.some((c) => c.name === selectedCar && c.isAvailable !== false)) {
       setCarType(selectedCar);
     }
-  }, [selectedCar]);
+  }, [selectedCar, fleet]);
 
-  const selectedVehicleObj = CHAUFFEUR_CARS.find((c) => c.name === carType) || CHAUFFEUR_CARS[0];
+  const selectedVehicleObj = fleet.find((c) => c.name === carType) || fleet[0];
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
     if (onQuickBook) {
       onQuickBook({
         pickupLocation: pickup || 'SUM Hospital, Bhubaneswar',
@@ -165,9 +199,9 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                       onChange={(e) => setCarType(e.target.value)}
                       className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white font-bold focus:outline-none focus:border-blue-500 cursor-pointer"
                     >
-                      {CHAUFFEUR_CARS.map((c) => (
+                      {fleet.map((c) => (
                         <option
-                          key={c.id}
+                          key={c.id || c.name}
                           value={c.name}
                           disabled={c.isAvailable === false}
                         >
@@ -181,14 +215,43 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                 </div>
               </div>
 
+              {!isAuthenticated && (
+                <AuthRequiredNotice
+                  title="Login Required to Book Chauffeur"
+                  message="Please sign in or create an account to book your executive car with verified chauffeur."
+                  className="my-1 bg-amber-950/40 border-amber-500/30 text-amber-200"
+                />
+              )}
+
               <div className="pt-2 flex flex-col sm:flex-row gap-3">
-                <button
-                  type="submit"
-                  className="flex-1 py-4 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm transition-all shadow-lg shadow-blue-500/25 cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <span>Confirm Chauffeur Ride</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                {!isAuthenticated ? (
+                  <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                    <Link
+                      to="/login"
+                      state={{ returnTo: '/car-with-driver' }}
+                      className="flex-1 py-4 px-6 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95 text-center"
+                    >
+                      <Lock className="w-4 h-4" />
+                      <span>Login to Confirm Chauffeur Ride</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal('login')}
+                      className="py-3 px-4 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer"
+                    >
+                      Popup
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="submit"
+                    className="flex-1 py-4 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm transition-all shadow-lg shadow-blue-500/25 cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <span>Confirm Chauffeur Ride</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
 
                 <WhatsAppButton
                   message={whatsappMessage}

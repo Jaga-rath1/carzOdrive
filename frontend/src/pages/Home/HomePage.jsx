@@ -14,7 +14,7 @@ export const HomePage = () => {
   return (
     <div className="bg-white text-slate-900 overflow-x-hidden">
       {/* 1. HERO SECTION — CLEAN WHITE & BLUE EXPERIENCE WITH TOP REDIRECT OPTIONS & TRIP BOOKING */}
-      <Hero onOpenQuickBook={handleOpenQuickBook} />
+      <Hero onOpenQuickBook={handleOpenQuickBook} onOpenSpecs={handleOpenSpecs} />
 
       {/* 2. FEATURED VEHICLES (FILTER TABS & DETAILED VEHICLE CARDS) */}
       <FeaturedVehiclesSection

@@ -6,13 +6,13 @@ import { DrivoraLogo } from '../navbar/DrivoraLogo';
 
 export const Footer = () => {
   return (
-    <footer className="relative bg-slate-950 border-t border-slate-800 text-slate-300 pt-16 sm:pt-20 pb-12 overflow-hidden">
+    <footer className="relative bg-slate-950 border-t border-slate-800 text-slate-300 pt-12 sm:pt-14 pb-10 overflow-hidden">
       {/* Background ambient lighting */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <Container>
         {/* Main Footer Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10 lg:gap-8 pb-14 border-b border-slate-800">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-8 pb-10 border-b border-slate-800">
           {/* Logo & Description (Col Span 2) */}
           <div className="lg:col-span-2 space-y-5">
             <DrivoraLogo />
@@ -171,6 +171,11 @@ export const Footer = () => {
             </h4>
             <ul className="space-y-2.5 text-xs sm:text-sm font-medium">
               <li>
+                <Link to="/my-bookings" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">
+                  My Bookings & Receipts
+                </Link>
+              </li>
+              <li>
                 <Link to="/contact" className="text-slate-400 hover:text-blue-400 transition-colors">
                   Help Center
                 </Link>
@@ -209,6 +214,7 @@ export const Footer = () => {
             <Link to="/about" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
             <Link to="/about" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
             <Link to="/contact" className="hover:text-slate-300 transition-colors">Concierge Support</Link>
+            <Link to="/admin/login" className="text-amber-400/80 hover:text-amber-300 transition-colors font-bold">Admin Portal</Link>
           </div>
         </div>
       </Container>

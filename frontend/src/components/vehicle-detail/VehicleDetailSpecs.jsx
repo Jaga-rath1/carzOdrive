@@ -9,6 +9,7 @@ import {
   Cog, 
   Timer,
   Scale,
+  Calendar,
   Sparkles,
   CheckCircle2,
   XCircle
@@ -19,20 +20,29 @@ export const VehicleDetailSpecs = ({ vehicle }) => {
   const specs = vehicle.specs || {};
   const isAvailable = vehicle.isAvailable !== false && vehicle.availableCount !== 0;
 
+  const bikeEngineDisplay = vehicle.engineCC
+    ? `${vehicle.engineCC} cc`
+    : vehicle.engineCapacity
+    ? (String(vehicle.engineCapacity).includes('cc') ? vehicle.engineCapacity : `${vehicle.engineCapacity} cc`)
+    : specs.engine
+    ? (String(specs.engine).includes('cc') ? specs.engine : `${specs.engine} cc`)
+    : '350 cc';
+
   // Build spec items dynamically based on available specs
   const specItems = isBike
     ? [
-        { label: 'Engine Capacity', value: specs.engine || vehicle.engine || '125 cc', icon: Gauge },
-        { label: 'Max Power', value: specs.power || '12 HP', icon: Zap },
-        { label: 'Fuel Economy', value: specs.mileage || vehicle.mileage || '45 km/l', icon: Fuel },
-        { label: 'Top Speed', value: specs.topSpeed || '100 km/h', icon: Timer },
-        { label: 'Transmission', value: specs.transmission || vehicle.transmission || 'Automatic', icon: Cog },
-        { label: 'Fuel Tank', value: specs.fuelTank || '5.5 Liters', icon: Fuel },
-        { label: 'Braking System', value: specs.brakes || 'Single-Channel ABS', icon: ShieldCheck },
-        { label: 'Kerb Weight', value: specs.weight || '120 kg', icon: Scale },
+        { label: 'Exterior Color', value: vehicle.color || specs.color || 'Classic Black', icon: Sparkles },
+        { label: 'Buying Year', value: vehicle.buyingYear || vehicle.year || 2024, icon: Calendar },
+        { label: 'Engine Capacity', value: bikeEngineDisplay, icon: Gauge },
+        { label: 'Max Power', value: specs.power || '20.2 HP', icon: Zap },
+        { label: 'Fuel Economy', value: specs.mileage || '35-50 km/l', icon: Fuel },
+        { label: 'Top Speed', value: specs.topSpeed || '120 km/h', icon: Timer },
+        { label: 'Transmission', value: specs.transmission || vehicle.transmission || '5-Speed Manual', icon: Cog },
+        { label: 'Braking System', value: specs.brakes || 'Dual-Channel ABS', icon: ShieldCheck },
       ]
     : [
-        { label: 'Exterior Color', value: vehicle.color || specs.color || 'Factory Finish', icon: Sparkles },
+        { label: 'Exterior Color', value: vehicle.color || specs.color || 'Pearl White', icon: Sparkles },
+        { label: 'Buying Year', value: vehicle.buyingYear || vehicle.year || 2024, icon: Calendar },
         { label: 'Fleet Units', value: isAvailable ? `${vehicle.availableCount || 1} Available` : '0 Units (Not Available)', icon: isAvailable ? CheckCircle2 : XCircle },
         { label: 'Horsepower', value: specs.power || '115 HP', icon: Zap },
         { label: 'Engine', value: specs.engine || specs.fuelType || vehicle.fuel || '1.5L Engine', icon: Gauge },
@@ -41,7 +51,6 @@ export const VehicleDetailSpecs = ({ vehicle }) => {
         { label: 'Transmission', value: specs.transmission || vehicle.transmission || 'Manual / Auto', icon: Cog },
         { label: 'Seating Capacity', value: specs.seats ? `${specs.seats} Seats` : `${vehicle.seats || 5} Seats`, icon: Users },
         { label: 'Luggage Volume', value: specs.luggage || '3 Large Bags', icon: Briefcase },
-        { label: 'Drivetrain', value: specs.drivetrain || 'Front-Wheel Drive', icon: ShieldCheck },
       ];
 
   return (

@@ -23,21 +23,17 @@ router.get('/health/database', async (req, res) => {
   });
 });
 
-// Module routes (registered here as implemented)
-router.use('/auth', require('../modules/auth/auth.routes'));
-router.use('/users', require('../modules/users/users.routes'));
-router.use('/admins', require('../modules/admins/admins.routes'));
-router.use('/vendors', require('../modules/vendors/vendors.routes'));
-router.use('/vehicles', require('../modules/vehicles/vehicles.routes'));
-router.use('/bikes', require('../modules/bikes/bikes.routes'));
-router.use('/drivers', require('../modules/drivers/drivers.routes'));
-router.use('/packages', require('../modules/packages/packages.routes'));
-router.use('/bookings', require('../modules/bookings/bookings.routes'));
-router.use('/quotations', require('../modules/quotations/quotations.routes'));
-router.use('/payments', require('../modules/payments/payments.routes'));
-router.use('/reviews', require('../modules/reviews/reviews.routes'));
-router.use('/notifications', require('../modules/notifications/notifications.routes'));
-router.use('/requests', require('../modules/requests/requests.routes'));
-router.use('/reports', require('../modules/reports/reports.routes'));
+// MVC Routes
+router.use('/auth', require('./auth.routes'));
+router.use('/users', require('./users.routes'));
+router.use('/admins', require('./admins.routes'));
+router.use('/vehicles', require('./vehicles.routes'));
+router.use('/bikes', require('./bikes.routes'));
+router.use('/drivers', require('./drivers.routes'));
+router.use('/packages', require('./packages.routes'));
+router.use('/bookings', require('./bookings.routes'));
+router.use('/payments', require('./payments.routes'));
+router.use('/vendors', require('./vendors.routes'));
+router.use('/uploads', require('./uploads.routes'));
 
 module.exports = router;

@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
-import { Send, CheckCircle2, MessageCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Send, CheckCircle2, MessageCircle, Lock, ArrowRight } from 'lucide-react';
 import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
 import { CONTACT_CONFIG } from '../../config/contact';
 import { buildWhatsAppUrl } from '../../utils/whatsapp';
+import { useAuth } from '../../hooks/useAuth';
+import { AuthRequiredNotice } from '../common/AuthRequiredNotice';
 
 export const ContactForm = () => {
+  const { currentUser, isAuthenticated, openAuthModal } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,12 +19,28 @@ export const ContactForm = () => {
   });
   const [submitted, setSubmitted] = useState(false);
 
+  // Auto-prefill authenticated user details
+  useEffect(() => {
+    if (currentUser) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || currentUser.name || '',
+        email: prev.email || currentUser.email || '',
+        phone: prev.phone || currentUser.phone || '',
+      }));
+    }
+  }, [currentUser]);
+
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
     if (!formData.service) {
       alert('Please select which service you want.');
       return;
@@ -92,6 +112,12 @@ export const ContactForm = () => {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
+          <AuthRequiredNotice
+            title="Login Required to Transmit Inquiry"
+            message="Please log in or sign up before submitting your inquiry so our concierge team can verify and trace your request."
+            className="mb-2"
+          />
+
           <div>
             <label className="text-xs font-bold text-slate-800 block mb-1">
               Full Name *
@@ -192,14 +218,42 @@ export const ContactForm = () => {
             />
           </div>
 
-          <button
-            type="submit"
-            className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-black text-sm transition-all shadow-lg shadow-emerald-600/25 inline-flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.99]"
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span>Send Message via WhatsApp</span>
-            <Send className="w-4 h-4" />
-          </button>
+          {!isAuthenticated ? (
+            <div className="space-y-2">
+              <Link
+                to="/login"
+                state={{ returnTo: '/contact' }}
+                className="w-full py-4 px-6 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-sm transition-all shadow-lg flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.99] text-center"
+              >
+                <Lock className="w-4 h-4" />
+                <span>Login to Transmit Inquiry</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <p className="text-center text-xs text-slate-500">
+                New user?{' '}
+                <Link to="/signup" state={{ returnTo: '/contact' }} className="text-blue-600 hover:underline font-bold">
+                  Sign Up here
+                </Link>
+                {' '}or{' '}
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('login')}
+                  className="text-amber-700 hover:underline font-bold cursor-pointer"
+                >
+                  Quick Popup Login
+                </button>
+              </p>
+            </div>
+          ) : (
+            <button
+              type="submit"
+              className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-black text-sm transition-all shadow-lg shadow-emerald-600/25 inline-flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.99]"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Send Message via WhatsApp</span>
+              <Send className="w-4 h-4" />
+            </button>
+          )}
         </form>
       )}
     </div>

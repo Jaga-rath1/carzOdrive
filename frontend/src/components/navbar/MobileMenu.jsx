@@ -1,12 +1,40 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Sparkles } from 'lucide-react';
+import { X, ChevronDown, Sparkles, User, LogOut } from 'lucide-react';
 import { SERVICES_MENU } from './NavLinks';
 import { DrivoraLogo } from './DrivoraLogo';
+import { getCurrentUser, clearAuthSession } from '../../services/api';
 
-export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook }) => {
+export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook, onOpenAuth }) => {
   const [servicesExpanded, setServicesExpanded] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+
+  const sync = () => {
+    setCurrentUser(getCurrentUser());
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      sync();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    window.addEventListener('carzodrive-auth-change', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('carzodrive-auth-change', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    clearAuthSession();
+    setCurrentUser(null);
+    onClose();
+  };
+
 
   return (
     <AnimatePresence>
@@ -32,7 +60,7 @@ export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook }) => {
             <div>
               {/* Header with DrivoraLogo */}
               <div className="flex items-center justify-between pb-6 border-b border-white/10">
-                <DrivoraLogo />
+                <DrivoraLogo onClick={onClose} />
 
                 <button
                   type="button"
@@ -46,22 +74,7 @@ export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook }) => {
 
               {/* Navigation Links */}
               <div className="py-6 space-y-2.5">
-                {/* 1. Home */}
-                <NavLink
-                  to="/"
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    `block text-sm font-bold py-2.5 px-3.5 rounded-xl transition-all ${
-                      isActive
-                        ? 'text-blue-400 bg-white/10 border border-blue-500/30'
-                        : 'text-slate-200 hover:text-white hover:bg-white/5'
-                    }`
-                  }
-                >
-                  Home
-                </NavLink>
-
-                {/* 2. About */}
+                {/* 1. About */}
                 <NavLink
                   to="/about"
                   onClick={onClose}
@@ -142,7 +155,7 @@ export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook }) => {
                     }`
                   }
                 >
-                  Rent Your Car
+                  Rent Your Car (Attach Fleet)
                 </NavLink>
 
                 {/* 6. Rent Your Bike */}
@@ -157,7 +170,7 @@ export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook }) => {
                     }`
                   }
                 >
-                  Rent Your Bike
+                  Rent Your Bike (Attach Fleet)
                 </NavLink>
 
                 {/* 7. Contact */}
@@ -177,8 +190,52 @@ export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook }) => {
               </div>
             </div>
 
-            {/* Bottom Actions CTA: Book a Ride */}
+            {/* Bottom Actions CTA: Auth & Book a Ride */}
             <div className="pt-6 border-t border-white/10 space-y-3">
+              {currentUser ? (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-cyan-500/30 space-y-3 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white uppercase shadow-md bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shrink-0">
+                      {(currentUser.name || currentUser.email || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-cyan-300 font-bold uppercase tracking-wider">Welcome,</p>
+                      <p className="text-sm font-black text-white truncate">{currentUser.name || currentUser.email?.split('@')[0] || 'Customer'}</p>
+                      <p className="text-[11px] text-slate-400 truncate">{currentUser.email || currentUser.phone || ''}</p>
+                    </div>
+                  </div>
+
+                  <Link
+                    to="/my-bookings"
+                    onClick={onClose}
+                    className="w-full py-2.5 px-3 rounded-xl font-bold text-xs text-cyan-300 hover:text-white bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center gap-2 transition-all"
+                  >
+                    <span>View My Bookings</span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full py-2 px-3 rounded-xl font-semibold text-xs text-rose-300 hover:text-rose-200 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="w-full py-3 px-4 rounded-xl font-bold text-sm text-slate-100 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-cyan-400/50 cursor-pointer flex items-center justify-center gap-2 transition-all"
+                  onClick={() => {
+                    onClose();
+                    if (onOpenAuth) onOpenAuth('login');
+                  }}
+                >
+                  <User className="w-4 h-4 text-cyan-400" />
+                  <span>Sign In / Create Account</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 className="w-full py-3.5 px-4 rounded-xl font-black text-sm text-white bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:to-indigo-900 shadow-[0_4px_25px_rgba(37,99,235,0.5)] border border-blue-400/40 cursor-pointer flex items-center justify-center gap-2"

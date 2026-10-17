@@ -1,6 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TRUST_METRICS } from '../../data/testimonials';
+
+const TRUST_METRICS = [
+  { value: '500+', label: 'Verified Cars & Bikes' },
+  { value: '45,000+', label: 'Kilometers Travelled' },
+  { value: '4.9/5', label: 'Customer Rating' },
+  { value: '24/7', label: 'Odisha Road Assistance' },
+];
 
 export const HeroStats = () => {
   return (

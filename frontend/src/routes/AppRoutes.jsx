@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { MainLayout } from '../layouts/MainLayout';
 import { HomePage } from '../pages/Home/HomePage';
 import { CarSelfRidePage } from '../pages/CarSelfRide/CarSelfRidePage';
@@ -14,8 +14,23 @@ import { AboutPage } from '../pages/About/AboutPage';
 import { ContactPage } from '../pages/Contact/ContactPage';
 import { VehicleDetailPage } from '../pages/VehicleDetail/VehicleDetailPage';
 import { TourDetailPage } from '../pages/TourDetail/TourDetailPage';
-// Booking confirmation page (Preserved as separate page, commented out for now)
-// import { BookingConfirmationPage } from '../pages/BookingConfirmation/BookingConfirmationPage';
+import { LoginPage } from '../pages/Auth/LoginPage';
+import { SignupPage } from '../pages/Auth/SignupPage';
+import { ForgotPasswordPage } from '../pages/Auth/ForgotPasswordPage';
+import { ResetPasswordPage } from '../pages/Auth/ResetPasswordPage';
+import { MyBookingsPage } from '../pages/MyBookings/MyBookingsPage';
+
+// Admin Portal Pages
+import { AdminLayout } from '../pages/Admin/AdminLayout';
+import { AdminDashboardPage } from '../pages/Admin/AdminDashboardPage';
+import { AdminVehiclesPage } from '../pages/Admin/AdminVehiclesPage';
+import { AdminBikesPage } from '../pages/Admin/AdminBikesPage';
+import { AdminDriversPage } from '../pages/Admin/AdminDriversPage';
+import { AdminUsersPage } from '../pages/Admin/AdminUsersPage';
+import { AdminVendorFleetPage } from '../pages/Admin/AdminVendorFleetPage';
+import { AdminBookingsPage } from '../pages/Admin/AdminBookingsPage';
+import { AdminPackagesPage } from '../pages/Admin/AdminPackagesPage';
+import { AdminLoginPage } from '../pages/Admin/AdminLoginPage';
 
 // Scroll to top helper when route changes
 export const ScrollToTop = () => {
@@ -59,8 +74,10 @@ export const AppRoutes = () => {
           <Route path="tour/:id" element={<TourDetailPage />} />
           <Route path="tours-packages/:id" element={<TourDetailPage />} />
 
-          {/* Booking Confirmation (Commented out as requested for direct WhatsApp flow) */}
-          {/* <Route path="booking-confirmation" element={<BookingConfirmationPage />} /> */}
+          {/* Customer Booking Voucher & History */}
+          <Route path="my-bookings" element={<MyBookingsPage />} />
+          <Route path="bookings" element={<MyBookingsPage />} />
+          <Route path="booking-history" element={<MyBookingsPage />} />
           
           {/* Shorthand / backward compatible aliases */}
           <Route path="bike-rental" element={<BikeSelfRidePage />} />
@@ -74,6 +91,30 @@ export const AppRoutes = () => {
           {/* Catch all fallback */}
           <Route path="*" element={<HomePage />} />
         </Route>
+
+        {/* Dedicated Admin Portal Routes */}
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route path="bookings" element={<AdminBookingsPage />} />
+          <Route path="vehicles" element={<AdminVehiclesPage />} />
+          <Route path="bikes" element={<AdminBikesPage />} />
+          <Route path="packages" element={<AdminPackagesPage />} />
+          <Route path="tours" element={<Navigate to="/admin/packages" replace />} />
+          <Route path="drivers" element={<AdminDriversPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="vendor-fleet" element={<AdminVendorFleetPage />} />
+          <Route path="staff" element={<Navigate to="/admin/users" replace />} />
+        </Route>
+
+        {/* Dedicated Auth Routes (Full-Screen Luxury Portal) */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signin" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/register" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Routes>
     </>
   );

@@ -75,17 +75,12 @@ export const NavLinks = () => {
 
   return (
     <div className="flex items-center gap-1">
-      {/* 1. Home */}
-      <NavLink to="/" className={navLinkClass} end>
-        Home
-      </NavLink>
-
-      {/* 2. About */}
+      {/* 1. About */}
       <NavLink to="/about" className={navLinkClass}>
         About
       </NavLink>
 
-      {/* 3. Services Dropdown */}
+      {/* 2. Services Dropdown */}
       <div
         className="relative"
         onMouseEnter={() => setServicesOpen(true)}
@@ -152,22 +147,22 @@ export const NavLinks = () => {
         )}
       </div>
 
-      {/* 4. Tours & Packages */}
+      {/* 3. Tours & Packages */}
       <NavLink to="/tours-packages" className={navLinkClass}>
         Tours & Packages
       </NavLink>
 
-      {/* 5. Rent Your Car */}
+      {/* 4. Rent Your Car */}
       <NavLink to="/rent-your-car" className={navLinkClass}>
         Rent Your Car
       </NavLink>
 
-      {/* 6. Rent Your Bike */}
+      {/* 5. Rent Your Bike */}
       <NavLink to="/rent-your-bike" className={navLinkClass}>
         Rent Your Bike
       </NavLink>
 
-      {/* 7. Contact */}
+      {/* 6. Contact */}
       <NavLink to="/contact" className={navLinkClass}>
         Contact
       </NavLink>

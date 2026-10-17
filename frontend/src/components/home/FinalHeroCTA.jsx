@@ -6,7 +6,7 @@ import { Container } from '../common/Container';
 
 export const FinalHeroCTA = ({ onOpenQuickBook }) => {
   return (
-    <section className="relative py-24 sm:py-36 bg-[#030712] text-white overflow-hidden border-t border-white/10">
+    <section className="relative py-14 sm:py-20 bg-[#030712] text-white overflow-hidden border-t border-white/10">
       {/* Cinematic Animated Background Elements */}
       <div className="absolute inset-0 pointer-events-none select-none">
         {/* Pulsing deep blue ambient lighting */}
