@@ -10,6 +10,7 @@ import { Button } from '../common/Button';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
 import { formatCurrency } from '../../utils/formatters';
+import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 import { getQuickBookingWhatsAppMessage } from '../../utils/whatsapp';
 
 export const BookingStepServiceItem = ({
@@ -89,9 +90,17 @@ export const BookingStepServiceItem = ({
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-16 h-12 rounded-xl overflow-hidden bg-slate-900 shrink-0 border border-slate-200">
               <img
-                src={currentItemImage}
+                src={resolveVehicleImageUrl(currentItemImage, selectedService === 'self-drive-bike' ? '/images/vehicles/royal-enfield.jpg' : '/images/vehicles/swift-2026-grey.jpg')}
                 alt={currentItemName}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = selectedService === 'self-drive-bike'
+                    ? '/images/vehicles/royal-enfield.jpg'
+                    : selectedService === 'tour-packages'
+                    ? 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'
+                    : '/images/vehicles/swift-2026-grey.jpg';
+                }}
               />
             </div>
             <div className="min-w-0">
