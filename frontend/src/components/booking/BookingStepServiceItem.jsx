@@ -98,8 +98,8 @@ export const BookingStepServiceItem = ({
                   e.currentTarget.src = selectedService === 'self-drive-bike'
                     ? '/images/vehicles/royal-enfield.jpg'
                     : selectedService === 'tour-packages'
-                    ? 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'
-                    : '/images/vehicles/swift-2026-grey.jpg';
+                      ? 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'
+                      : '/images/vehicles/swift-2026-grey.jpg';
                 }}
               />
             </div>
@@ -108,8 +108,8 @@ export const BookingStepServiceItem = ({
                 {selectedService === 'driver-only'
                   ? 'Driver: Provided by Company'
                   : selectedService === 'tour-packages'
-                  ? 'Selected Package'
-                  : 'Selected Fleet'}
+                    ? 'Selected Package'
+                    : 'Selected Fleet'}
               </span>
               <h4 className="text-sm font-bold text-slate-950 truncate">{currentItemName}</h4>
               <div className="text-xs text-slate-500 truncate">
@@ -371,16 +371,15 @@ export const BookingStepServiceItem = ({
             onClick={() => setIncludeProtection(!includeProtection)}
             role="button"
             tabIndex={0}
-            className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-start gap-3 select-none ${
-              includeProtection
+            className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-start gap-3 select-none ${includeProtection
                 ? 'bg-blue-50/80 border-blue-500 shadow-sm'
                 : 'bg-slate-50 border-slate-200 hover:border-slate-300'
-            }`}
+              }`}
           >
             <input
               type="checkbox"
               checked={includeProtection}
-              onChange={() => {}}
+              onChange={() => { }}
               className="mt-0.5 w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
             />
             <div className="flex-1 min-w-0">

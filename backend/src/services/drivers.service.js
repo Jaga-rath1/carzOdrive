@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const { Driver } = require('../models/driver.model');
 const { DriverRegistrationSubmission } = require('../models/partner.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
+const cache = require('../utils/cache');
+
+function invalidateDriverCache() {
+  cache.invalidatePrefix('drivers:');
+}
 
 async function applyAsDriver(userId, data) {
   return registerDriver(userId, data);
@@ -158,33 +163,35 @@ async function updateDriverProfile(driverId, userId, data) {
  * List drivers (Admin portal audits carzodrive_partners + live drivers)
  */
 async function listDrivers(query = {}) {
-  const { page, limit, skip } = getPagination(query);
-  const filter = {};
+  const cacheKey = `drivers:list:${JSON.stringify(query)}`;
 
-  if (query.status && query.status !== 'ALL') {
-    filter.status = query.status;
-  }
-  if (query.isAvailable !== undefined) {
-    filter.isAvailable = query.isAvailable === 'true';
-  }
-  if (query.serviceArea) {
-    filter.serviceArea = { $in: [new RegExp(query.serviceArea, 'i')] };
-  }
+  return cache.wrap(cacheKey, 60, async () => {
+    const { page, limit, skip } = getPagination(query);
+    const filter = {};
 
-  // Fetch partner registrations
-  const partnerDrivers = await DriverRegistrationSubmission.find(filter).sort({ createdAt: -1 });
-
-  // Fetch primary DB catalog drivers
-  const legacyDrivers = await Driver.find(filter).populate('userId', 'name email').sort({ createdAt: -1 });
-
-  // Combine results with priority given to partner registrations
-  const combined = [...partnerDrivers.map((d) => d.toObject())];
-  legacyDrivers.forEach((ld) => {
-    const obj = ld.toObject();
-    if (!combined.some((d) => d.licenseNumber === obj.licenseNumber || d.slug === obj.slug || d.id === obj.id || String(d._id) === String(obj._id))) {
-      combined.push(obj);
+    if (query.status && query.status !== 'ALL') {
+      filter.status = query.status;
     }
-  });
+    if (query.isAvailable !== undefined) {
+      filter.isAvailable = query.isAvailable === 'true';
+    }
+    if (query.serviceArea) {
+      filter.serviceArea = { $in: [new RegExp(query.serviceArea, 'i')] };
+    }
+
+    // Fetch partner registrations with .lean() to eliminate Mongoose document overhead
+    const partnerDrivers = await DriverRegistrationSubmission.find(filter).sort({ createdAt: -1 }).lean();
+
+    // Fetch primary DB catalog drivers with .lean()
+    const legacyDrivers = await Driver.find(filter).populate('userId', 'name email').sort({ createdAt: -1 }).lean();
+
+    // Combine results with priority given to partner registrations
+    const combined = [...partnerDrivers];
+    legacyDrivers.forEach((ld) => {
+      if (!combined.some((d) => d.licenseNumber === ld.licenseNumber || d.slug === ld.slug || d.id === ld.id || String(d._id) === String(ld._id))) {
+        combined.push(ld);
+      }
+    });
 
 function normalizeDriverDocuments(driverObj) {
   if (!driverObj) return driverObj;
@@ -250,7 +257,8 @@ function normalizeDriverDocuments(driverObj) {
   const total = combined.length;
   const paginatedList = combined.slice(skip, skip + limit).map(normalizeDriverDocuments);
 
-  return { drivers: paginatedList, pagination: buildPaginationMeta(total, page, limit) };
+    return { drivers: paginatedList, pagination: buildPaginationMeta(total, page, limit) };
+  });
 }
 
 async function getDriverById(driverId) {

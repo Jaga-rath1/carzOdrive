@@ -98,10 +98,17 @@ const bookingSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Production High-Performance Indexes
+bookingSchema.index({ customerId: 1, createdAt: -1 });
+bookingSchema.index({ vendorId: 1, createdAt: -1 });
 bookingSchema.index({ customerId: 1, status: 1 });
 bookingSchema.index({ status: 1, createdAt: -1 });
+bookingSchema.index({ vehicleId: 1, status: 1, startDate: 1, endDate: 1 });
+bookingSchema.index({ bikeId: 1, status: 1, startDate: 1, endDate: 1 });
 bookingSchema.index({ paymentId: 1 });
 bookingSchema.index({ transactionId: 1 });
+bookingSchema.index({ guestPhone: 1 });
+bookingSchema.index({ guestEmail: 1 });
 
 // Auto-generate booking voucher number (e.g. CZ-2026-X892)
 bookingSchema.pre('save', function (next) {

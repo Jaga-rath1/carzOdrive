@@ -171,12 +171,18 @@ const driverSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Production High-Performance Indexes
+driverSchema.index({ status: 1, isAvailable: 1, rating: -1 });
+driverSchema.index({ city: 1, status: 1 });
+driverSchema.index({ id: 1 });
+driverSchema.index({ phone: 1 });
 driverSchema.index({ status: 1 });
 driverSchema.index({ isAvailable: 1 });
 driverSchema.index(
   { userId: 1 },
   { unique: true, partialFilterExpression: { userId: { $type: 'objectId' } } }
 );
+driverSchema.index({ name: 'text', city: 'text', title: 'text' });
 
 driverSchema.pre('save', function (next) {
   if (this.photo && !this.avatar) {

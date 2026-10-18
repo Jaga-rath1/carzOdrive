@@ -125,6 +125,30 @@ const generalLimiter = rateLimit({
 });
 app.use(['/api/v1', '/api'], generalLimiter);
 
+// 7.5 Production Cache Headers & Response Time Monitor
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const elapsed = Date.now() - start;
+    if (!res.headersSent) {
+      res.setHeader('X-Response-Time', `${elapsed}ms`);
+    }
+  });
+
+  if (req.method === 'GET' && !req.headers.authorization) {
+    const path = req.path || '';
+    if (
+      path.includes('/vehicles') ||
+      path.includes('/bikes') ||
+      path.includes('/packages') ||
+      path.includes('/drivers')
+    ) {
+      res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
+    }
+  }
+  next();
+});
+
 // 8. Main API Router (Supports /api/v1, /api, and direct paths like /auth, /vehicles)
 app.use('/api/v1', router);
 app.use('/api', router);

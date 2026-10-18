@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 const TourPackage = require('../models/package.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
+const cache = require('../utils/cache');
+
+function invalidatePackageCache() {
+  cache.invalidatePrefix('packages:');
+}
 
 // ─── Create ────────────────────────────────────────────────────────────────
 
@@ -26,43 +31,48 @@ async function createPackage(vendorId, data) {
     isAvailable,
     ...data,
   });
+  invalidatePackageCache();
   return pkg;
 }
 
 // ─── Public listing ────────────────────────────────────────────────────────
 
 async function listPackages(query) {
-  const { page, limit, skip } = getPagination(query);
-  const filter = { status: 'APPROVED', isPublished: true };
+  const cacheKey = `packages:public:${JSON.stringify(query)}`;
 
-  if (query.destination) {
-    filter.destination = new RegExp(query.destination, 'i');
-  }
+  return cache.wrap(cacheKey, 60, async () => {
+    const { page, limit, skip } = getPagination(query);
+    const filter = { status: 'APPROVED', isPublished: true };
 
-  if (query.days) {
-    filter['duration.days'] = parseInt(query.days, 10);
-  }
+    if (query.destination) {
+      filter.destination = new RegExp(query.destination, 'i');
+    }
 
-  if (query.minPrice || query.maxPrice) {
-    filter['pricing.adultPrice'] = {};
-    if (query.minPrice) filter['pricing.adultPrice'].$gte = Number(query.minPrice);
-    if (query.maxPrice) filter['pricing.adultPrice'].$lte = Number(query.maxPrice);
-  }
+    if (query.days) {
+      filter['duration.days'] = parseInt(query.days, 10);
+    }
 
-  if (query.category) {
-    filter.category = new RegExp(query.category, 'i');
-  }
+    if (query.minPrice || query.maxPrice) {
+      filter['pricing.adultPrice'] = {};
+      if (query.minPrice) filter['pricing.adultPrice'].$gte = Number(query.minPrice);
+      if (query.maxPrice) filter['pricing.adultPrice'].$lte = Number(query.maxPrice);
+    }
 
-  if (query.odishaTheme) {
-    filter.odishaTheme = new RegExp(query.odishaTheme, 'i');
-  }
+    if (query.category) {
+      filter.category = new RegExp(query.category, 'i');
+    }
 
-  const [packages, total] = await Promise.all([
-    TourPackage.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
-    TourPackage.countDocuments(filter),
-  ]);
+    if (query.odishaTheme) {
+      filter.odishaTheme = new RegExp(query.odishaTheme, 'i');
+    }
 
-  return { packages, pagination: buildPaginationMeta(total, page, limit) };
+    const [packages, total] = await Promise.all([
+      TourPackage.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
+      TourPackage.countDocuments(filter),
+    ]);
+
+    return { packages, pagination: buildPaginationMeta(total, page, limit) };
+  });
 }
 
 // ─── Vendor listing ────────────────────────────────────────────────────────
@@ -75,7 +85,7 @@ async function listVendorPackages(vendorId, query) {
   if (query.isPublished !== undefined) filter.isPublished = query.isPublished === 'true';
 
   const [packages, total] = await Promise.all([
-    TourPackage.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
+    TourPackage.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
     TourPackage.countDocuments(filter),
   ]);
 
@@ -99,7 +109,8 @@ async function listAdminPackages(query) {
       .populate('approvedBy', 'name email')
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 }),
+      .sort({ createdAt: -1 })
+      .lean(),
     TourPackage.countDocuments(filter),
   ]);
 
@@ -109,21 +120,25 @@ async function listAdminPackages(query) {
 // ─── Get one ───────────────────────────────────────────────────────────────
 
 async function getPackageById(packageId) {
-  let pkg = null;
-  if (mongoose.Types.ObjectId.isValid(packageId)) {
-    pkg = await TourPackage.findById(packageId).populate('approvedBy', 'name email');
-  }
-  if (!pkg) {
-    pkg = await TourPackage.findOne({
-      $or: [{ slug: packageId }, { id: packageId }],
-    }).populate('approvedBy', 'name email');
-  }
-  if (!pkg) {
-    const err = new Error('Package not found');
-    err.statusCode = 404;
-    throw err;
-  }
-  return pkg;
+  const cacheKey = `packages:detail:${packageId}`;
+
+  return cache.wrap(cacheKey, 60, async () => {
+    let pkg = null;
+    if (mongoose.Types.ObjectId.isValid(packageId)) {
+      pkg = await TourPackage.findById(packageId).populate('approvedBy', 'name email').lean();
+    }
+    if (!pkg) {
+      pkg = await TourPackage.findOne({
+        $or: [{ slug: packageId }, { id: packageId }],
+      }).populate('approvedBy', 'name email').lean();
+    }
+    if (!pkg) {
+      const err = new Error('Package not found');
+      err.statusCode = 404;
+      throw err;
+    }
+    return pkg;
+  });
 }
 
 // ─── Update ────────────────────────────────────────────────────────────────
@@ -152,7 +167,8 @@ async function updatePackage(packageId, vendorId, data, isAdmin = false) {
 
   Object.assign(pkg, data);
   await pkg.save();
-  return pkg;
+  invalidatePackageCache();
+  return pkg.toObject ? pkg.toObject() : pkg;
 }
 
 // ─── Approve / Reject ──────────────────────────────────────────────────────
@@ -170,7 +186,8 @@ async function approvePackage(packageId, adminId) {
   pkg.approvedAt = new Date();
   pkg.rejectionReason = undefined;
   await pkg.save();
-  return pkg;
+  invalidatePackageCache();
+  return pkg.toObject ? pkg.toObject() : pkg;
 }
 
 async function rejectPackage(packageId, adminId, reason) {
@@ -184,7 +201,8 @@ async function rejectPackage(packageId, adminId, reason) {
   pkg.isPublished = false;
   pkg.rejectionReason = reason;
   await pkg.save();
-  return pkg;
+  invalidatePackageCache();
+  return pkg.toObject ? pkg.toObject() : pkg;
 }
 
 // ─── Delete ────────────────────────────────────────────────────────────────
@@ -201,8 +219,9 @@ async function deletePackage(packageId, vendorId, isAdmin = false) {
     err.statusCode = 403;
     throw err;
   }
-  await TourPackage.deleteOne({ _id: packageId });
-  return { message: 'Package deleted successfully' };
+  await TourPackage.findByIdAndDelete(packageId);
+  invalidatePackageCache();
+  return true;
 }
 
 // ─── Toggle publish ────────────────────────────────────────────────────────
@@ -219,29 +238,33 @@ async function togglePublish(packageId, vendorId, isPublished, isAdmin = false) 
     err.statusCode = 403;
     throw err;
   }
-  if (isPublished && pkg.status !== 'APPROVED') {
-    const err = new Error('Cannot publish a package that is not approved');
-    err.statusCode = 400;
-    throw err;
-  }
   pkg.isPublished = isPublished;
   await pkg.save();
-  return pkg;
+  invalidatePackageCache();
+  return pkg.toObject ? pkg.toObject() : pkg;
 }
 
 // ─── Check availability ────────────────────────────────────────────────────
 
-async function checkDateAvailability(packageId, dateStr, pax = 1) {
-  const pkg = await getPackageById(packageId);
-  const targetDate = new Date(dateStr);
-  const slot = (pkg.availableDates || []).find(
-    (d) => new Date(d.date).toDateString() === targetDate.toDateString()
-  );
-  if (!slot) {
-    return { available: true, remainingCapacity: 20 };
+async function checkPackageAvailability(packageId, dateStr, count) {
+  const pkg = await TourPackage.findById(packageId).lean();
+  if (!pkg) {
+    const err = new Error('Package not found');
+    err.statusCode = 404;
+    throw err;
   }
-  const remaining = slot.capacity - slot.bookedCount;
-  return { available: remaining >= pax, remainingCapacity: Math.max(0, remaining) };
+
+  const requestedDate = new Date(dateStr);
+  const entry = (pkg.availableDates || []).find(
+    (d) => new Date(d.date).toDateString() === requestedDate.toDateString()
+  );
+
+  const capacity = entry ? entry.capacity : pkg.maxPax;
+  const booked = entry ? entry.bookedCount : 0;
+  const availableSlots = capacity - booked;
+  const isAvailable = availableSlots >= count;
+
+  return { isAvailable, availableSlots, capacity, bookedCount: booked };
 }
 
 module.exports = {
@@ -255,5 +278,6 @@ module.exports = {
   rejectPackage,
   deletePackage,
   togglePublish,
-  checkDateAvailability,
+  checkPackageAvailability,
+  invalidatePackageCache,
 };
