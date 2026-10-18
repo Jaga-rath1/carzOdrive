@@ -63,7 +63,7 @@ export const ContactHubs = () => {
           <div className="flex items-start gap-3">
             <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
             <p className="text-xs text-slate-600 leading-relaxed font-normal">
-              <strong>Central Address:</strong> Plot 142, CARZODRIVE Mobility Hub, Near Infocity Square, Patia, Bhubaneswar, Odisha 751024
+              <strong>Central Address:</strong> Plot no -1774. Ananda Bana Main Road. Kalinga Nagar, Ghatikia, Bhubaneswar, Pin- 751029
             </p>
           </div>
           <div className="flex items-start gap-3">

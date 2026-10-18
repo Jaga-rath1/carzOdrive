@@ -1,47 +1,79 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Users, Fuel, Gauge, SlidersHorizontal } from 'lucide-react';
+import { Users, Fuel, Gauge, SlidersHorizontal, Loader2 } from 'lucide-react';
 import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
-import { VEHICLES } from '../../data/vehicles';
-
-export const CAR_LISTING = VEHICLES.map((v) => ({
-  id: v.id,
-  name: v.name,
-  category:
-    v.category === 'suv'
-      ? 'SUV'
-      : v.category === 'sedan'
-      ? 'Sedan'
-      : v.category === 'luxury'
-      ? 'Luxury'
-      : 'Hatchback',
-  seats: v.specs?.seats || 5,
-  fuel: v.specs?.fuelType || 'Petrol',
-  transmission: v.specs?.transmission || 'Manual / AMT',
-  pricePerDay: v.pricePerDay,
-  priceDisplay: v.priceDisplay,
-  popularity: v.isAvailable ? 100 : 70,
-  isLuxury: v.category === 'luxury',
-  image: v.image,
-  badge: v.badge || (v.isAvailable ? 'Available Now' : v.type),
-  isAvailable: v.isAvailable,
-  availableCount: v.availableCount ?? (v.isAvailable ? 1 : 0),
-  availabilityStatus: v.availabilityStatus || (v.isAvailable ? 'Available' : 'Currently Not Available'),
-  color: v.color || v.specs?.color || 'Standard',
-  year: v.year,
-}));
+import { vehiclesAPI } from '../../services/api';
+import { CarRideCard } from './CarRideCard';
 
 export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [sortBy, setSortBy] = useState('popular');
+  const [fleetCars, setFleetCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    vehiclesAPI
+      .getAll()
+      .then((res) => {
+        if (isMounted && res?.data && res.data.length > 0) {
+          const mapped = res.data.map((v) => {
+            const price = v.pricing?.dailyRate || v.pricePerDay || v.priceNumeric || 1499;
+            const image = (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg';
+
+            return {
+              id: v.slug || v._id || v.id,
+              rawId: v._id || v.id,
+              vehicleId: v._id || v.id,
+              name: v.name,
+              category:
+                (v.category || '').toLowerCase() === 'suv'
+                  ? 'SUV'
+                  : (v.category || '').toLowerCase() === 'sedan'
+                  ? 'Sedan'
+                  : (v.category || '').toLowerCase() === 'luxury'
+                  ? 'Luxury'
+                  : 'Hatchback',
+              seats: v.specs?.seats || v.seats || 5,
+              fuel: v.specs?.fuelType || (v.fuelType ? v.fuelType.toUpperCase() : 'PETROL'),
+              transmission: v.specs?.transmission || (v.transmission ? v.transmission.toUpperCase() : 'MANUAL'),
+              pricePerDay: price,
+              priceDisplay: `₹${price.toLocaleString('en-IN')}`,
+              popularity: v.isAvailable !== false ? 100 : 70,
+              isLuxury: (v.category || '').toLowerCase() === 'luxury',
+              image: image,
+              badge: v.badge || (v.isAvailable !== false ? 'Live in Hub' : 'Reserved'),
+              availableCount: v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0),
+              isAvailable: v.isAvailable !== false && (v.availableCount ?? v.count ?? 1) > 0 && v.availabilityStatus !== 'UNAVAILABLE',
+              availabilityStatus: (v.isAvailable !== false && (v.availableCount ?? v.count ?? 1) > 0 && v.availabilityStatus !== 'UNAVAILABLE') ? 'Available' : 'Currently Unavailable',
+              color: v.color || v.specs?.color || 'Standard',
+              year: v.year || 2024,
+              rawVehicle: v,
+              vehicleType: 'car',
+            };
+          });
+          setFleetCars(mapped);
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load cars from DB:', err);
+        setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const categories = ['All', 'Available Now', 'Hatchback', 'SUV', 'Sedan', 'Luxury'];
 
   const filteredAndSortedCars = useMemo(() => {
-    let result = [...CAR_LISTING];
+    let result = [...fleetCars];
     if (activeCategory === 'Available Now') {
       result = result.filter((c) => c.isAvailable);
     } else if (activeCategory !== 'All') {
@@ -52,25 +84,21 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
       result.sort((a, b) => a.pricePerDay - b.pricePerDay);
     } else if (sortBy === 'price-high') {
       result.sort((a, b) => b.pricePerDay - a.pricePerDay);
+    } else if (sortBy === 'seats') {
+      result.sort((a, b) => b.seats - a.seats);
     } else {
-      // Prioritize active available cars first, then popularity
-      result.sort((a, b) => {
-        if (a.isAvailable !== b.isAvailable) {
-          return a.isAvailable ? -1 : 1;
-        }
-        return b.popularity - a.popularity;
-      });
+      result.sort((a, b) => b.popularity - a.popularity);
     }
     return result;
-  }, [activeCategory, sortBy]);
+  }, [fleetCars, activeCategory, sortBy]);
 
   return (
     <section className="py-16 sm:py-24">
       <Container>
-        {/* Filter Controls Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 no-scrollbar w-full sm:w-auto">
+        {/* Controls: Filter Pills + Sort Dropdown */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -88,137 +116,56 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
           </div>
 
           {/* Sort Selector */}
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <SlidersHorizontal className="w-4 h-4 text-slate-400" />
+          <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+            <span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1.5">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
+              <span>Sort by:</span>
+            </span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-slate-100 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl focus:outline-none border border-slate-200 cursor-pointer"
+              className="bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 shadow-2xs focus:border-blue-500 focus:outline-hidden cursor-pointer"
             >
-              <option value="popular">Most Popular</option>
+              <option value="popular">Popularity</option>
               <option value="price-low">Price: Low to High</option>
               <option value="price-high">Price: High to Low</option>
+              <option value="seats">Seating Capacity</option>
             </select>
           </div>
         </div>
 
-        {/* Cars Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <AnimatePresence mode="popLayout">
-            {filteredAndSortedCars.map((vehicle) => (
-              <motion.div
-                key={vehicle.id}
-                layout
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                transition={{ duration: 0.3 }}
-                className={`group relative flex flex-col justify-between rounded-3xl bg-white border shadow-[0_6px_25px_rgba(0,0,0,0.06)] transition-all duration-300 overflow-hidden ${
-                  vehicle.isAvailable
-                    ? 'border-slate-200/90 hover:shadow-[0_16px_40px_rgba(37,99,235,0.16)] hover:border-blue-500'
-                    : 'border-slate-200/80 hover:border-slate-300'
-                }`}
-              >
-                {/* Image */}
-                <div className="relative h-60 w-full overflow-hidden bg-slate-900">
-                  <img
-                    src={vehicle.image}
-                    alt={vehicle.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    loading="lazy"
+        {/* Loading Spinner */}
+        {loading ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <p className="text-sm font-bold text-slate-500">Loading fleet from database...</p>
+          </div>
+        ) : filteredAndSortedCars.length === 0 ? (
+          <div className="py-16 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-8">
+            <p className="text-slate-600 font-bold text-sm">No vehicles found in this category.</p>
+          </div>
+        ) : (
+          /* Cars Grid */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <AnimatePresence mode="popLayout">
+              {filteredAndSortedCars.map((vehicle) => (
+                <motion.div
+                  key={vehicle.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CarRideCard
+                    vehicle={vehicle}
+                    onOpenQuickBook={onOpenQuickBook}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-
-                  {/* Clean Badge on Image */}
-                  <div className="absolute top-3 left-3">
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-white shadow-sm">
-                      {vehicle.badge}
-                    </span>
-                  </div>
-
-                  <div className="absolute bottom-3 right-3 text-right">
-                    <span className="text-xl font-black text-white drop-shadow-md">
-                      {vehicle.priceDisplay}
-                    </span>
-                    <span className="text-[11px] font-semibold text-slate-300 ml-1">
-                      / day
-                    </span>
-                  </div>
-                </div>
-
-                {/* Body Content */}
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-blue-600">
-                        {vehicle.category} • {vehicle.year}
-                      </span>
-                      {vehicle.color && (
-                        <span className="text-[10px] font-semibold text-slate-500">
-                          {vehicle.color}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="text-lg font-black text-slate-950 mt-1 group-hover:text-blue-600 transition-colors">
-                      {vehicle.name}
-                    </h3>
-                  </div>
-
-                  {/* Specs Row */}
-                  <div className="grid grid-cols-3 gap-2 py-3 border-y border-slate-100 text-slate-600 text-[11px] font-semibold">
-                    <div className="flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                      <span>{vehicle.seats} Seats</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 truncate">
-                      <Fuel className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                      <span className="truncate">{vehicle.fuel}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 truncate">
-                      <Gauge className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                      <span className="truncate">{vehicle.transmission}</span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons: View Details + WhatsApp + Book Now (Faded if not available) */}
-                  <div className="flex items-center gap-2 pt-1">
-                    <Link
-                      to={`/vehicle/${vehicle.id}`}
-                      className="flex-1 py-3 px-2 rounded-xl border border-slate-200 hover:border-blue-500 font-bold text-xs text-slate-700 hover:text-blue-600 transition-all cursor-pointer text-center bg-slate-50 hover:bg-white"
-                    >
-                      View Details
-                    </Link>
-
-                    <WhatsAppButton
-                      message={getVehicleWhatsAppMessage(vehicle)}
-                      variant="icon-only"
-                      size="md"
-                    />
-
-                    {vehicle.isAvailable ? (
-                      <button
-                        type="button"
-                        onClick={() => onOpenQuickBook?.({ vehicle, type: 'car' })}
-                        className="flex-1 py-3 px-2 rounded-xl font-black text-xs text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all shadow-md cursor-pointer text-center"
-                      >
-                        Book Now
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled
-                        className="flex-1 py-3 px-2 rounded-xl font-bold text-xs text-slate-400 bg-slate-100 border border-slate-200 opacity-40 cursor-not-allowed select-none text-center"
-                        title="Vehicle is currently not available for booking"
-                      >
-                        Not Available
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </Container>
     </section>
   );

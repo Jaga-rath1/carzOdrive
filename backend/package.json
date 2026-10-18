@@ -1,0 +1,51 @@
+{
+  "name": "carzodrive-backend",
+  "version": "1.0.0",
+  "description": "CarzoDrive backend API server",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --runInBand --forceExit",
+    "test:watch": "jest --watch --runInBand",
+    "seed:admin": "node src/scripts/seedAdmin.js",
+    "purge:demo": "node src/scripts/purgeDemoData.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cashfree-pg": "^4.0.1",
+    "cloudinary": "^2.11.0",
+    "compression": "^1.8.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "express-validator": "^7.1.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.5",
+    "morgan": "^1.10.0",
+    "multer": "^2.4.0",
+    "nodemailer": "^10.1.1",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@mongodb-js/zstd": "^2.0.1",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^11.3.0",
+    "nodemon": "^3.1.4",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "setupFiles": [
+      "./tests/setup.js"
+    ],
+    "globalSetup": "./tests/globalSetup.js",
+    "globalTeardown": "./tests/globalTeardown.js",
+    "testTimeout": 60000
+  }
+}

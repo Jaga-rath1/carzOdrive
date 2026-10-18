@@ -89,6 +89,9 @@ export const getQuickBookingWhatsAppMessage = ({
   protection = '',
   deposit = '',
   total = '',
+  paymentMode = '',
+  paidNow = '',
+  balanceOnPickup = '',
   bookingCode = '',
   guestName = '',
   guestPhone = '',
@@ -122,6 +125,15 @@ export const getQuickBookingWhatsAppMessage = ({
   }
   if (total) {
     msg += `💰 *Estimated Total:* ${total}\n`;
+  }
+  if (paymentMode) {
+    msg += `💳 *Payment Option:* ${paymentMode}\n`;
+  }
+  if (paidNow) {
+    msg += `💵 *Advance Paid Online:* ${paidNow}\n`;
+  }
+  if (balanceOnPickup) {
+    msg += `⏳ *Balance Due at Pickup:* ${balanceOnPickup}\n`;
   }
   if (guestName) {
     msg += `\n👤 *Customer Name:* ${guestName}\n`;

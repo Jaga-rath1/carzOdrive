@@ -71,7 +71,13 @@ export const VehicleCard = ({
                 {isBike ? 'Engine' : '0-100'}
               </span>
               <span className="text-xs font-bold text-slate-900 block mt-0.5 truncate">
-                {isBike ? specs.engine : specs.acceleration}
+                {isBike
+                  ? (vehicle.engineCC
+                      ? `${vehicle.engineCC} cc`
+                      : vehicle.engineCapacity
+                      ? (String(vehicle.engineCapacity).includes('cc') ? vehicle.engineCapacity : `${vehicle.engineCapacity} cc`)
+                      : specs.engine || '350 cc')
+                  : specs.acceleration}
               </span>
             </div>
 

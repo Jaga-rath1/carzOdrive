@@ -14,9 +14,16 @@ export const VehicleSpecsModal = ({
   onClose,
   onBookNow
 }) => {
+  const [activeImage, setActiveImage] = useState(vehicle?.image || '');
+
+  React.useEffect(() => {
+    if (vehicle?.image) {
+      setActiveImage(vehicle.image);
+    }
+  }, [vehicle]);
+
   if (!vehicle) return null;
 
-  const [activeImage, setActiveImage] = useState(vehicle.image);
   const specs = vehicle.specs || {};
   const gallery = [vehicle.image, ...(vehicle.secondaryImages || [])];
 

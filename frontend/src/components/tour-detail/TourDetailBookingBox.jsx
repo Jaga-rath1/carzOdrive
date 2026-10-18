@@ -13,9 +13,13 @@ export const TourDetailBookingBox = ({ tour, onOpenQuickBook }) => {
 
   const handleReserve = () => {
     onOpenQuickBook?.({
-      serviceType: 'tour-package',
-      name: tour.title,
+      serviceType: 'tour-packages',
+      vehicle: tour,
+      tour: tour,
+      packageId: tour.packageId || tour._id || tour.id,
+      name: tour.title || tour.name,
       location: tour.destination,
+      pickupDate: departureDate,
       departureDate,
       travelers,
       price: tour.startingPrice,

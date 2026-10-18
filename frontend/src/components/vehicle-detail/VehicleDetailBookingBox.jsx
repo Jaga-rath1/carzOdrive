@@ -4,14 +4,18 @@ import {
   MapPin, 
   ShieldCheck, 
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  CreditCard,
+  Coins,
+  MessageCircle
 } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
 
 export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
-  const isAvailable = vehicle.isAvailable !== false && vehicle.availableCount !== 0;
+  const count = vehicle.availableCount ?? vehicle.count ?? (vehicle.isAvailable !== false ? 1 : 0);
+  const isAvailable = vehicle.isAvailable !== false && count > 0 && vehicle.availabilityStatus !== 'UNAVAILABLE';
 
   const [pickupDate, setPickupDate] = useState(() => {
     const d = new Date();
@@ -24,6 +28,7 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
     return d.toISOString().split('T')[0];
   });
   const [pickupLocation, setPickupLocation] = useState('SUM Hospital');
+  const [paymentMode, setPaymentMode] = useState('full'); // 'full' | 'partial' | 'offline'
 
   // Calculate day difference
   const daysDiff = Math.max(
@@ -41,6 +46,8 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
   );
 
   const estimatedTotal = priceNum * daysDiff;
+  const partialAmount = Math.max(499, Math.round(estimatedTotal * 0.25));
+  const remainingAmount = Math.max(0, estimatedTotal - partialAmount);
   const depositText = vehicle.deposit || (vehicle.depositNumeric ? `₹${vehicle.depositNumeric}` : '₹5,000');
 
   const effectiveLocation = pickupLocation;
@@ -54,6 +61,7 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
       returnDate,
       location: effectiveLocation,
       pickupLocation: effectiveLocation,
+      paymentMode,
     });
   };
 
@@ -76,7 +84,21 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
               Color: <strong className="text-slate-800">{vehicle.color}</strong>
             </span>
           )}
+          <div className="mt-2">
+            {isAvailable ? (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                {count} Units Available
+              </span>
+            ) : (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 inline-flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                Currently Unavailable (0 Units)
+              </span>
+            )}
+          </div>
         </div>
+
 
         <div className="text-right">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 block mb-1">
@@ -139,42 +161,145 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
         </div>
       </div>
 
-      {/* Fare Estimate */}
-      <div className="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-200 flex items-center justify-between text-xs">
-        <div>
-          <span className="font-bold text-slate-900 block">Total for {daysDiff} Days</span>
-          <span className="text-[10px] text-slate-500">Includes all taxes & FASTag</span>
-        </div>
-        <div className="text-right">
-          <span className="text-xl font-black text-blue-600">
-            ₹{estimatedTotal.toLocaleString('en-IN')}
-          </span>
+      {/* Payment Options Selection */}
+      <div className="space-y-2">
+        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+          Payment Preference
+        </label>
+        <div className="grid grid-cols-3 gap-1.5">
+          <button
+            type="button"
+            onClick={() => setPaymentMode('full')}
+            className={`p-2 rounded-xl text-center border transition-all cursor-pointer ${
+              paymentMode === 'full'
+                ? 'border-blue-600 bg-blue-50/70 text-blue-700 font-bold ring-1 ring-blue-500/30'
+                : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300'
+            }`}
+          >
+            <div className="text-[11px] font-bold leading-tight">Full Pay</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">100% Online</div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPaymentMode('partial')}
+            className={`p-2 rounded-xl text-center border transition-all cursor-pointer ${
+              paymentMode === 'partial'
+                ? 'border-indigo-600 bg-indigo-50/70 text-indigo-700 font-bold ring-1 ring-indigo-500/30'
+                : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300'
+            }`}
+          >
+            <div className="text-[11px] font-bold leading-tight">25% Token</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">Advance</div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPaymentMode('offline')}
+            className={`p-2 rounded-xl text-center border transition-all cursor-pointer ${
+              paymentMode === 'offline'
+                ? 'border-emerald-600 bg-emerald-50/70 text-emerald-700 font-bold ring-1 ring-emerald-500/30'
+                : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300'
+            }`}
+          >
+            <div className="text-[11px] font-bold leading-tight">Offline</div>
+            <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">WhatsApp</div>
+          </button>
         </div>
       </div>
 
-      {/* Primary Actions: Book Now (faded if unavailable) + Chat on WhatsApp */}
+      {/* Fare Estimate with dynamic breakdown */}
+      <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/90 text-xs space-y-2">
+        <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/70">
+          <div>
+            <span className="font-bold text-slate-900 block">Total for {daysDiff} Days</span>
+            <span className="text-[10px] text-slate-500">Includes all taxes & FASTag</span>
+          </div>
+          <div className="text-right">
+            <span className="text-base font-black text-slate-900">
+              ₹{estimatedTotal.toLocaleString('en-IN')}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between font-semibold pt-0.5">
+          <span className="text-slate-600 text-[11px]">
+            {paymentMode === 'full'
+              ? 'Pay Online Now (100%):'
+              : paymentMode === 'partial'
+              ? 'Pay Online Now (25% Token):'
+              : 'Pay Online Now:'}
+          </span>
+          <span
+            className={`text-sm font-black ${
+              paymentMode === 'offline' ? 'text-emerald-600' : 'text-blue-600'
+            }`}
+          >
+            {paymentMode === 'full'
+              ? `₹${estimatedTotal.toLocaleString('en-IN')}`
+              : paymentMode === 'partial'
+              ? `₹${partialAmount.toLocaleString('en-IN')}`
+              : '₹0 (Zero Advance)'}
+          </span>
+        </div>
+
+        {paymentMode !== 'full' && (
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
+            <span>Pay on Vehicle Handover:</span>
+            <span className="font-bold text-slate-800">
+              {paymentMode === 'partial'
+                ? `₹${remainingAmount.toLocaleString('en-IN')} (Cash / UPI)`
+                : `₹${estimatedTotal.toLocaleString('en-IN')} (Cash / UPI)`}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Primary Actions: Book Now + Chat on WhatsApp */}
       <div className="space-y-2.5">
         {isAvailable ? (
           <button
             type="button"
             onClick={handleBookNow}
-            className="w-full py-4 px-6 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all shadow-[0_6px_20px_rgba(37,99,235,0.35)] cursor-pointer flex items-center justify-center gap-2 group"
+            className={`w-full py-4 px-6 rounded-2xl font-black text-sm text-white transition-all shadow-[0_6px_20px_rgba(0,0,0,0.15)] cursor-pointer flex items-center justify-center gap-2 group ${
+              paymentMode === 'offline'
+                ? 'bg-emerald-600 hover:bg-emerald-700'
+                : paymentMode === 'partial'
+                ? 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700'
+                : 'bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800'
+            }`}
           >
-            <span>Book Now Instant</span>
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            {paymentMode === 'offline' ? (
+              <>
+                <MessageCircle className="w-4 h-4" />
+                <span>Book via WhatsApp (Pay at Pickup)</span>
+              </>
+            ) : paymentMode === 'partial' ? (
+              <>
+                <Coins className="w-4 h-4" />
+                <span>Lock with 25% (₹{partialAmount.toLocaleString('en-IN')})</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </>
+            ) : (
+              <>
+                <CreditCard className="w-4 h-4" />
+                <span>Book Now (Pay ₹{estimatedTotal.toLocaleString('en-IN')})</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </>
+            )}
           </button>
         ) : (
           <div className="space-y-1.5">
             <button
               type="button"
               disabled
-              className="w-full py-4 px-6 rounded-2xl font-bold text-sm text-slate-400 bg-slate-100 border border-slate-200 opacity-40 cursor-not-allowed select-none text-center"
-              title="This vehicle is currently not available for booking"
+              className="w-full py-4 px-6 rounded-2xl font-black text-sm text-rose-500 bg-rose-50 border border-rose-200 cursor-not-allowed select-none text-center shadow-xs"
+              title="This vehicle has 0 units available and is currently unavailable"
             >
-              Not Available
+              Currently Unavailable
             </button>
-            <p className="text-[11px] text-slate-500 text-center font-medium">
-              This vehicle is currently not available for booking.
+            <p className="text-[11px] text-rose-600 text-center font-medium">
+              This vehicle currently has 0 units in stock and is unavailable for booking.
             </p>
           </div>
         )}

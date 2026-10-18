@@ -6,9 +6,9 @@ import { Container } from '../common/Container';
 
 export const DriverRegistrationCTA = () => {
   return (
-    <section className="py-16 sm:py-24 bg-white relative">
+    <section className="py-10 sm:py-14 bg-white relative">
       <Container>
-        <div className="relative rounded-3xl sm:rounded-[36px] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-[#030712] text-white p-8 sm:p-12 lg:p-16 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+        <div className="relative rounded-3xl sm:rounded-[36px] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-[#030712] text-white p-6 sm:p-10 lg:p-12 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
           {/* Subtle Ambient Lighting Aura */}
           <div className="absolute top-1/2 left-0 w-96 h-96 bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
 

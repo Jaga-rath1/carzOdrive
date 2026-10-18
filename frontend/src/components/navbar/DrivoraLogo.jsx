@@ -1,13 +1,31 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-export const DrivoraLogo = ({ className = '' }) => {
+export const DrivoraLogo = ({ className = '', theme = 'dark', darkText = false, onClick }) => {
+  const isLight = theme === 'light' || darkText;
+
   return (
-    <Link to="/" className={`flex items-center gap-2.5 group focus:outline-none select-none ${className}`}>
+    <Link
+      to="/"
+      onClick={onClick}
+      title="CarzoDrive - Go to Homepage"
+      aria-label="CarzoDrive Homepage"
+      className={`flex items-center gap-2.5 group focus:outline-none select-none cursor-pointer ${className}`}
+    >
       {/* Aerodynamic Speed Curve Emblem */}
       <div className="relative shrink-0 flex items-center justify-center">
-        <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 p-[1px] border border-blue-500/30 shadow-[0_0_15px_rgba(37,99,235,0.3)] group-hover:shadow-[0_0_20px_rgba(37,99,235,0.6)] transition-all duration-300 group-hover:scale-105">
-          <div className="w-full h-full rounded-[11px] bg-slate-950 flex items-center justify-center p-1 overflow-hidden relative">
+        <div
+          className={`relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl p-[1px] transition-all duration-300 group-hover:scale-105 ${
+            isLight
+              ? 'bg-black border border-black shadow-sm'
+              : 'bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 border border-blue-500/30 shadow-[0_0_15px_rgba(37,99,235,0.3)] group-hover:shadow-[0_0_20px_rgba(37,99,235,0.6)]'
+          }`}
+        >
+          <div
+            className={`w-full h-full rounded-[11px] flex items-center justify-center p-1 overflow-hidden relative ${
+              isLight ? 'bg-black' : 'bg-slate-950'
+            }`}
+          >
             <svg
               viewBox="0 0 48 48"
               fill="none"
@@ -52,11 +70,19 @@ export const DrivoraLogo = ({ className = '' }) => {
       {/* Brand Typography Wordmark: CARZODRIVE */}
       <div className="flex flex-col">
         <div className="flex items-center tracking-tight leading-none">
-          <span className="font-black text-lg sm:text-xl text-white tracking-wider">
-            CARZO<span className="text-blue-400">DRIVE</span>
+          <span
+            className={`font-black text-lg sm:text-xl tracking-wider ${
+              isLight ? 'text-black' : 'text-white'
+            }`}
+          >
+            CARZO<span className={isLight ? 'text-zinc-600' : 'text-blue-400'}>DRIVE</span>
           </span>
         </div>
-        <span className="text-[7.5px] uppercase tracking-[0.24em] font-extrabold text-slate-400 mt-0.5">
+        <span
+          className={`text-[7.5px] uppercase tracking-[0.24em] font-extrabold mt-0.5 ${
+            isLight ? 'text-zinc-500 font-bold' : 'text-slate-400'
+          }`}
+        >
           PREMIUM MOBILITY
         </span>
       </div>

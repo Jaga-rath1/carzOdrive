@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
@@ -13,16 +14,21 @@ import {
   CheckCircle2, 
   ArrowRight,
   Sparkles,
-  Printer 
+  Printer,
+  Lock,
 } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { openWhatsAppChat, CARZODRIVE_WHATSAPP_NUMBER } from '../../utils/whatsapp';
+import { bookingsAPI } from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
+import { AuthRequiredNotice } from '../common/AuthRequiredNotice';
 
 export const DriverBookingModal = ({
   isOpen,
   onClose,
   driver = null,
 }) => {
+  const { currentUser, isAuthenticated, openAuthModal } = useAuth();
   const [step, setStep] = useState(1);
   const [dutyType, setDutyType] = useState('Full Day City (8 Hours)');
   const [carType, setCarType] = useState('Sedan (Automatic)');
@@ -35,9 +41,17 @@ export const DriverBookingModal = ({
   const [reportingAddress, setReportingAddress] = useState('');
   
   // Contact info
-  const [clientName, setClientName] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
+  const [clientName, setClientName] = useState(() => currentUser?.name || '');
+  const [clientPhone, setClientPhone] = useState(() => currentUser?.phone || '');
   const [bookingCode, setBookingCode] = useState('');
+
+  // Auto-prefill authenticated user details
+  useEffect(() => {
+    if (currentUser) {
+      if (!clientName && currentUser.name) setClientName(currentUser.name);
+      if (!clientPhone && currentUser.phone) setClientPhone(currentUser.phone);
+    }
+  }, [currentUser, isOpen]);
 
   if (!isOpen) return null;
 
@@ -51,9 +65,41 @@ export const DriverBookingModal = ({
     languages: 'English, Hindi, Odia',
   };
 
-  const handleConfirm = (e) => {
+  const handleConfirm = async (e) => {
     e.preventDefault();
-    const code = 'CHAUFFEUR-' + Math.floor(1000 + Math.random() * 9000);
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+    let code = 'CHAUFFEUR-' + Math.floor(1000 + Math.random() * 9000);
+
+    try {
+      const res = await bookingsAPI.create({
+        serviceType: 'driver-only',
+        guestName: clientName || 'Guest User',
+        guestPhone: clientPhone,
+        guestEmail: `${(clientPhone || 'driver').replace(/[^0-9]/g, '')}@carzodrive.com`,
+        driverId: currentDriver.id,
+        userCarModel: carType,
+        pickupLocation: reportingAddress || 'Bhubaneswar',
+        pickupDate: reportingDate,
+        returnDate: reportingDate,
+        days: 1,
+        paymentMode: 'offline',
+        onlineMethod: 'whatsapp',
+        transactionId: 'PAY_DRIVER_ON_DUTY',
+        totalAmount: 799,
+        status: 'PENDING',
+        paymentStatus: 'OFFLINE_PENDING',
+        customerNotes: `Duty: ${dutyType}, Time: ${reportingTime}`,
+      });
+      if (res?.data?.bookingNumber) {
+        code = res.data.bookingNumber;
+      }
+    } catch (apiErr) {
+      console.warn('Driver booking notice:', apiErr.message);
+    }
+
     setBookingCode(code);
     setStep(2);
   };
@@ -287,15 +333,51 @@ Please confirm driver dispatch!`;
               </span>
             </div>
 
+            {!isAuthenticated && (
+              <AuthRequiredNotice
+                title="Login Required to Hire Driver"
+                message="Please sign in or create an account before dispatching a verified chauffeur. Your reservation will be tracked in your account."
+                className="my-1"
+              />
+            )}
+
             {/* Actions: Confirm Driver + WhatsApp Direct */}
             <div className="space-y-2.5 pt-2">
-              <button
-                type="submit"
-                className="w-full py-4 px-6 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 group"
-              >
-                <span>Confirm Driver Hire</span>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </button>
+              {!isAuthenticated ? (
+                <div className="space-y-2">
+                  <Link
+                    to="/login"
+                    state={{ returnTo: '/driver-only' }}
+                    className="w-full py-4 px-6 rounded-2xl font-black text-sm text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-95 text-center"
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span>Login to Confirm Driver Hire</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <p className="text-center text-xs text-slate-500">
+                    Need an account?{' '}
+                    <Link to="/signup" state={{ returnTo: '/driver-only' }} className="text-blue-600 hover:underline font-bold">
+                      Sign Up
+                    </Link>
+                    {' '}or{' '}
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal('login')}
+                      className="text-amber-700 hover:underline font-bold cursor-pointer"
+                    >
+                      Quick Popup
+                    </button>
+                  </p>
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  className="w-full py-4 px-6 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 group"
+                >
+                  <span>Confirm Driver Hire</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </button>
+              )}
 
               <WhatsAppButton
                 message={whatsappMessage}

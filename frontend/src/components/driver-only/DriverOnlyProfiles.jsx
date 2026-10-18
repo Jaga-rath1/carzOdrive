@@ -1,96 +1,73 @@
-import React from 'react';
-import { ShieldCheck, Star, MapPin, Globe, Clock, UserCheck, ArrowRight, Award } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShieldCheck, Star, MapPin, Globe, Clock, UserCheck, ArrowRight, Award, Loader2 } from 'lucide-react';
 import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
+import { driversAPI } from '../../services/api';
 
-export const DRIVER_PROFILES = [
-  {
-    id: 'drv-1',
-    name: 'Rajesh Sharma',
-    photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop',
-    experience: '12 Years',
-    speciality: 'Luxury & Automatic Cars',
-    rating: 4.98,
-    reviews: 210,
-    languages: 'English, Hindi, Odia',
-    location: 'Bhubaneswar Central & Airport',
-    availability: 'Available Immediately',
-    ratePerDay: '₹1,299 / day',
-    verified: true,
-  },
-  {
-    id: 'drv-2',
-    name: 'Vikram Pattnaik',
-    photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop',
-    experience: '9 Years',
-    speciality: 'Highway & Outstation Expert',
-    rating: 4.96,
-    reviews: 164,
-    languages: 'English, Hindi, Bengali',
-    location: 'Cuttack & Bhubaneswar',
-    availability: 'Available Today',
-    ratePerDay: '₹1,199 / day',
-    verified: true,
-  },
-  {
-    id: 'drv-3',
-    name: 'Arun Mohanty',
-    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=600&auto=format&fit=crop',
-    experience: '14 Years',
-    speciality: 'Coastal Puri & Konark Routes',
-    rating: 4.99,
-    reviews: 320,
-    languages: 'English, Hindi, Telugu',
-    location: 'Puri Coastal & Konark Route',
-    availability: 'Available Immediately',
-    ratePerDay: '₹1,399 / day',
-    verified: true,
-  },
-  {
-    id: 'drv-4',
-    name: 'Pradeep Jena',
-    photo: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=600&auto=format&fit=crop',
-    experience: '8 Years',
-    speciality: 'Daily City Commute & Airport',
-    rating: 4.94,
-    reviews: 142,
-    languages: 'English, Hindi',
-    location: 'Bhubaneswar Infocity & Patia',
-    availability: 'Available Today',
-    ratePerDay: '₹1,099 / day',
-    verified: true,
-  },
-  {
-    id: 'drv-5',
-    name: 'Sunil Routray',
-    photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=600&auto=format&fit=crop',
-    experience: '11 Years',
-    speciality: 'Corporate & VIP Protocol',
-    rating: 4.97,
-    reviews: 198,
-    languages: 'English, Hindi, Odia',
-    location: 'Nayapalli & Saheed Nagar',
-    availability: 'Available Immediately',
-    ratePerDay: '₹1,249 / day',
-    verified: true,
-  },
-  {
-    id: 'drv-6',
-    name: 'Manoj Tripathy',
-    photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=600&auto=format&fit=crop',
-    experience: '15 Years',
-    speciality: 'Heavy SUVs & Mountain Terrain',
-    rating: 4.99,
-    reviews: 275,
-    languages: 'English, Hindi, Odia',
-    location: 'Khandagiri & Airport Ring Road',
-    availability: 'Available Today',
-    ratePerDay: '₹1,449 / day',
-    verified: true,
-  },
-];
+export const DRIVER_PROFILES = [];
 
 export const DriverOnlyProfiles = ({ onBookDriver }) => {
+  const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    driversAPI
+      .getAll()
+      .then((res) => {
+        if (isMounted && res?.data && res.data.length > 0) {
+          const mapped = res.data.map((d, idx) => {
+            const avatarList = [
+              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=600&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=600&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=600&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=600&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop',
+            ];
+
+            const rate = d.pricing?.dailyRate || d.dailyRate || 1199;
+            const exp = d.experienceYears || d.experience || 10;
+            const spec = d.speciality || (Array.isArray(d.specialties) ? d.specialties[0] : null) || 'Executive Chauffeur';
+            const loc = Array.isArray(d.serviceLocations)
+              ? d.serviceLocations.join(' & ')
+              : Array.isArray(d.serviceArea)
+              ? d.serviceArea.join(' & ')
+              : 'Bhubaneswar, Cuttack & Airport';
+
+            return {
+              id: d._id || d.id,
+              rawId: d._id || d.id,
+              name: d.name,
+              photo: d.photo || d.avatar || avatarList[idx % avatarList.length],
+              experience: `${exp} Years`,
+              speciality: spec,
+              rating: typeof d.rating === 'number' ? d.rating : d.rating?.average || 4.96,
+              reviews: d.rating?.count || d.tripsCount || 150,
+              languages: Array.isArray(d.languages) ? d.languages.join(', ') : d.languages || 'Odia, Hindi, English',
+              location: loc,
+              availability: d.status === 'APPROVED' ? 'Available Today' : d.status || 'Available',
+              ratePerDay: `₹${rate.toLocaleString('en-IN')} / day`,
+              priceNumeric: rate,
+              verified: true,
+              rawDriver: d,
+            };
+          });
+          setDrivers(mapped);
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load drivers from DB:', err);
+        setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section className="py-16 sm:py-24">
       <Container>
@@ -106,9 +83,18 @@ export const DriverOnlyProfiles = ({ onBookDriver }) => {
             Experienced drivers trained in automatic, manual, and luxury vehicles. No car rental required—hire solely the driver.
           </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {DRIVER_PROFILES.map((driver) => {
+        {loading ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <p className="text-sm font-bold text-slate-500">Loading verified chauffeurs from database...</p>
+          </div>
+        ) : drivers.length === 0 ? (
+          <div className="py-16 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-8">
+            <p className="text-slate-600 font-bold text-sm">No drivers currently available.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {drivers.map((driver) => {
             const whatsappMsg = `Hello CARZODRIVE! 👔\nI want to hire driver *${driver.name}* (${driver.experience} experience, ${driver.ratePerDay}) for my personal car. Please confirm availability!`;
 
             return (
@@ -200,6 +186,7 @@ export const DriverOnlyProfiles = ({ onBookDriver }) => {
             );
           })}
         </div>
+        )}
       </Container>
     </section>
   );

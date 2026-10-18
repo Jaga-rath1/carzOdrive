@@ -1,18 +1,57 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ArrowRight } from 'lucide-react';
-import { ALL_CARS, ALL_BIKES } from '../../data/catalog';
+import { ArrowRight } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
+import { vehiclesAPI, bikesAPI } from '../../services/api';
 
 export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
-  const isBike = currentVehicle.vehicleType === 'bike';
-  const sourceList = isBike ? ALL_BIKES : ALL_CARS;
+  const isBike = currentVehicle?.vehicleType === 'bike';
+  const [similarVehicles, setSimilarVehicles] = useState([]);
 
-  // Filter out current vehicle and pick up to 3 similar
-  const similarVehicles = sourceList
-    .filter((v) => v.id !== currentVehicle.id)
-    .slice(0, 3);
+  useEffect(() => {
+    let isMounted = true;
+    const fetchSimilar = isBike ? bikesAPI.getAll() : vehiclesAPI.getAll();
+
+    fetchSimilar
+      .then((res) => {
+        if (isMounted && res?.data && res.data.length > 0) {
+          const filtered = res.data
+            .filter((v) => (v.slug || v._id || v.id) !== (currentVehicle?.slug || currentVehicle?.id || currentVehicle?._id))
+            .slice(0, 3)
+            .map((v) => {
+              const price = v.pricing?.dailyRate || v.pricePerDay || (isBike ? 499 : 1499);
+              const image = (v.images && v.images[0]) || v.image || (isBike ? '/images/vehicles/hero-splendor.jpg' : '/images/vehicles/swift-2026-grey.jpg');
+
+              return {
+                id: v.slug || v._id || v.id,
+                _id: v._id || v.id,
+                vehicleId: v._id || v.id,
+                name: v.name,
+                brand: v.brand || 'Premium',
+                category: v.category || (isBike ? 'Bike' : 'Sedan'),
+                vehicleType: isBike ? 'bike' : 'car',
+                color: v.color || 'Standard',
+                image,
+                pricePerDay: price,
+                priceDisplay: `₹${price.toLocaleString('en-IN')}`,
+                badge: v.badge || (v.isAvailable !== false ? 'Verified' : 'Reserved'),
+                isAvailable: v.isAvailable !== false,
+                rawVehicle: v,
+              };
+            });
+
+          setSimilarVehicles(filtered);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load similar vehicles from DB:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentVehicle, isBike]);
 
   if (similarVehicles.length === 0) return null;
 
@@ -24,7 +63,7 @@ export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
             Similar {isBike ? 'Bikes' : 'Cars'} You Might Like
           </h3>
           <p className="text-xs text-slate-500 mt-1">
-            Compare other benchmark options available for immediate booking.
+            Compare other benchmark options available in our database.
           </p>
         </div>
         <Link
@@ -59,7 +98,7 @@ export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
 
               <div className="absolute bottom-3 right-3 text-right">
                 <span className="text-lg font-black text-white drop-shadow-md">
-                  {item.priceDisplay || item.pricePerDay}
+                  {item.priceDisplay}
                 </span>
                 <span className="text-[10px] text-slate-300 ml-1">/ day</span>
               </div>
@@ -96,10 +135,17 @@ export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
                   size="md"
                 />
 
-                {item.isAvailable !== false && item.availableCount !== 0 ? (
+                {item.isAvailable ? (
                   <button
                     type="button"
-                    onClick={() => onOpenQuickBook?.({ vehicle: item, type: item.vehicleType })}
+                    onClick={() =>
+                      onOpenQuickBook?.({
+                        vehicle: item,
+                        type: item.vehicleType,
+                        vehicleId: item.rawId || item.id,
+                        _id: item.rawId || item.id,
+                      })
+                    }
                     className="py-2.5 px-4 rounded-xl font-black text-xs text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm cursor-pointer"
                   >
                     Book

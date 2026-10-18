@@ -1,7 +1,8 @@
-import React from 'react';
-import { useParams, useOutletContext, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useOutletContext, Link } from 'react-router-dom';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import { Container } from '../../components/common/Container';
-import { getVehicleById } from '../../data/catalog';
+import { vehiclesAPI, bikesAPI } from '../../services/api';
 import { VehicleDetailHero } from '../../components/vehicle-detail/VehicleDetailHero';
 import { VehicleDetailGallery } from '../../components/vehicle-detail/VehicleDetailGallery';
 import { VehicleDetailSpecs } from '../../components/vehicle-detail/VehicleDetailSpecs';
@@ -13,10 +14,155 @@ export const VehicleDetailPage = () => {
   const { id } = useParams();
   const { handleOpenQuickBook } = useOutletContext() || {};
 
-  const vehicle = getVehicleById(id);
+  const [vehicle, setVehicle] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+
+    async function fetchVehicle() {
+      try {
+        // 1. Try fetching car from database by ID or Slug
+        let res = null;
+        let isBike = false;
+        try {
+          res = await vehiclesAPI.getBySlugOrId(id);
+        } catch {
+          // If not a car, check bikes
+          try {
+            res = await bikesAPI.getBySlugOrId(id);
+            isBike = true;
+          } catch {
+            // Not found in bikes
+          }
+        }
+
+        if (res?.data && isMounted) {
+          const raw = res.data;
+          const primaryImage = (raw.images && raw.images[0]) || raw.image || '/images/vehicles/swift-2026-grey.jpg';
+          const price = raw.pricing?.dailyRate || raw.pricePerDay || (isBike ? 499 : 1499);
+
+          const normalized = {
+            id: raw.slug || raw._id || raw.id,
+            _id: raw._id || raw.id,
+            vehicleId: raw._id || raw.id,
+            name: raw.name,
+            brand: raw.brand || 'Premium',
+            model: raw.model || raw.name,
+            category: raw.category || (isBike ? 'Bike' : 'Sedan'),
+            vehicleType: isBike ? 'bike' : 'car',
+            color: raw.color || 'Standard',
+            year: raw.year || 2024,
+            image: primaryImage,
+            images: raw.images?.length ? raw.images : [primaryImage],
+            pricePerDay: price,
+            priceDisplay: `₹${price.toLocaleString('en-IN')}`,
+            badge: raw.badge || (raw.isAvailable !== false ? 'Verified' : 'Reserved'),
+            isAvailable: raw.isAvailable !== false,
+            availableCount: raw.availableCount ?? (raw.isAvailable !== false ? 1 : 0),
+            rating: raw.rating?.average || 4.9,
+            reviewsCount: raw.rating?.count || 48,
+            pricing: raw.pricing || {
+              dailyRate: price,
+              dailyRateWithFuel: price + 600,
+              securityDeposit: isBike ? 1000 : 2000,
+              extraKmCharge: isBike ? 4 : 10,
+              extraHourCharge: isBike ? 50 : 150,
+            },
+            engineCC:
+              raw.engineCC ||
+              (raw.engineCapacity ? parseInt(String(raw.engineCapacity).replace(/[^0-9]/g, ''), 10) : null) ||
+              (raw.specs?.engine ? parseInt(String(raw.specs.engine).replace(/[^0-9]/g, ''), 10) : null) ||
+              (isBike ? 350 : null),
+            engineCapacity:
+              raw.engineCapacity ||
+              (raw.engineCC ? `${raw.engineCC} cc` : null) ||
+              raw.specs?.engine ||
+              (isBike ? '350 cc' : '1197 cc'),
+            power: raw.power || raw.specs?.power || (isBike ? '20.2 HP' : '115 HP'),
+            topSpeed: raw.topSpeed || raw.specs?.topSpeed || (isBike ? '120 km/h' : '175 km/h'),
+            transmission: raw.transmission || raw.specs?.transmission || (isBike ? '5-Speed Manual' : 'Manual / Auto'),
+            specs: {
+              seats: isBike ? '2 Seats' : `${raw.seats || 5} Seats`,
+              fuelType: raw.fuelType ? raw.fuelType.toUpperCase() : 'PETROL',
+              transmission: raw.transmission ? raw.transmission.toUpperCase() : (isBike ? '5-SPEED MANUAL' : 'MANUAL'),
+              engine: isBike
+                ? (raw.engineCC
+                    ? `${raw.engineCC} cc`
+                    : raw.engineCapacity
+                    ? (String(raw.engineCapacity).includes('cc') ? raw.engineCapacity : `${raw.engineCapacity} cc`)
+                    : raw.specs?.engine || '350 cc')
+                : (raw.engineCapacity
+                    ? (String(raw.engineCapacity).includes('cc') ? raw.engineCapacity : `${raw.engineCapacity} cc`)
+                    : raw.specs?.engine || '1197 cc'),
+              mileage: raw.mileage ? (String(raw.mileage).includes('km') ? raw.mileage : `${raw.mileage} km/l`) : (isBike ? '45 km/l' : '20 km/l'),
+              power: raw.power || raw.specs?.power || (isBike ? '20.2 HP' : '115 HP'),
+              topSpeed: raw.topSpeed || raw.specs?.topSpeed || (isBike ? '120 km/h' : '175 km/h'),
+              brakes: raw.brakes || raw.specs?.brakes || (isBike ? 'Dual-Channel ABS' : 'Disc + ABS'),
+              bootSpace: isBike ? 'N/A' : (raw.specs?.bootSpace || '268 Litres'),
+              airbags: isBike ? 'N/A' : (raw.specs?.airbags || '6 Airbags (Dual Front + Side)'),
+              groundClearance: isBike ? (raw.specs?.groundClearance || '165 mm') : (raw.specs?.groundClearance || '170 mm'),
+            },
+            features: raw.features?.length
+              ? raw.features
+              : [
+                  'Full Air Conditioning',
+                  'Touchscreen Infotainment & Bluetooth',
+                  'Keyless Push Button Start',
+                  'Reverse Parking Camera & Sensors',
+                  'Comprehensive Zero-Dep Insurance Included',
+                  '24x7 Roadside Assistance across Odisha',
+                ],
+            rawVehicle: raw,
+          };
+
+          setVehicle(normalized);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error('API lookup error for vehicle:', err);
+      }
+
+      if (isMounted) {
+        setVehicle(null);
+        setLoading(false);
+      }
+    }
+
+    fetchVehicle();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="pt-32 pb-20 bg-white min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+        <p className="text-sm font-bold text-slate-500">Loading vehicle details from database...</p>
+      </div>
+    );
+  }
 
   if (!vehicle) {
-    return <Navigate to="/car-self-ride" replace />;
+    return (
+      <div className="pt-32 pb-20 bg-white min-h-[60vh] text-center">
+        <Container className="space-y-4">
+          <h2 className="text-2xl font-black text-slate-900">Vehicle Not Found</h2>
+          <p className="text-sm text-slate-500">The vehicle you are looking for is not listed in our database.</p>
+          <Link
+            to="/car-self-ride"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to All Cars</span>
+          </Link>
+        </Container>
+      </div>
+    );
   }
 
   return (
