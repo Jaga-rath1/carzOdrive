@@ -16,9 +16,11 @@ import {
   ArrowRight,
   Loader2,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  FileText
 } from 'lucide-react';
 import { Container } from '../../components/common/Container';
+import { InvoiceModal } from '../../components/common/InvoiceModal';
 import { bookingsAPI, getCurrentUser } from '../../services/api';
 
 export const MyBookingsPage = () => {
@@ -27,6 +29,7 @@ export const MyBookingsPage = () => {
   const currentUser = getCurrentUser();
   const [searchQuery, setSearchQuery] = useState('');
   const [bookings, setBookings] = useState([]);
+  const [selectedInvoiceBooking, setSelectedInvoiceBooking] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -290,21 +293,32 @@ export const MyBookingsPage = () => {
                     </div>
                   </div>
 
-                  {/* WhatsApp Support Callout */}
+                  {/* Actions & WhatsApp Support Callout */}
                   <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
                     <span className="text-slate-400 text-[11px]">
-                      Need to reschedule or modify pickup time? Contact our 24x7 Odisha operations desk.
+                      Official GST Tax Invoice & Confirmed Travel Voucher available for this reservation.
                     </span>
 
-                    <a
-                      href={`https://wa.me/917978000000?text=${encodeURIComponent(`Hello CARZODRIVE! I need support regarding my booking: ${b.bookingNumber || b._id}`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 font-bold transition-colors"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      <span>WhatsApp Support</span>
-                    </a>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedInvoiceBooking(b)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600/20 text-blue-300 hover:bg-blue-600/30 border border-blue-500/30 font-bold transition-colors cursor-pointer"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Tax Invoice / Voucher</span>
+                      </button>
+
+                      <a
+                        href={`https://wa.me/917978000000?text=${encodeURIComponent(`Hello CARZODRIVE! I need support regarding my booking: ${b.bookingNumber || b._id}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 font-bold transition-colors"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>WhatsApp Support</span>
+                      </a>
+                    </div>
                   </div>
                 </div>
               );
@@ -337,6 +351,13 @@ export const MyBookingsPage = () => {
           </div>
         )}
       </Container>
+
+      <InvoiceModal
+        isOpen={Boolean(selectedInvoiceBooking)}
+        onClose={() => setSelectedInvoiceBooking(null)}
+        booking={selectedInvoiceBooking}
+        bookingIdOrCode={selectedInvoiceBooking?.bookingNumber || selectedInvoiceBooking?._id}
+      />
     </div>
   );
 };

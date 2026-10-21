@@ -528,6 +528,10 @@ export const bookingsAPI = {
       method: 'DELETE',
     });
   },
+
+  async getInvoice(idOrCode) {
+    return apiRequest(`/bookings/${idOrCode}/invoice`);
+  },
 };
 
 /**

@@ -57,6 +57,8 @@ export const QuickBookingModal = ({
   const [guestNotes, setGuestNotes] = useState('');
   const [bookingCode, setBookingCode] = useState('');
   const [paymentNumber, setPaymentNumber] = useState('');
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [confirmedBooking, setConfirmedBooking] = useState(null);
 
   // Auto-sync guest fields if user logs in
   useEffect(() => {
@@ -320,10 +322,13 @@ export const QuickBookingModal = ({
       const finalBookingNumber = resData.bookingNumber || bookingData.bookingNumber || ('CZ-' + Math.floor(1000 + Math.random() * 9000));
       const finalPaymentNumber = resData.paymentNumber || paymentData.paymentNumber || ('PAY-' + Math.floor(1000 + Math.random() * 9000));
       const finalTxnId = resData.transactionId || paymentData.transactionId || (paymentMode === 'offline' ? 'PAY_ON_PICKUP' : 'TXN-' + Math.floor(100000 + Math.random() * 900000));
+      const finalInvoiceNumber = resData.invoiceNumber || bookingData.invoiceNumber || `INV-${finalBookingNumber.replace(/^CZ-/, '')}`;
 
       setBookingCode(finalBookingNumber);
       setPaymentNumber(finalPaymentNumber);
       setTransactionId(finalTxnId);
+      setInvoiceNumber(finalInvoiceNumber);
+      setConfirmedBooking(bookingData);
 
       if (paymentMode === 'offline') {
         const waMsg = getQuickBookingWhatsAppMessage({
@@ -363,6 +368,8 @@ export const QuickBookingModal = ({
     setStep(1);
     setIsProcessingPayment(false);
     setPaymentError(null);
+    setConfirmedBooking(null);
+    setInvoiceNumber('');
     onClose();
   };
 
@@ -486,6 +493,8 @@ export const QuickBookingModal = ({
           paymentMode={paymentMode}
           bookingCode={bookingCode}
           paymentNumber={paymentNumber}
+          invoiceNumber={invoiceNumber}
+          confirmedBooking={confirmedBooking}
           transactionId={transactionId}
           guestName={guestName}
           guestPhone={guestPhone}

@@ -91,7 +91,14 @@ const deleteBooking = asyncHandler(async (req, res) => {
   success(res, result, 'Booking deleted successfully');
 });
 
+const getBookingInvoice = asyncHandler(async (req, res) => {
+  const identifier = req.params.id || req.params.code;
+  const invoiceData = await svc.getBookingInvoice(identifier);
+  success(res, invoiceData, 'Booking invoice retrieved successfully');
+});
+
 module.exports = {
+  getBookingInvoice,
   createUniversalBooking,
   getBookingByCode,
   lookupBookings,

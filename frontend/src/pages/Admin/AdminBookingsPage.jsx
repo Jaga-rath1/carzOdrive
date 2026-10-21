@@ -19,6 +19,7 @@ import { BookingTableView } from '../../components/admin/bookings/BookingTableVi
 import { BookingCardItem } from '../../components/admin/bookings/BookingCardItem';
 import { BookingEditModal } from '../../components/admin/bookings/BookingEditModal';
 import { BookingDeleteModal } from '../../components/admin/bookings/BookingDeleteModal';
+import { InvoiceModal } from '../../components/common/InvoiceModal';
 
 export const AdminBookingsPage = () => {
   const [bookings, setBookings] = useState([]);
@@ -38,6 +39,9 @@ export const AdminBookingsPage = () => {
   // Delete Modal State
   const [deletingBooking, setDeletingBooking] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Invoice / Voucher Modal State
+  const [invoiceBooking, setInvoiceBooking] = useState(null);
 
   const fetchBookings = async () => {
     setIsLoading(true);
@@ -394,6 +398,7 @@ export const AdminBookingsPage = () => {
           copiedId={copiedId}
           handleCopyCode={handleCopyCode}
           handleOpenEdit={handleOpenEdit}
+          handleOpenInvoice={(b) => setInvoiceBooking(b)}
           setDeletingBooking={setDeletingBooking}
         />
       ) : (
@@ -405,6 +410,7 @@ export const AdminBookingsPage = () => {
               copiedId={copiedId}
               handleCopyCode={handleCopyCode}
               handleOpenEdit={handleOpenEdit}
+              handleOpenInvoice={(b) => setInvoiceBooking(b)}
               setDeletingBooking={setDeletingBooking}
               updatingId={updatingId}
               handleQuickStatusUpdate={handleQuickStatusUpdate}
@@ -430,6 +436,14 @@ export const AdminBookingsPage = () => {
         isDeleting={isDeleting}
         handleConfirmDelete={handleConfirmDelete}
         onClose={() => setDeletingBooking(null)}
+      />
+
+      {/* Official Tax Invoice & Travel Voucher Modal */}
+      <InvoiceModal
+        isOpen={Boolean(invoiceBooking)}
+        booking={invoiceBooking}
+        bookingIdOrCode={invoiceBooking?.bookingNumber || invoiceBooking?._id}
+        onClose={() => setInvoiceBooking(null)}
       />
     </div>
   );

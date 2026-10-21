@@ -657,7 +657,71 @@ async function deleteBooking(bookingId) {
   return { message: 'Booking and linked payment record deleted successfully' };
 }
 
+const COMPANY_INVOICE_DETAILS = {
+  legalName: 'CARZODRIVE LUXURY MOBILITY & TOURS PRIVATE LIMITED',
+  tradeName: 'CARZODRIVE',
+  address: 'Plot No. 42, Airport Square, Master Canteen, Bhubaneswar, Odisha - 751001, India',
+  gstin: '21AAACC1234D1Z5',
+  cin: 'U50100OR2026PTC045812',
+  pan: 'AAACC1234D',
+  state: 'Odisha',
+  stateCode: '21',
+  supportPhone: '+91 79780 00000',
+  supportEmail: 'concierge@carzodrive.com',
+  website: 'https://carzodrive.com',
+  sacCarRental: '996411',
+  sacTourOperator: '998553',
+};
+
+async function getBookingInvoice(identifier) {
+  let booking = null;
+  if (mongoose.Types.ObjectId.isValid(identifier)) {
+    booking = await Booking.findById(identifier)
+      .populate('customerId', 'name email phone')
+      .populate('vehicleId')
+      .populate('bikeId')
+      .populate('driverId')
+      .populate('packageId')
+      .populate('paymentId');
+  }
+  if (!booking) {
+    booking = await Booking.findOne({
+      $or: [
+        { bookingNumber: identifier },
+        { invoiceNumber: identifier },
+        { transactionId: identifier },
+      ],
+    })
+      .populate('customerId', 'name email phone')
+      .populate('vehicleId')
+      .populate('bikeId')
+      .populate('driverId')
+      .populate('packageId')
+      .populate('paymentId');
+  }
+
+  if (!booking) {
+    const err = new Error('Booking invoice not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (!booking.invoiceNumber && booking.bookingNumber) {
+    booking.invoiceNumber = `INV-${booking.bookingNumber.replace(/^CZ-/, '')}`;
+    await booking.save();
+  }
+
+  return {
+    company: COMPANY_INVOICE_DETAILS,
+    invoiceNumber: booking.invoiceNumber || `INV-${booking.bookingNumber?.replace(/^CZ-/, '') || booking._id}`,
+    invoiceDate: booking.invoiceDate || booking.createdAt || new Date(),
+    booking,
+  };
+}
+
 module.exports = {
+  COMPANY_INVOICE_DETAILS,
+  getBookingInvoice,
   createSelfDriveCar,
   createSelfDriveBike,
   createCarWithDriver,

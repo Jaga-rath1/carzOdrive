@@ -1,5 +1,5 @@
 import React from 'react';
-import { Copy, Check, Edit3, Trash2 } from 'lucide-react';
+import { Copy, Check, Edit3, Trash2, FileText } from 'lucide-react';
 import { STATUS_COLORS, PAYMENT_STATUS_COLORS } from './bookingConstants';
 
 export const BookingTableView = ({
@@ -7,6 +7,7 @@ export const BookingTableView = ({
   copiedId,
   handleCopyCode,
   handleOpenEdit,
+  handleOpenInvoice,
   setDeletingBooking,
 }) => {
   return (
@@ -102,6 +103,16 @@ export const BookingTableView = ({
                   </td>
                   <td className="py-3 px-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-1.5">
+                      {handleOpenInvoice && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenInvoice(b)}
+                          className="p-1.5 rounded-lg text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors cursor-pointer"
+                          title="View & Download Tax Invoice / Voucher"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => handleOpenEdit(b)}

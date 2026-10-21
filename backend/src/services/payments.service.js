@@ -296,6 +296,8 @@ async function processCheckout(data, customerId = null) {
     payment,
     bookingNumber: booking.bookingNumber,
     paymentNumber: payment.paymentNumber,
+    invoiceNumber: booking.invoiceNumber,
+    invoiceDate: booking.invoiceDate,
     transactionId: payment.transactionId,
     amount: booking.totalAmount,
     paidAmount: booking.paidAmount,

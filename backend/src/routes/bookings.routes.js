@@ -18,6 +18,7 @@ router.post('/universal', optionalAuth, controller.createUniversalBooking);
 
 // Booking voucher lookup by bookingNumber / code
 router.get('/voucher/:code', controller.getBookingByCode);
+router.get('/voucher/:code/invoice', controller.getBookingInvoice);
 
 // Public booking & payment history lookup (by phone, voucher code, or email - no token required)
 router.get('/lookup', controller.lookupBookings);
@@ -70,6 +71,7 @@ router.post(
 // List and get
 router.get('/', authenticate, controller.listBookings);
 router.get('/:id', authenticate, controller.getBooking);
+router.get('/:id/invoice', optionalAuth, controller.getBookingInvoice);
 
 // Status management
 router.patch(
