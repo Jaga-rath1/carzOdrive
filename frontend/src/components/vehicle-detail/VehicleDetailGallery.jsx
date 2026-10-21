@@ -22,7 +22,11 @@ export const VehicleDetailGallery = ({ vehicle }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = vehicle.vehicleType === 'bike' ? '/images/vehicles/hero-splendor.jpg' : '/images/vehicles/swift-2026-grey.jpg';
+            }}
           />
         </AnimatePresence>
 

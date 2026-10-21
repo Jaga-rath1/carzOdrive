@@ -1,6 +1,77 @@
 const mongoose = require('mongoose');
 const { Vehicle } = require('../models/vehicle.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
+const cache = require('../utils/cache');
+
+// Selected public projection fields to eliminate over-fetching heavy documents over Atlas
+const PUBLIC_VEHICLE_FIELDS = {
+  id: 1,
+  slug: 1,
+  name: 1,
+  brand: 1,
+  make: 1,
+  model: 1,
+  category: 1,
+  type: 1,
+  vehicleType: 1,
+  year: 1,
+  buyingYear: 1,
+  color: 1,
+  availableCount: 1,
+  isAvailable: 1,
+  availabilityStatus: 1,
+  tagline: 1,
+  image: 1,
+  images: 1,
+  secondaryImages: 1,
+  gallery: 1,
+  imageOptions: 1,
+  pricePerDay: 1,
+  pricePerHour: 1,
+  priceNumeric: 1,
+  priceDisplay: 1,
+  deposit: 1,
+  depositNumeric: 1,
+  rating: 1,
+  reviewsCount: 1,
+  badge: 1,
+  availableFor: 1,
+  isFeatured: 1,
+  engineCapacity: 1,
+  power: 1,
+  mileage: 1,
+  topSpeed: 1,
+  acceleration: 1,
+  bootSpace: 1,
+  luggage: 1,
+  airbags: 1,
+  groundClearance: 1,
+  drivetrain: 1,
+  specs: 1,
+  features: 1,
+  inclusions: 1,
+  rules: 1,
+  driver: 1,
+  seats: 1,
+  fuelType: 1,
+  transmission: 1,
+  location: 1,
+  serviceTypes: 1,
+  pricing: 1,
+  securityDeposit: 1,
+  extraKmCharge: 1,
+  status: 1,
+  isPublished: 1,
+  createdAt: 1,
+  updatedAt: 1,
+};
+
+/**
+ * Invalidate vehicle cache on mutations
+ */
+function invalidateVehicleCache() {
+  cache.invalidatePrefix('vehicles:');
+}
 
 /**
  * Create a vehicle for a vendor or admin.
@@ -14,51 +85,63 @@ async function createVehicle(vendorId, data) {
     isPublished,
     ...data,
   });
+  invalidateVehicleCache();
   return vehicle;
 }
 
 /**
  * Public search — only APPROVED + isPublished + isAvailable vehicles.
+ * Cached in-memory with automatic TTL and lean document streaming.
  */
 async function listVehicles(query) {
-  const { page, limit, skip } = getPagination(query);
+  const cacheKey = `vehicles:public:${JSON.stringify(query)}`;
 
-  const filter = {
-    status: 'APPROVED',
-    isPublished: true,
-    isAvailable: true,
-  };
+  return cache.wrap(cacheKey, 60, async () => {
+    const { page, limit, skip } = getPagination(query);
 
-  if (query.city) filter['location.city'] = { $regex: query.city, $options: 'i' };
-  if (query.vehicleType) filter.vehicleType = query.vehicleType.toUpperCase();
-  if (query.category) filter.category = query.category.toLowerCase();
-  if (query.brand) filter.brand = { $regex: query.brand, $options: 'i' };
-  if (query.seats) filter.seats = { $gte: parseInt(query.seats, 10) };
-  if (query.serviceType) filter.serviceTypes = { $in: [query.serviceType, query.serviceType.toUpperCase(), query.serviceType.toLowerCase()] };
-  if (query.fuelType) filter.fuelType = { $regex: query.fuelType, $options: 'i' };
-  if (query.transmission) filter.transmission = { $regex: query.transmission, $options: 'i' };
-  if (query.isFeatured !== undefined) filter.isFeatured = query.isFeatured === 'true' || query.isFeatured === true;
+    const filter = {
+      status: 'APPROVED',
+      isPublished: true,
+      isAvailable: true,
+    };
 
-  if (query.search || query.q) {
-    const searchRegex = new RegExp(query.search || query.q, 'i');
-    filter.$or = [
-      { name: searchRegex },
-      { brand: searchRegex },
-      { make: searchRegex },
-      { model: searchRegex },
-      { category: searchRegex },
-    ];
-  }
+    if (query.city) filter['location.city'] = { $regex: query.city, $options: 'i' };
+    if (query.vehicleType) filter.vehicleType = query.vehicleType.toUpperCase();
+    if (query.category) filter.category = query.category.toLowerCase();
+    if (query.brand) filter.brand = { $regex: query.brand, $options: 'i' };
+    if (query.seats) filter.seats = { $gte: parseInt(query.seats, 10) };
+    if (query.serviceType) {
+      filter.serviceTypes = { $in: [query.serviceType, query.serviceType.toUpperCase(), query.serviceType.toLowerCase()] };
+    }
+    if (query.fuelType) filter.fuelType = { $regex: query.fuelType, $options: 'i' };
+    if (query.transmission) filter.transmission = { $regex: query.transmission, $options: 'i' };
+    if (query.isFeatured !== undefined) {
+      filter.isFeatured = query.isFeatured === 'true' || query.isFeatured === true;
+    }
 
-  const [vehicles, total] = await Promise.all([
-    Vehicle.find(filter)
-      .sort({ isFeatured: -1, rating: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(limit),
-    Vehicle.countDocuments(filter),
-  ]);
+    if (query.search || query.q) {
+      const searchRegex = new RegExp(query.search || query.q, 'i');
+      filter.$or = [
+        { name: searchRegex },
+        { brand: searchRegex },
+        { make: searchRegex },
+        { model: searchRegex },
+        { category: searchRegex },
+      ];
+    }
 
-  return { vehicles, pagination: buildPaginationMeta(total, page, limit) };
+    // High performance query: .lean() bypasses full Mongoose hydration
+    const [vehicles, total] = await Promise.all([
+      Vehicle.find(filter, PUBLIC_VEHICLE_FIELDS)
+        .sort({ isFeatured: -1, rating: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Vehicle.countDocuments(filter),
+    ]);
+
+    return { vehicles, pagination: buildPaginationMeta(total, page, limit) };
+  });
 }
 
 /**
@@ -71,7 +154,7 @@ async function listVendorVehicles(vendorId, query) {
   if (query.status) filter.status = query.status;
 
   const [vehicles, total] = await Promise.all([
-    Vehicle.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Vehicle.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
     Vehicle.countDocuments(filter),
   ]);
 
@@ -95,7 +178,8 @@ async function listAdminVehicles(query) {
       .populate('approvedBy', 'name email')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit),
+      .limit(limit)
+      .lean(),
     Vehicle.countDocuments(filter),
   ]);
 
@@ -106,22 +190,28 @@ async function listAdminVehicles(query) {
  * Get a single vehicle by id or slug, populating vendor info.
  */
 async function getVehicleById(vehicleIdOrSlug) {
-  const isObjectId = mongoose.Types.ObjectId.isValid(vehicleIdOrSlug);
-  const filter = isObjectId ? { $or: [{ _id: vehicleIdOrSlug }, { slug: vehicleIdOrSlug }, { id: vehicleIdOrSlug }] } : { $or: [{ slug: vehicleIdOrSlug }, { id: vehicleIdOrSlug }] };
+  const cacheKey = `vehicles:detail:${vehicleIdOrSlug}`;
 
-  let vehicle = await Vehicle.findOne(filter);
-  if (!vehicle && !isObjectId) {
-    vehicle = await Vehicle.findOne({
-      $or: [{ slug: vehicleIdOrSlug }, { id: vehicleIdOrSlug }, { name: new RegExp(vehicleIdOrSlug, 'i') }]
-    });
-  }
+  return cache.wrap(cacheKey, 60, async () => {
+    const isObjectId = mongoose.Types.ObjectId.isValid(vehicleIdOrSlug);
+    const filter = isObjectId
+      ? { $or: [{ _id: vehicleIdOrSlug }, { slug: vehicleIdOrSlug }, { id: vehicleIdOrSlug }] }
+      : { $or: [{ slug: vehicleIdOrSlug }, { id: vehicleIdOrSlug }] };
 
-  if (!vehicle) {
-    const err = new Error('Vehicle not found');
-    err.statusCode = 404;
-    throw err;
-  }
-  return vehicle;
+    let vehicle = await Vehicle.findOne(filter).lean();
+    if (!vehicle && !isObjectId) {
+      vehicle = await Vehicle.findOne({
+        $or: [{ slug: vehicleIdOrSlug }, { id: vehicleIdOrSlug }, { name: new RegExp(vehicleIdOrSlug, 'i') }],
+      }).lean();
+    }
+
+    if (!vehicle) {
+      const err = new Error('Vehicle not found');
+      err.statusCode = 404;
+      throw err;
+    }
+    return vehicle;
+  });
 }
 
 /**
@@ -157,7 +247,8 @@ async function updateVehicle(vehicleId, vendorId, data) {
 
   Object.assign(vehicle, data);
   await vehicle.save();
-  return vehicle;
+  invalidateVehicleCache();
+  return vehicle.toObject ? vehicle.toObject() : vehicle;
 }
 
 /**
@@ -175,7 +266,8 @@ async function approveVehicle(vehicleId, adminId) {
   vehicle.approvedAt = new Date();
   vehicle.rejectionReason = undefined;
   await vehicle.save();
-  return vehicle;
+  invalidateVehicleCache();
+  return vehicle.toObject ? vehicle.toObject() : vehicle;
 }
 
 /**
@@ -194,7 +286,8 @@ async function rejectVehicle(vehicleId, adminId, reason) {
   vehicle.rejectionReason = reason || 'No reason provided';
   vehicle.isPublished = false;
   await vehicle.save();
-  return vehicle;
+  invalidateVehicleCache();
+  return vehicle.toObject ? vehicle.toObject() : vehicle;
 }
 
 /**
@@ -214,7 +307,8 @@ async function togglePublish(vehicleId, vendorId, isPublished) {
   }
   vehicle.isPublished = isPublished;
   await vehicle.save();
-  return vehicle;
+  invalidateVehicleCache();
+  return vehicle.toObject ? vehicle.toObject() : vehicle;
 }
 
 /**
@@ -229,6 +323,7 @@ async function deleteVehicle(vehicleId, vendorId) {
     err.statusCode = 404;
     throw err;
   }
+  invalidateVehicleCache();
   return true;
 }
 
@@ -243,4 +338,5 @@ module.exports = {
   approveVehicle,
   rejectVehicle,
   togglePublish,
+  invalidateVehicleCache,
 };

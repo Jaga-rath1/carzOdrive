@@ -15,10 +15,12 @@ const logger = require('../utils/logger');
 
 const options = {
   maxPoolSize: 50,
-  minPoolSize: 5,
-  serverSelectionTimeoutMS: 5000,
+  minPoolSize: 10,
+  maxIdleTimeMS: 30000,
+  serverSelectionTimeoutMS: 8000,
   socketTimeoutMS: 45000,
   connectTimeoutMS: 10000,
+  compressors: ['zstd', 'snappy', 'zlib'],
 };
 
 // Dedicated Partner Database Connection for "Rent Your Car", "Rent Your Bike", and "Driver Registration"

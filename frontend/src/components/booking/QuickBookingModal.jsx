@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Modal } from '../common/Modal';
 import { BHUBANESWAR_LOCATIONS, SERVICE_OPTIONS } from '../../config/bookingConfig';
 import { formatCurrency } from '../../utils/formatters';
+import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 import { getQuickBookingWhatsAppMessage, openWhatsAppChat } from '../../utils/whatsapp';
 import { paymentsAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -167,7 +168,7 @@ export const QuickBookingModal = ({
         const fallbackPrice = car?.priceNumeric ? car.priceNumeric + 700 : 3499;
         return {
           currentItemName: car?.name ? `${car.name} (with Chauffeur)` : 'Executive Car (with Chauffeur)',
-          currentItemImage: car?.image || '/images/vehicles/toyota-innova.jpg',
+          currentItemImage: resolveVehicleImageUrl(car?.image, '/images/vehicles/toyota-innova.jpg'),
           ratePerDay: rawPricing || fallbackPrice,
           deposit: '₹0 (Zero Deposit)',
           isAvailable: car?.isAvailable !== false && (car?.availableCount ?? 1) > 0 && car?.availabilityStatus !== 'UNAVAILABLE',
@@ -190,7 +191,7 @@ export const QuickBookingModal = ({
           : parseInt(String(bike?.pricePerDay || '1299').replace(/[^0-9]/g, ''), 10) || 1299;
         return {
           currentItemName: bike?.name || 'Self-Drive Two-Wheeler',
-          currentItemImage: bike?.image || '/images/vehicles/royal-enfield.jpg',
+          currentItemImage: resolveVehicleImageUrl(bike?.image, '/images/vehicles/royal-enfield.jpg'),
           ratePerDay: parsed,
           deposit: bike?.deposit || '₹2,000',
           isAvailable: bike?.isAvailable !== false && (bike?.availableCount ?? 1) > 0 && bike?.availabilityStatus !== 'UNAVAILABLE',
@@ -203,7 +204,7 @@ export const QuickBookingModal = ({
           : parseInt(String(tour?.startingPrice || '5499').replace(/[^0-9]/g, ''), 10) || 5499;
         return {
           currentItemName: tour?.title || tour?.name || 'Bhubaneswar Heritage Escape',
-          currentItemImage: tour?.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop',
+          currentItemImage: resolveVehicleImageUrl(tour?.image, 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'),
           ratePerDay: parsed,
           deposit: '₹0 (Zero Deposit)',
           isAvailable: true,
@@ -223,7 +224,7 @@ export const QuickBookingModal = ({
         }
         return {
           currentItemName: car?.name || 'Swift 2026',
-          currentItemImage: car?.image || '/images/vehicles/swift-2026-grey.jpg',
+          currentItemImage: resolveVehicleImageUrl(car?.image, '/images/vehicles/swift-2026-grey.jpg'),
           ratePerDay: rate,
           deposit: car?.depositNumeric ? `₹${car.depositNumeric}` : (car?.deposit || '₹5,000'),
           isAvailable: car?.isAvailable !== false && (car?.availableCount ?? 1) > 0 && car?.availabilityStatus !== 'UNAVAILABLE',

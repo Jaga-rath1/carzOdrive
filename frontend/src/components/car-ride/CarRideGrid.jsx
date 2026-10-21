@@ -6,6 +6,7 @@ import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { vehiclesAPI } from '../../services/api';
+import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 import { CarRideCard } from './CarRideCard';
 
 export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
@@ -22,7 +23,8 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
         if (isMounted && res?.data && res.data.length > 0) {
           const mapped = res.data.map((v) => {
             const price = v.pricing?.dailyRate || v.pricePerDay || v.priceNumeric || 1499;
-            const image = (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg';
+            const rawImage = (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg';
+            const image = resolveVehicleImageUrl(rawImage);
 
             return {
               id: v.slug || v._id || v.id,

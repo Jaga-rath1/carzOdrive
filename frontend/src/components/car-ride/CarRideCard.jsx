@@ -22,8 +22,12 @@ export const CarRideCard = ({ vehicle, onOpenQuickBook }) => {
         <img
           src={vehicle.image}
           alt={vehicle.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
           loading="lazy"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = '/images/vehicles/swift-2026-grey.jpg';
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
 

@@ -457,7 +457,8 @@ async function listBookings(query, userId, userRole) {
       .populate('paymentId')
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 }),
+      .sort({ createdAt: -1 })
+      .lean(),
     Booking.countDocuments(filter),
   ]);
   return { bookings, pagination: buildPaginationMeta(total, page, limit) };

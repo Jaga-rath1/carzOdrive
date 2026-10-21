@@ -139,11 +139,20 @@ const bikeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Production High-Performance Indexes
+bikeSchema.index({ status: 1, isPublished: 1, isAvailable: 1, isFeatured: -1, rating: -1, createdAt: -1 });
+bikeSchema.index({ status: 1, isPublished: 1, isAvailable: 1, category: 1, isFeatured: -1 });
+bikeSchema.index({ vendorId: 1, status: 1, createdAt: -1 });
 bikeSchema.index({ vendorId: 1, isVendorListing: 1 });
 bikeSchema.index({ category: 1 });
 bikeSchema.index({ isFeatured: 1 });
 bikeSchema.index({ status: 1 });
 bikeSchema.index({ isPublished: 1, isAvailable: 1 });
+bikeSchema.index({ id: 1 });
+bikeSchema.index(
+  { name: 'text', brand: 'text', make: 'text', model: 'text', category: 'text' },
+  { weights: { name: 10, brand: 5, model: 5, category: 2 }, name: 'bike_text_search' }
+);
 
 bikeSchema.pre('save', function (next) {
   if (this.pricePerDay && !this.priceNumeric) {
