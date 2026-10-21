@@ -74,9 +74,9 @@ export const DriverBookingModal = ({
     try {
       const res = await bookingsAPI.create({
         serviceType: 'driver-only',
-        guestName: clientName || 'Guest User',
-        guestPhone: clientPhone,
-        guestEmail: `${(clientPhone || 'driver').replace(/[^0-9]/g, '')}@carzodrive.com`,
+        guestName: clientName || currentUser?.name || 'Guest User',
+        guestPhone: clientPhone || currentUser?.phone || '',
+        guestEmail: currentUser?.email || (clientPhone ? `${clientPhone.replace(/[^0-9]/g, '')}@carzodrive.com` : undefined),
         driverId: currentDriver.id,
         userCarModel: carType,
         pickupLocation: reportingAddress || 'Bhubaneswar',

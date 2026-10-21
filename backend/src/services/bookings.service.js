@@ -561,7 +561,15 @@ async function updateBookingStatus(bookingId, newStatus, userId, userRole, note,
   // Dynamically sync linked Payment record
   await createOrSyncPaymentForBooking(booking);
 
-  const updated = await Booking.findById(booking._id).populate('paymentId');
+  const updated = await Booking.findById(booking._id)
+    .populate('customerId', 'name email phone')
+    .populate('vehicleId')
+    .populate('bikeId')
+    .populate('driverId')
+    .populate('packageId')
+    .populate('paymentId');
+
+  dispatchBookingNotificationsSafely(updated || booking);
   return updated || booking;
 }
 
@@ -671,8 +679,14 @@ async function updateBooking(bookingId, updateData) {
   const updated = await Booking.findById(booking._id)
     .populate('customerId', 'name email phone')
     .populate('vehicleId')
+    .populate('bikeId')
+    .populate('driverId')
     .populate('packageId')
     .populate('paymentId');
+
+  if (updateData.status || updateData.paymentStatus) {
+    dispatchBookingNotificationsSafely(updated || booking);
+  }
 
   return updated || booking;
 }
