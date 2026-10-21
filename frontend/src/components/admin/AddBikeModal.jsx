@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import {
   X,
@@ -408,7 +409,9 @@ export const AddBikeModal = ({ isOpen, onClose, onBikeAdded, bikeToEdit = null }
     { id: 'host', label: '6. Host & Documents', icon: FileText },
   ];
 
-  return (
+  if (!isOpen) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/70 backdrop-blur-md overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.96 }}
@@ -578,6 +581,7 @@ export const AddBikeModal = ({ isOpen, onClose, onBikeAdded, bikeToEdit = null }
           </div>
         </form>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };

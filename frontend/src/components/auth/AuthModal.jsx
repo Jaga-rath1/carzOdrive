@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthCard } from './AuthCard';
 
@@ -8,10 +9,12 @@ export const AuthModal = ({
   initialMode = 'login',
   onSuccess,
 }) => {
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
           {/* Dark Glass Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -43,6 +46,7 @@ export const AuthModal = ({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };

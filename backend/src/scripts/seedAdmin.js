@@ -3,6 +3,11 @@
  * Run: node src/scripts/seedAdmin.js
  * Requires SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD, SUPER_ADMIN_NAME, MONGODB_URI, JWT_SECRET in .env
  */
+const dns = require('dns');
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+} catch (e) {}
+
 require('dotenv').config();
 const mongoose = require('mongoose');
 const { env, validateEnv } = require('../config/env');

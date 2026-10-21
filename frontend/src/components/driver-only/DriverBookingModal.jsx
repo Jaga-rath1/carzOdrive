@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -121,7 +122,9 @@ ${bookingCode ? `• Booking Code: ${bookingCode}` : ''}
 
 Please confirm driver dispatch!`;
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <motion.div
@@ -453,6 +456,7 @@ Please confirm driver dispatch!`;
           </div>
         )}
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };
