@@ -32,8 +32,29 @@ function addStatusHistory(booking, status, changedBy, note) {
   });
 }
 
-// ─── Payment Synchronization ───────────────────────────────────────────────
+// ─── Payment Synchronization & Notifications ──────────────────────────────
 const { createOrSyncPaymentForBooking } = require('./bookingPaymentSync');
+
+async function dispatchBookingNotificationsSafely(booking, fallbackEmail = null) {
+  try {
+    const { dispatchBookingEmails } = require('../utils/mailer');
+    let target = booking;
+    if ((!target.customerId?.email || !target.vehicleId) && target._id) {
+      target = (await Booking.findById(target._id)
+        .populate('customerId', 'name email phone')
+        .populate('vehicleId')
+        .populate('bikeId')
+        .populate('driverId')
+        .populate('packageId')
+        .populate('paymentId')) || target;
+    }
+    dispatchBookingEmails(target, fallbackEmail).catch((e) =>
+      console.error('Background dispatchBookingEmails error:', e?.message)
+    );
+  } catch (e) {
+    console.error('Nodemailer booking dispatch trigger error:', e?.message);
+  }
+}
 
 // ─── Self-Drive Car ────────────────────────────────────────────────────────
 
@@ -76,6 +97,8 @@ async function createSelfDriveCar(customerId, data) {
     paymentStatus: 'PENDING',
     statusHistory: [{ status: 'PENDING', changedBy: customerId, changedAt: new Date() }],
   });
+  await createOrSyncPaymentForBooking(booking);
+  dispatchBookingNotificationsSafely(booking, data.guestEmail || data.email);
   return booking;
 }
 
@@ -119,6 +142,8 @@ async function createSelfDriveBike(customerId, data) {
     paymentStatus: 'PENDING',
     statusHistory: [{ status: 'PENDING', changedBy: customerId, changedAt: new Date() }],
   });
+  await createOrSyncPaymentForBooking(booking);
+  dispatchBookingNotificationsSafely(booking, data.guestEmail || data.email);
   return booking;
 }
 
@@ -156,6 +181,8 @@ async function createCarWithDriver(customerId, data) {
     paymentStatus: 'PENDING',
     statusHistory: [{ status: 'PENDING', changedBy: customerId, changedAt: new Date() }],
   });
+  await createOrSyncPaymentForBooking(booking);
+  dispatchBookingNotificationsSafely(booking, data.guestEmail || data.email);
   return booking;
 }
 
@@ -183,6 +210,8 @@ async function createDriverOnly(customerId, data) {
     paymentStatus: 'PENDING',
     statusHistory: [{ status: 'PENDING', changedBy: customerId, changedAt: new Date() }],
   });
+  await createOrSyncPaymentForBooking(booking);
+  dispatchBookingNotificationsSafely(booking, data.guestEmail || data.email);
   return booking;
 }
 
@@ -247,6 +276,8 @@ async function createTourPackageBooking(customerId, data) {
     paymentStatus: data.paymentStatus || 'PAID',
     statusHistory: [{ status: 'CONFIRMED', changedBy: customerId || null, changedAt: new Date() }],
   });
+  await createOrSyncPaymentForBooking(booking);
+  dispatchBookingNotificationsSafely(booking, data.guestEmail || data.email);
   return booking;
 }
 
@@ -374,20 +405,9 @@ async function createUniversalBooking(customerId, data) {
     .populate('packageId')
     .populate('paymentId');
 
-  // Dispatched booking confirmation email via Nodemailer asynchronously
-  const guestMail = payload.guestEmail || payload.email;
-  if (guestMail && guestMail.includes('@')) {
-    try {
-      const { sendBookingConfirmationEmail } = require('../utils/mailer');
-      sendBookingConfirmationEmail({
-        email: guestMail,
-        name: payload.guestName || 'Valued Guest',
-        booking: populated || booking,
-      }).catch((e) => console.error('Error dispatching confirmation email:', e?.message));
-    } catch (e) {
-      console.error('Nodemailer confirmation trigger error:', e?.message);
-    }
-  }
+  // Dispatched booking Tax Invoice & Admin Alert via Nodemailer asynchronously
+  const guestMail = payload.guestEmail || payload.email || populated?.customerId?.email;
+  dispatchBookingNotificationsSafely(populated || booking, guestMail);
 
   return populated || booking;
 }

@@ -204,6 +204,8 @@ async function processCheckout(data, customerId = null) {
     booking = await Booking.findOne({ bookingNumber: data.bookingNumber });
   }
 
+  const isExistingBooking = Boolean(booking);
+
   // If no existing booking, create one using universal booking logic
   if (!booking) {
     const bookingsSvc = require('./bookings.service');
@@ -291,6 +293,25 @@ async function processCheckout(data, customerId = null) {
   booking.transactionId = payment.transactionId;
   await booking.save();
 
+  // If this was an existing booking completing payment, dispatch updated invoice & admin notification
+  if (isExistingBooking) {
+    try {
+      const { dispatchBookingEmails } = require('../utils/mailer');
+      const populated = await Booking.findById(booking._id)
+        .populate('customerId', 'name email phone')
+        .populate('vehicleId')
+        .populate('bikeId')
+        .populate('driverId')
+        .populate('packageId')
+        .populate('paymentId');
+      dispatchBookingEmails(populated || booking, data.guestEmail).catch((e) =>
+        console.error('Error dispatching checkout payment update emails:', e?.message)
+      );
+    } catch (e) {
+      console.error('Failed to trigger email dispatch in processCheckout:', e?.message);
+    }
+  }
+
   return {
     booking,
     payment,
@@ -338,6 +359,25 @@ async function updatePaymentStatus(paymentId, status, adminId, notes, approve) {
       if (booking.status === 'PENDING') booking.status = 'CONFIRMED';
     }
     await booking.save();
+
+    // If verified to PAID, dispatch updated receipt to customer and admin
+    if (finalStatus === 'PAID') {
+      try {
+        const { dispatchBookingEmails } = require('../utils/mailer');
+        const populated = await Booking.findById(booking._id)
+          .populate('customerId', 'name email phone')
+          .populate('vehicleId')
+          .populate('bikeId')
+          .populate('driverId')
+          .populate('packageId')
+          .populate('paymentId');
+        dispatchBookingEmails(populated || booking).catch((e) =>
+          console.error('Error dispatching invoice on payment approval:', e?.message)
+        );
+      } catch (e) {
+        console.error('Failed to trigger email on payment approval:', e?.message);
+      }
+    }
   }
 
   await payment.save();
