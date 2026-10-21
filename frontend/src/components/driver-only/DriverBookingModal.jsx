@@ -23,6 +23,7 @@ import { openWhatsAppChat, CARZODRIVE_WHATSAPP_NUMBER } from '../../utils/whatsa
 import { bookingsAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthRequiredNotice } from '../common/AuthRequiredNotice';
+import { getTodayDateString } from '../../utils/formatters';
 
 export const DriverBookingModal = ({
   isOpen,
@@ -33,11 +34,7 @@ export const DriverBookingModal = ({
   const [step, setStep] = useState(1);
   const [dutyType, setDutyType] = useState('Full Day City (8 Hours)');
   const [carType, setCarType] = useState('Sedan (Automatic)');
-  const [reportingDate, setReportingDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split('T')[0];
-  });
+  const [reportingDate, setReportingDate] = useState(() => getTodayDateString(1));
   const [reportingTime, setReportingTime] = useState('09:00 AM');
   const [reportingAddress, setReportingAddress] = useState('');
   
@@ -252,8 +249,13 @@ Please confirm driver dispatch!`;
                   <input
                     type="date"
                     required
+                    min={getTodayDateString(0)}
                     value={reportingDate}
-                    onChange={(e) => setReportingDate(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const today = getTodayDateString(0);
+                      setReportingDate(val && val < today ? today : val);
+                    }}
                     className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
                   />
                 </div>

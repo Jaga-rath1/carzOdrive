@@ -9,7 +9,7 @@ import {
 import { Button } from '../common/Button';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, getTodayDateString } from '../../utils/formatters';
 import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 import { getQuickBookingWhatsAppMessage } from '../../utils/whatsapp';
 
@@ -327,34 +327,59 @@ export const BookingStepServiceItem = ({
       </div>
 
       {/* 4. DATES SELECTION */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 mb-1">
-            <Calendar className="w-3.5 h-3.5 text-blue-600" />
-            Pick-up Date
-          </label>
-          <input
-            type="date"
-            required
-            value={pickupDate}
-            onChange={(e) => setPickupDate(e.target.value)}
-            className="w-full bg-transparent text-sm font-semibold text-slate-900 focus:outline-none cursor-pointer"
-          />
-        </div>
+      <div className="space-y-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 mb-1">
+              <Calendar className="w-3.5 h-3.5 text-blue-600" />
+              Pick-up Date
+            </label>
+            <input
+              type="date"
+              required
+              min={getTodayDateString(0)}
+              value={pickupDate}
+              onChange={(e) => {
+                const val = e.target.value;
+                const today = getTodayDateString(0);
+                if (val && val < today) {
+                  setPickupDate(today);
+                  if (returnDate && returnDate < today) setReturnDate(today);
+                } else {
+                  setPickupDate(val);
+                  if (returnDate && returnDate < val) setReturnDate(val);
+                }
+              }}
+              className="w-full bg-transparent text-sm font-semibold text-slate-900 focus:outline-none cursor-pointer"
+            />
+          </div>
 
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 mb-1">
-            <Calendar className="w-3.5 h-3.5 text-blue-600" />
-            Return Date
-          </label>
-          <input
-            type="date"
-            required
-            value={returnDate}
-            onChange={(e) => setReturnDate(e.target.value)}
-            className="w-full bg-transparent text-sm font-semibold text-slate-900 focus:outline-none cursor-pointer"
-          />
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 mb-1">
+              <Calendar className="w-3.5 h-3.5 text-blue-600" />
+              Return Date
+            </label>
+            <input
+              type="date"
+              required
+              min={pickupDate || getTodayDateString(0)}
+              value={returnDate}
+              onChange={(e) => {
+                const val = e.target.value;
+                const minAllowed = pickupDate || getTodayDateString(0);
+                if (val && val < minAllowed) {
+                  setReturnDate(minAllowed);
+                } else {
+                  setReturnDate(val);
+                }
+              }}
+              className="w-full bg-transparent text-sm font-semibold text-slate-900 focus:outline-none cursor-pointer"
+            />
+          </div>
         </div>
+        <p className="text-[10.5px] text-slate-500 px-1">
+          * Pick-up must be today or a future date. Back-dated reservations are disabled.
+        </p>
       </div>
 
       {/* 5. OPTIONAL PROTECTION ADD-ON */}

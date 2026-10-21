@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal } from '../common/Modal';
 import { BHUBANESWAR_LOCATIONS, SERVICE_OPTIONS } from '../../config/bookingConfig';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, getTodayDateString, ensureFutureDate } from '../../utils/formatters';
 import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 import { getQuickBookingWhatsAppMessage, openWhatsAppChat } from '../../utils/whatsapp';
 import { paymentsAPI } from '../../services/api';
@@ -46,9 +46,9 @@ export const QuickBookingModal = ({
   const [pickupLocation, setPickupLocation] = useState('SUM Hospital');
   const [dropoffLocation, setDropoffLocation] = useState('Same as Pick-up Address');
 
-  // 4. Dates & Optional Protection
-  const [pickupDate, setPickupDate] = useState(getTodayOffset(1));
-  const [returnDate, setReturnDate] = useState(getTodayOffset(3));
+  // 4. Dates & Optional Protection (Always default to future dates)
+  const [pickupDate, setPickupDate] = useState(() => getTodayDateString(1));
+  const [returnDate, setReturnDate] = useState(() => getTodayDateString(3));
   const [includeProtection, setIncludeProtection] = useState(false);
 
   const [guestName, setGuestName] = useState(() => currentUser?.name || '');
@@ -130,8 +130,12 @@ export const QuickBookingModal = ({
     }
 
     if (targetService) setSelectedService(targetService);
-    if (initialData?.pickupDate) setPickupDate(initialData.pickupDate);
-    if (initialData?.returnDate) setReturnDate(initialData.returnDate);
+    if (initialData?.pickupDate) setPickupDate(ensureFutureDate(initialData.pickupDate, 1));
+    if (initialData?.returnDate) {
+      const sanitizedPickup = ensureFutureDate(initialData.pickupDate, 1);
+      const sanitizedReturn = ensureFutureDate(initialData.returnDate, 3);
+      setReturnDate(sanitizedReturn >= sanitizedPickup ? sanitizedReturn : sanitizedPickup);
+    }
     if (initialData?.location || initialData?.pickupLocation) {
       const loc = initialData.location || initialData.pickupLocation;
       if (BHUBANESWAR_LOCATIONS.includes(loc)) setPickupLocation(loc);
@@ -250,6 +254,20 @@ export const QuickBookingModal = ({
   const handleProceedToDetails = (e) => {
     e.preventDefault();
     if (!isAvailable) return;
+
+    // Strict validation: back-dated bookings forbidden
+    const today = getTodayDateString(0);
+    if (!pickupDate || pickupDate < today) {
+      alert('Back-dated bookings are not allowed. Please select today or a future date for pick-up.');
+      setPickupDate(today);
+      return;
+    }
+    if (selectedService !== 'tour-packages' && returnDate && returnDate < pickupDate) {
+      alert('Return date cannot be earlier than pick-up date.');
+      setReturnDate(pickupDate);
+      return;
+    }
+
     setStep(2);
   };
 
@@ -271,6 +289,14 @@ export const QuickBookingModal = ({
     }
     if (paymentMode !== 'offline' && (!guestEmail.trim() || !guestEmail.includes('@'))) {
       setPaymentError('Please enter a valid email address to receive your payment confirmation.');
+      return;
+    }
+
+    // Secondary back-date guard before processing payment
+    const today = getTodayDateString(0);
+    if (!pickupDate || pickupDate < today) {
+      setPaymentError('Pick-up date cannot be in the past. Please choose today or a future date.');
+      setStep(1);
       return;
     }
 

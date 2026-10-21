@@ -269,6 +269,19 @@ async function createUniversalBooking(customerId, data) {
     }
   }
 
+  // Validate that booking pick-up / start date is not in the past
+  const targetStartDate = payload.pickupDate || payload.startDate;
+  if (targetStartDate) {
+    const parsedDate = new Date(targetStartDate);
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+    if (!isNaN(parsedDate.getTime()) && parsedDate < todayMidnight) {
+      const err = new Error('Booking pick-up date cannot be in the past. Please select today or a future date.');
+      err.statusCode = 400;
+      throw err;
+    }
+  }
+
   // Ensure total, paid, and balance amounts are properly computed
   const total = Number(payload.totalAmount || payload.priceBreakdown?.totalAmount || 0);
   let paid = Number(payload.paidAmount || 0);

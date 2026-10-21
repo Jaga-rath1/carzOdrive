@@ -6,13 +6,14 @@ import { vehiclesAPI } from '../../services/api';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthRequiredNotice } from '../common/AuthRequiredNotice';
+import { getTodayDateString } from '../../utils/formatters';
 
 export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
   const { isAuthenticated, openAuthModal } = useAuth();
   const [fleet, setFleet] = useState([]);
   const [pickup, setPickup] = useState('');
   const [destination, setDestination] = useState('');
-  const [date, setDate] = useState('2026-10-14');
+  const [date, setDate] = useState(() => getTodayDateString(1));
   const [time, setTime] = useState('10:00');
   const [carType, setCarType] = useState(selectedCar || '');
   const [bookedSubmitted, setBookedSubmitted] = useState(false);
@@ -166,8 +167,13 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                     <Calendar className="w-4 h-4 text-blue-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="date"
+                      min={getTodayDateString(0)}
                       value={date}
-                      onChange={(e) => setDate(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const today = getTodayDateString(0);
+                        setDate(val && val < today ? today : val);
+                      }}
                       className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white font-medium focus:outline-none focus:border-blue-500"
                     />
                   </div>

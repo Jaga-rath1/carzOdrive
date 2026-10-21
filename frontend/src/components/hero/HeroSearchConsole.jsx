@@ -11,6 +11,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
+import { getTodayDateString } from '../../utils/formatters';
 
 export const HeroSearchConsole = ({
   activeTab,
@@ -221,8 +222,19 @@ export const HeroSearchConsole = ({
             <div className="flex items-center gap-1.5 sm:gap-2">
               <input
                 type="date"
+                min={getTodayDateString(0)}
                 value={pickupDate}
-                onChange={(e) => setPickupDate(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const today = getTodayDateString(0);
+                  if (val && val < today) {
+                    setPickupDate(today);
+                    if (returnDate && returnDate < today) setReturnDate(today);
+                  } else {
+                    setPickupDate(val);
+                    if (returnDate && returnDate < val) setReturnDate(val);
+                  }
+                }}
                 className="flex-1 min-w-0 bg-slate-900 text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer [color-scheme:dark] py-0.5"
               />
               <input
@@ -243,8 +255,17 @@ export const HeroSearchConsole = ({
             <div className="flex items-center gap-1.5 sm:gap-2">
               <input
                 type="date"
+                min={pickupDate || getTodayDateString(0)}
                 value={returnDate}
-                onChange={(e) => setReturnDate(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const minAllowed = pickupDate || getTodayDateString(0);
+                  if (val && val < minAllowed) {
+                    setReturnDate(minAllowed);
+                  } else {
+                    setReturnDate(val);
+                  }
+                }}
                 className="flex-1 min-w-0 bg-slate-900 text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer [color-scheme:dark] py-0.5"
               />
               <input
