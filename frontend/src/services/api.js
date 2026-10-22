@@ -61,6 +61,16 @@ export const clearAuthSession = () => {
   }
 };
 
+export const isAdminUser = (user) => {
+  if (!user || !user.role) return false;
+  const role = String(user.role).toUpperCase();
+  return (
+    role.includes('ADMIN') ||
+    role === 'SUPER_ADMIN' ||
+    ['SUPER_ADMIN', 'OPERATIONS_ADMIN', 'SUPPORT_ADMIN', 'FINANCE_ADMIN', 'STAFF_ADMIN', 'ADMIN'].includes(role)
+  );
+};
+
 
 // Client-Side In-Memory Cache & In-Flight Request Deduplication for Instant UI
 const clientCache = new Map();
@@ -447,6 +457,20 @@ export const adminsAPI = {
 };
 
 /**
+ * Users API Endpoints (Admin Customer Management & Lookups)
+ */
+export const usersAPI = {
+  async getAll(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/users${query ? `?${query}` : ''}`);
+  },
+
+  async getById(id) {
+    return apiRequest(`/users/${id}`);
+  },
+};
+
+/**
  * Packages API Endpoints
  */
 export const packagesAPI = {
@@ -491,6 +515,13 @@ export const bookingsAPI = {
     });
   },
 
+  async createAdminBooking(bookingData) {
+    return apiRequest('/bookings/admin/create', {
+      method: 'POST',
+      body: bookingData,
+    });
+  },
+
   async getByCode(bookingCode) {
     return apiRequest(`/bookings/voucher/${bookingCode}`);
   },
@@ -500,9 +531,9 @@ export const bookingsAPI = {
     return apiRequest(`/bookings/lookup?${params}`);
   },
 
-  async getAll(params = {}) {
+  async getAll(params = {}, options = {}) {
     const query = new URLSearchParams(params).toString();
-    return apiRequest(`/bookings${query ? `?${query}` : ''}`);
+    return apiRequest(`/bookings${query ? `?${query}` : ''}`, options);
   },
 
   async getById(id) {

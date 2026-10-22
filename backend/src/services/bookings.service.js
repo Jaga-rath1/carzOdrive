@@ -40,13 +40,11 @@ async function dispatchBookingNotificationsSafely(booking, fallbackEmail = null)
     const { dispatchBookingEmails } = require('../utils/mailer');
     let target = booking;
     if ((!target.customerId?.email || !target.vehicleId) && target._id) {
-      target = (await Booking.findById(target._id)
-        .populate('customerId', 'name email phone')
-        .populate('vehicleId')
-        .populate('bikeId')
-        .populate('driverId')
-        .populate('packageId')
-        .populate('paymentId')) || target;
+      try {
+        target = (await Booking.findById(target._id)
+          .populate('customerId', 'name email phone')
+          .populate('paymentId')) || target;
+      } catch (_) {}
     }
     dispatchBookingEmails(target, fallbackEmail).catch((e) =>
       console.error('Background dispatchBookingEmails error:', e?.message)
@@ -408,6 +406,281 @@ async function createUniversalBooking(customerId, data) {
   // Dispatched booking Tax Invoice & Admin Alert via Nodemailer asynchronously
   const guestMail = payload.guestEmail || payload.email || populated?.customerId?.email;
   dispatchBookingNotificationsSafely(populated || booking, guestMail);
+
+  return populated || booking;
+}
+
+// ─── Admin Manual Booking (Admin books directly for customer / walk-in) ────
+
+async function createAdminBooking(adminUser, data) {
+  const {
+    customerId,
+    customerName,
+    customerEmail,
+    customerPhone,
+    guestName,
+    guestEmail,
+    guestPhone,
+    guestNotes,
+    serviceType = 'SELF_DRIVE_CAR',
+    vehicleId,
+    bikeId,
+    driverId,
+    packageId,
+    userCarModel,
+    startDate,
+    endDate,
+    pickupDate,
+    returnDate,
+    pickupLocation,
+    dropoffLocation,
+    days,
+    paymentMode = 'offline',
+    onlineMethod = 'cash',
+    paymentStatus,
+    status = 'CONFIRMED',
+    transactionId,
+    totalAmount,
+    paidAmount,
+    balanceAmount,
+    securityDeposit,
+    priceBreakdown,
+    adminNotes,
+    customerNotes,
+  } = data;
+
+  // Helper to safely extract ObjectId string or null
+  const normalizeId = (id) =>
+    id && typeof id === 'string' && mongoose.Types.ObjectId.isValid(id)
+      ? id
+      : id && typeof id === 'object' && id._id && mongoose.Types.ObjectId.isValid(id._id)
+      ? String(id._id)
+      : null;
+
+  const cleanCustomerId = normalizeId(customerId);
+  const cleanVehicleId = normalizeId(vehicleId);
+  const cleanBikeId = normalizeId(bikeId);
+  const cleanDriverId = normalizeId(driverId);
+  const cleanPackageId = normalizeId(packageId);
+
+  // Resolve customer details
+  let resolvedCustomerId = cleanCustomerId;
+  let finalName = (guestName || customerName || '').trim();
+  let finalEmail = (guestEmail || customerEmail || '').trim().toLowerCase();
+  let finalPhone = (guestPhone || customerPhone || '').trim();
+
+  // If customerId is provided, fetch user if name/email/phone are not explicitly supplied
+  if (resolvedCustomerId && (!finalName || !finalEmail || !finalPhone)) {
+    try {
+      const User = require('../models/user.model').User;
+      const foundUser = await User.findById(resolvedCustomerId);
+      if (foundUser) {
+        if (!finalName) finalName = foundUser.name;
+        if (!finalEmail) finalEmail = foundUser.email;
+        if (!finalPhone) finalPhone = foundUser.phone;
+      }
+    } catch {
+      // Continue if lookup fails
+    }
+  }
+
+  // Resolve dates & duration
+  const start = startDate ? new Date(startDate) : (pickupDate ? new Date(pickupDate) : new Date());
+  let end = endDate ? new Date(endDate) : (returnDate ? new Date(returnDate) : null);
+  const numDays = Number(days) || (end ? Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24))) : 1);
+  if (!end) {
+    end = new Date(start.getTime() + numDays * 24 * 60 * 60 * 1000);
+  }
+
+  // Resolve asset snapshots
+  let foundVehicle = null;
+  let foundBike = null;
+  let foundDriver = null;
+  let foundPackage = null;
+  let resolvedVehicleName = data.vehicleName || '';
+  let resolvedVehicleImage = data.vehicleImage || '';
+
+  if (cleanVehicleId) {
+    foundVehicle = await Vehicle().findById(cleanVehicleId);
+    if (foundVehicle) {
+      resolvedVehicleName = foundVehicle.name;
+      resolvedVehicleImage = foundVehicle.images?.[0] || foundVehicle.primaryImage || '';
+    }
+  }
+
+  if (cleanBikeId) {
+    foundBike = await Bike().findById(cleanBikeId);
+    if (foundBike) {
+      resolvedVehicleName = foundBike.name;
+      resolvedVehicleImage = foundBike.images?.[0] || foundBike.primaryImage || '';
+    }
+  }
+
+  if (cleanDriverId) {
+    foundDriver = await Driver().findById(cleanDriverId);
+  }
+
+  if (cleanPackageId) {
+    foundPackage = await TourPackage().findById(cleanPackageId);
+    if (foundPackage) {
+      resolvedVehicleName = foundPackage.title || foundPackage.name;
+      resolvedVehicleImage = foundPackage.images?.[0] || '';
+    }
+  }
+
+  if (!resolvedVehicleName) {
+    resolvedVehicleName =
+      serviceType === 'DRIVER_ONLY'
+        ? userCarModel
+          ? `Chauffeur for ${userCarModel}`
+          : 'Professional Chauffeur'
+        : serviceType === 'SELF_DRIVE_BIKE'
+        ? 'Self-Drive Bike'
+        : 'Self-Drive Vehicle';
+  }
+
+  // Calculate pricing & payments cleanly
+  const total = Number(totalAmount) || 0;
+  let paid =
+    paidAmount !== undefined && paidAmount !== null && paidAmount !== ''
+      ? Number(paidAmount)
+      : paymentMode === 'full'
+      ? total
+      : 0;
+
+  if (paymentMode === 'partial' && paid === 0) {
+    paid = Math.max(499, Math.round(total * 0.25));
+  }
+
+  const balance =
+    balanceAmount !== undefined && balanceAmount !== null && balanceAmount !== ''
+      ? Number(balanceAmount)
+      : Math.max(0, total - paid);
+
+  let finalPaymentStatus = paymentStatus;
+  if (!finalPaymentStatus) {
+    if (paid >= total && total > 0) finalPaymentStatus = 'PAID';
+    else if (paid > 0 && paid < total) finalPaymentStatus = 'PARTIALLY_PAID';
+    else if (paymentMode === 'offline') finalPaymentStatus = 'OFFLINE_PENDING';
+    else finalPaymentStatus = 'PENDING';
+  }
+
+  const finalTxnId =
+    transactionId ||
+    (paymentMode === 'offline'
+      ? `ADMIN-CASH-${Date.now().toString(36).toUpperCase()}`
+      : `ADMIN-TXN-${Date.now().toString(36).toUpperCase()}`);
+
+  const adminId = adminUser?._id || adminUser?.id;
+  const changedBy = adminId && mongoose.Types.ObjectId.isValid(adminId) ? adminId : null;
+  const adminLabel = adminUser?.name || adminUser?.email || 'Admin';
+
+  const bookingPayload = {
+    customerId: resolvedCustomerId,
+    guestName: finalName || 'Valued Customer',
+    guestEmail: finalEmail || '',
+    guestPhone: finalPhone || '',
+    guestNotes: guestNotes || customerNotes || '',
+    userCarModel: userCarModel || '',
+    serviceType,
+    vehicleId: cleanVehicleId,
+    bikeId: cleanBikeId,
+    driverId: cleanDriverId,
+    packageId: cleanPackageId,
+    vehicleName: resolvedVehicleName,
+    vehicleImage: resolvedVehicleImage,
+    pickupLocation: pickupLocation || 'SUM Hospital Hub',
+    dropoffLocation: dropoffLocation || pickupLocation || 'Same as Pick-up Address',
+    startDate: start,
+    endDate: end,
+    pickupDate: pickupDate || start.toISOString().split('T')[0],
+    returnDate: returnDate || end.toISOString().split('T')[0],
+    days: numDays,
+    paymentMode,
+    onlineMethod,
+    transactionId: finalTxnId,
+    totalAmount: total,
+    paidAmount: paid,
+    balanceAmount: balance,
+    securityDeposit: Number(securityDeposit) || 0,
+    priceBreakdown: priceBreakdown || {
+      baseAmount: Math.max(0, total - (Number(securityDeposit) || 0)),
+      securityDeposit: Number(securityDeposit) || 0,
+      taxes: 0,
+      extraCharges: 0,
+      protectionFee: 0,
+      totalAmount: total,
+    },
+    status: status || 'CONFIRMED',
+    paymentStatus: finalPaymentStatus,
+    customerNotes: customerNotes || '',
+    adminNotes: adminNotes || `Booked manually by Admin: ${adminLabel}`,
+    statusHistory: [
+      {
+        status: status || 'CONFIRMED',
+        changedBy,
+        changedAt: new Date(),
+        note: `Manual booking created by Admin (${adminLabel})`,
+      },
+    ],
+  };
+
+  const booking = await Booking.create(bookingPayload);
+
+  // Decrement fleet inventory safely
+  if (foundVehicle && (foundVehicle.availableCount !== undefined || foundVehicle.count !== undefined)) {
+    try {
+      const current = foundVehicle.availableCount ?? foundVehicle.count ?? 1;
+      const newCount = Math.max(0, current - 1);
+      foundVehicle.availableCount = newCount;
+      if (newCount === 0) {
+        foundVehicle.isAvailable = false;
+        foundVehicle.availabilityStatus = 'UNAVAILABLE';
+      }
+      await foundVehicle.save();
+    } catch (vErr) {
+      console.warn('Inventory decrement notice (vehicle):', vErr.message);
+    }
+  }
+
+  if (foundBike && (foundBike.availableCount !== undefined || foundBike.count !== undefined)) {
+    try {
+      const current = foundBike.availableCount ?? foundBike.count ?? 1;
+      const newCount = Math.max(0, current - 1);
+      foundBike.availableCount = newCount;
+      if (newCount === 0) {
+        foundBike.isAvailable = false;
+        foundBike.availabilityStatus = 'UNAVAILABLE';
+      }
+      await foundBike.save();
+    } catch (bErr) {
+      console.warn('Inventory decrement notice (bike):', bErr.message);
+    }
+  }
+
+  // Create & link Payment record (respecting custom paid/balance amounts)
+  try {
+    await createOrSyncPaymentForBooking(booking);
+  } catch (payErr) {
+    console.warn('Payment sync notice during admin booking:', payErr.message);
+  }
+
+  // Fetch populated booking safely
+  let populated = booking;
+  try {
+    populated = await Booking.findById(booking._id)
+      .populate('customerId', 'name email phone')
+      .populate('paymentId');
+  } catch (popErr) {
+    console.warn('Populate notice in createAdminBooking:', popErr.message);
+    populated = booking;
+  }
+
+  // Dispatch background notification without blocking response
+  const targetMail = finalEmail || populated?.customerId?.email;
+  if (targetMail && targetMail.includes('@') && !targetMail.includes('@offline.carzodrive.com')) {
+    dispatchBookingNotificationsSafely(populated || booking, targetMail);
+  }
 
   return populated || booking;
 }
@@ -775,6 +1048,7 @@ module.exports = {
   createDriverOnly,
   createTourPackageBooking,
   createUniversalBooking,
+  createAdminBooking,
   getBooking,
   listBookings,
   updateBookingStatus,

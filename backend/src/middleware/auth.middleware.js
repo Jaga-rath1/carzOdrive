@@ -34,13 +34,14 @@ function authenticate(req, res, next) {
 function authorize(...rolesOrPerms) {
   return (req, res, next) => {
     if (!req.user) return unauthorized(res);
+    const userRole = (req.user.role || '').toUpperCase();
     // Super admin has master access across all platform operations
-    if (req.user.role === 'SUPER_ADMIN') return next();
+    if (userRole === 'SUPER_ADMIN') return next();
 
     if (!rolesOrPerms.length) return next();
 
-    // 1. Direct role match
-    if (rolesOrPerms.includes(req.user.role)) return next();
+    // 1. Direct role match (case-insensitive)
+    if (rolesOrPerms.some((r) => String(r).toUpperCase() === userRole)) return next();
 
     // 2. Direct permission match
     const userPerms = Array.isArray(req.user.permissions) ? req.user.permissions : [];
@@ -49,7 +50,7 @@ function authorize(...rolesOrPerms) {
     // 3. Permission-to-Role mapped check
     for (const perm of userPerms) {
       const allowedRoles = PERMISSION_ROLES_MAP[perm] || [];
-      if (allowedRoles.some((r) => rolesOrPerms.includes(r))) {
+      if (allowedRoles.some((r) => rolesOrPerms.some((target) => String(target).toUpperCase() === String(r).toUpperCase()))) {
         return next();
       }
     }

@@ -12,13 +12,15 @@ import {
   X,
   LayoutGrid,
   Table as TableIcon,
-  AlertTriangle
+  AlertTriangle,
+  Plus
 } from 'lucide-react';
 import { bookingsAPI } from '../../services/api';
 import { BookingTableView } from '../../components/admin/bookings/BookingTableView';
 import { BookingCardItem } from '../../components/admin/bookings/BookingCardItem';
 import { BookingEditModal } from '../../components/admin/bookings/BookingEditModal';
 import { BookingDeleteModal } from '../../components/admin/bookings/BookingDeleteModal';
+import { AdminCreateBookingModal } from '../../components/admin/bookings/AdminCreateBookingModal';
 import { InvoiceModal } from '../../components/common/InvoiceModal';
 
 export const AdminBookingsPage = () => {
@@ -43,11 +45,14 @@ export const AdminBookingsPage = () => {
   // Invoice / Voucher Modal State
   const [invoiceBooking, setInvoiceBooking] = useState(null);
 
+  // Manual Create Booking Modal State
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   const fetchBookings = async () => {
     setIsLoading(true);
     setStatusMessage(null);
     try {
-      const res = await bookingsAPI.getAll();
+      const res = await bookingsAPI.getAll({}, { skipCache: true });
       setBookings(res?.data || []);
     } catch (err) {
       console.warn('Failed to fetch bookings:', err);
@@ -253,6 +258,16 @@ export const AdminBookingsPage = () => {
             <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black text-zinc-950 bg-amber-400 hover:bg-amber-300 shadow-sm hover:shadow transition-all cursor-pointer active:scale-95"
+            title="Create manual booking for walk-in or customer"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Book For User</span>
+          </button>
         </div>
       </div>
 
@@ -391,6 +406,16 @@ export const AdminBookingsPage = () => {
               ? `No bookings match your search query "${searchTerm}".`
               : 'As customers make reservations, their vouchers and payment logs will appear here.'}
           </p>
+          {!searchTerm && (
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Book For Customer Now</span>
+            </button>
+          )}
         </div>
       ) : viewMode === 'table' ? (
         <BookingTableView
@@ -444,6 +469,26 @@ export const AdminBookingsPage = () => {
         booking={invoiceBooking}
         bookingIdOrCode={invoiceBooking?.bookingNumber || invoiceBooking?._id}
         onClose={() => setInvoiceBooking(null)}
+      />
+
+      {/* Admin Manual Booking Creation Modal */}
+      <AdminCreateBookingModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={(newBooking) => {
+          if (newBooking) {
+            setBookings((prev) => [
+              newBooking,
+              ...prev.filter((x) => (x._id || x.id) !== (newBooking._id || newBooking.id)),
+            ]);
+            setInvoiceBooking(newBooking);
+            showNotification(
+              'success',
+              `Booking #${newBooking.bookingNumber || newBooking._id} confirmed & invoice generated!`
+            );
+          }
+          fetchBookings();
+        }}
       />
     </div>
   );

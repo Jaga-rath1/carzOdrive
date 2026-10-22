@@ -16,6 +16,14 @@ const dateRange = [
 router.post('/', optionalAuth, controller.createUniversalBooking);
 router.post('/universal', optionalAuth, controller.createUniversalBooking);
 
+// Admin manual booking creation (Admin books directly for any customer / walk-in)
+router.post(
+  '/admin/create',
+  authenticate,
+  authorize(...ADMINS, 'manage_bookings'),
+  controller.createAdminBooking
+);
+
 // Booking voucher lookup by bookingNumber / code
 router.get('/voucher/:code', controller.getBookingByCode);
 router.get('/voucher/:code/invoice', controller.getBookingInvoice);

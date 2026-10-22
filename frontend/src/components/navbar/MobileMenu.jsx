@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Sparkles, User, LogOut } from 'lucide-react';
+import { X, ChevronDown, Sparkles, User, LogOut, CalendarCheck, LayoutDashboard } from 'lucide-react';
 import { SERVICES_MENU } from './NavLinks';
 import { DrivoraLogo } from './DrivoraLogo';
-import { getCurrentUser, clearAuthSession } from '../../services/api';
+import { getCurrentUser, clearAuthSession, isAdminUser } from '../../services/api';
 
-export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook, onOpenAuth }) => {
+export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook, onOpenAuth, currentUser: propUser }) => {
   const [servicesExpanded, setServicesExpanded] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const activeUser = propUser !== undefined ? propUser : currentUser;
+  const isAdmin = isAdminUser(activeUser);
 
   const sync = () => {
     setCurrentUser(getCurrentUser());
@@ -192,26 +194,38 @@ export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook, onOpenAuth }) => 
 
             {/* Bottom Actions CTA: Auth & Book a Ride */}
             <div className="pt-6 border-t border-white/10 space-y-3">
-              {currentUser ? (
+              {activeUser ? (
                 <div className="p-3.5 rounded-2xl bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-cyan-500/30 space-y-3 shadow-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white uppercase shadow-md bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shrink-0">
-                      {(currentUser.name || currentUser.email || 'U').charAt(0).toUpperCase()}
+                      {(activeUser.name || activeUser.email || 'U').charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] text-cyan-300 font-bold uppercase tracking-wider">Welcome,</p>
-                      <p className="text-sm font-black text-white truncate">{currentUser.name || currentUser.email?.split('@')[0] || 'Customer'}</p>
-                      <p className="text-[11px] text-slate-400 truncate">{currentUser.email || currentUser.phone || ''}</p>
+                      <p className="text-sm font-black text-white truncate">{activeUser.name || activeUser.email?.split('@')[0] || 'Customer'}</p>
+                      <p className="text-[11px] text-slate-400 truncate">{activeUser.email || activeUser.phone || ''}</p>
                     </div>
                   </div>
 
-                  <Link
-                    to="/my-bookings"
-                    onClick={onClose}
-                    className="w-full py-2.5 px-3 rounded-xl font-bold text-xs text-cyan-300 hover:text-white bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center gap-2 transition-all"
-                  >
-                    <span>View My Bookings</span>
-                  </Link>
+                  {isAdmin ? (
+                    <Link
+                      to="/admin/dashboard"
+                      onClick={onClose}
+                      className="w-full py-2.5 px-3 rounded-xl font-black text-xs text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-400 flex items-center justify-center gap-2 transition-all shadow-sm"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      <span>Go to Admin Dashboard</span>
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/my-bookings"
+                      onClick={onClose}
+                      className="w-full py-2.5 px-3 rounded-xl font-bold text-xs text-cyan-300 hover:text-white bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center gap-2 transition-all"
+                    >
+                      <CalendarCheck className="w-4 h-4 text-cyan-400" />
+                      <span>View My Bookings</span>
+                    </Link>
+                  )}
 
                   <button
                     type="button"

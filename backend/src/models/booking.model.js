@@ -1,5 +1,11 @@
 const mongoose = require('mongoose');
 
+// Ensure referenced schemas are registered for robust Mongoose population
+try {
+  require('./user.model');
+  require('./payment.model');
+} catch (_) {}
+
 const SERVICE_TYPES = [
   'SELF_DRIVE_CAR',
   'SELF_DRIVE_BIKE',
@@ -132,13 +138,17 @@ bookingSchema.pre('save', function (next) {
   if (!this.endDate && this.returnDate) {
     this.endDate = new Date(this.returnDate);
   }
-  // Set appropriate paymentStatus according to paymentMode
-  if (this.paymentMode === 'offline') {
-    this.paymentStatus = 'OFFLINE_PENDING';
-  } else if (this.paymentMode === 'partial') {
-    this.paymentStatus = 'PARTIALLY_PAID';
-  } else if (this.paymentMode === 'full') {
-    this.paymentStatus = 'PAID';
+  // Set appropriate paymentStatus according to paymentMode only if not already explicitly specified
+  if (!this.paymentStatus) {
+    if (this.paymentMode === 'offline') {
+      this.paymentStatus = 'OFFLINE_PENDING';
+    } else if (this.paymentMode === 'partial') {
+      this.paymentStatus = 'PARTIALLY_PAID';
+    } else if (this.paymentMode === 'full') {
+      this.paymentStatus = 'PAID';
+    } else {
+      this.paymentStatus = 'PENDING';
+    }
   }
   next();
 });
