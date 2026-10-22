@@ -98,12 +98,19 @@ export async function apiRequest(endpoint, { method = 'GET', body, headers = {},
 
   // Purge relevant cache on state-modifying requests
   if (!isGet) {
-    if (endpoint.includes('/vehicles')) invalidateClientCache('/vehicles');
-    else if (endpoint.includes('/bikes')) invalidateClientCache('/bikes');
-    else if (endpoint.includes('/packages') || endpoint.includes('/tours')) invalidateClientCache('/packages');
-    else if (endpoint.includes('/drivers')) invalidateClientCache('/drivers');
-    else if (endpoint.includes('/bookings')) invalidateClientCache('/bookings');
-    else invalidateClientCache();
+    if (endpoint.includes('/bookings') || endpoint.includes('/payments')) {
+      invalidateClientCache();
+    } else if (endpoint.includes('/vehicles')) {
+      invalidateClientCache('/vehicles');
+    } else if (endpoint.includes('/bikes')) {
+      invalidateClientCache('/bikes');
+    } else if (endpoint.includes('/packages') || endpoint.includes('/tours')) {
+      invalidateClientCache('/packages');
+    } else if (endpoint.includes('/drivers')) {
+      invalidateClientCache('/drivers');
+    } else {
+      invalidateClientCache();
+    }
   }
 
   // Return cached result if fresh

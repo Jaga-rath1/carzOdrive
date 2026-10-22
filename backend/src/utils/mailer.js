@@ -462,11 +462,18 @@ async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', book
   }
 }
 
+function resolveAdminAlertEmail(override = null) {
+  if (override && override.includes('@') && !override.includes('@carzodrive.com')) return override;
+  const configured = process.env.SUPER_ADMIN_EMAIL?.trim();
+  if (configured && configured.includes('@') && !configured.includes('@carzodrive.com')) return configured;
+  return process.env.SMTP_USER || 'jagankumarrath72@gmail.com';
+}
+
 /**
  * Send instant high-priority new booking alert to Admin with PDF Attachment
  */
 async function sendBookingAlertToAdmin({ booking, adminEmail, pdfBuffer = null }) {
-  const targetAdminEmail = adminEmail || process.env.SUPER_ADMIN_EMAIL || process.env.SMTP_USER || 'jagankumarrath72@gmail.com';
+  const targetAdminEmail = resolveAdminAlertEmail(adminEmail);
   if (!targetAdminEmail || !targetAdminEmail.includes('@')) {
     return { success: false, reason: 'No admin email configured' };
   }
@@ -783,7 +790,7 @@ async function dispatchBookingEmails(booking, overrideCustomerEmail = null) {
   }
 
   // 2. Always send Alert to Admin (with PDF attachment)
-  const adminEmail = process.env.SUPER_ADMIN_EMAIL || process.env.SMTP_USER || 'jagankumarrath72@gmail.com';
+  const adminEmail = resolveAdminAlertEmail();
   promises.push(
     sendBookingAlertToAdmin({
       booking,

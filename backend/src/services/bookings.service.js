@@ -338,58 +338,99 @@ async function createUniversalBooking(customerId, data) {
       : `TXN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
   }
 
-  // Validate that vehicle or bike is not currently unavailable (count 0)
+  // Resilient lookup for vehicle
   let foundVehicle = null;
   let foundBike = null;
 
-  if (payload.vehicleId && mongoose.Types.ObjectId.isValid(payload.vehicleId)) {
-    foundVehicle = await Vehicle().findById(payload.vehicleId);
-    if (foundVehicle) {
-      const vCount = foundVehicle.availableCount ?? foundVehicle.count ?? (foundVehicle.isAvailable !== false ? 1 : 0);
-      if (foundVehicle.isAvailable === false || vCount <= 0 || foundVehicle.availabilityStatus === 'UNAVAILABLE') {
-        const err = new Error(`${foundVehicle.name || 'Vehicle'} has 0 available units and is currently unavailable.`);
-        err.statusCode = 400;
-        throw err;
-      }
+  if (payload.vehicleId) {
+    if (mongoose.Types.ObjectId.isValid(payload.vehicleId)) {
+      foundVehicle = await Vehicle().findById(payload.vehicleId);
+    }
+    if (!foundVehicle) {
+      foundVehicle = await Vehicle().findOne({ $or: [{ id: payload.vehicleId }, { slug: payload.vehicleId }] });
+    }
+  }
+  if (!foundVehicle && payload.vehicleName && payload.serviceType !== 'DRIVER_ONLY' && payload.serviceType !== 'TOUR_PACKAGES' && payload.serviceType !== 'tour-packages') {
+    const cleanName = payload.vehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+    if (cleanName) {
+      foundVehicle = await Vehicle().findOne({
+        name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
+      });
+    }
+  }
+  if (foundVehicle) {
+    payload.vehicleId = foundVehicle._id;
+    const vCount = foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? (foundVehicle.isAvailable !== false ? 1 : 0);
+    if (foundVehicle.isAvailable === false || vCount <= 0 || foundVehicle.availabilityStatus === 'UNAVAILABLE') {
+      const err = new Error(`${foundVehicle.name || 'Vehicle'} has 0 available units and is currently unavailable.`);
+      err.statusCode = 400;
+      throw err;
     }
   }
 
-  if (payload.bikeId && mongoose.Types.ObjectId.isValid(payload.bikeId)) {
-    foundBike = await Bike().findById(payload.bikeId);
-    if (foundBike) {
-      const bCount = foundBike.availableCount ?? foundBike.count ?? (foundBike.isAvailable !== false ? 1 : 0);
-      if (foundBike.isAvailable === false || bCount <= 0 || foundBike.availabilityStatus === 'UNAVAILABLE') {
-        const err = new Error(`${foundBike.name || 'Bike'} has 0 available units and is currently unavailable.`);
-        err.statusCode = 400;
-        throw err;
-      }
+  // Resilient lookup for bike
+  if (payload.bikeId) {
+    if (mongoose.Types.ObjectId.isValid(payload.bikeId)) {
+      foundBike = await Bike().findById(payload.bikeId);
+    }
+    if (!foundBike) {
+      foundBike = await Bike().findOne({ $or: [{ id: payload.bikeId }, { slug: payload.bikeId }] });
+    }
+  }
+  if (!foundBike && payload.vehicleName && (payload.serviceType === 'SELF_DRIVE_BIKE' || payload.serviceType === 'self-drive-bike')) {
+    const cleanName = payload.vehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+    if (cleanName) {
+      foundBike = await Bike().findOne({
+        name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
+      });
+    }
+  }
+  if (foundBike) {
+    payload.bikeId = foundBike._id;
+    const bCount = foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? (foundBike.isAvailable !== false ? 1 : 0);
+    if (foundBike.isAvailable === false || bCount <= 0 || foundBike.availabilityStatus === 'UNAVAILABLE') {
+      const err = new Error(`${foundBike.name || 'Bike'} has 0 available units and is currently unavailable.`);
+      err.statusCode = 400;
+      throw err;
     }
   }
 
   const booking = await Booking.create(payload);
 
-  // Decrement vehicle inventory count upon booking
+  // Decrement vehicle inventory count upon booking & invalidate cache
   if (foundVehicle) {
-    const current = foundVehicle.availableCount ?? foundVehicle.count ?? 1;
+    const current = foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? 1;
     const newCount = Math.max(0, current - 1);
     foundVehicle.availableCount = newCount;
+    if (!foundVehicle.specs) foundVehicle.specs = {};
+    foundVehicle.specs.availableUnits = newCount;
     if (newCount === 0) {
       foundVehicle.isAvailable = false;
       foundVehicle.availabilityStatus = 'UNAVAILABLE';
     }
     await foundVehicle.save();
+    try {
+      const { invalidateVehicleCache } = require('./vehicles.service');
+      invalidateVehicleCache();
+    } catch (_) {}
   }
 
-  // Decrement bike inventory count upon booking
+  // Decrement bike inventory count upon booking & invalidate cache
   if (foundBike) {
-    const current = foundBike.availableCount ?? foundBike.count ?? 1;
+    const current = foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? 1;
     const newCount = Math.max(0, current - 1);
     foundBike.availableCount = newCount;
+    if (!foundBike.specs) foundBike.specs = {};
+    foundBike.specs.availableUnits = newCount;
     if (newCount === 0) {
       foundBike.isAvailable = false;
       foundBike.availabilityStatus = 'UNAVAILABLE';
     }
     await foundBike.save();
+    try {
+      const { invalidateBikeCache } = require('./bikes.service');
+      invalidateBikeCache();
+    } catch (_) {}
   }
 
   // Dynamically create and link corresponding Payment document
@@ -501,19 +542,47 @@ async function createAdminBooking(adminUser, data) {
   let resolvedVehicleImage = data.vehicleImage || '';
 
   if (cleanVehicleId) {
-    foundVehicle = await Vehicle().findById(cleanVehicleId);
-    if (foundVehicle) {
-      resolvedVehicleName = foundVehicle.name;
-      resolvedVehicleImage = foundVehicle.images?.[0] || foundVehicle.primaryImage || '';
+    if (mongoose.Types.ObjectId.isValid(cleanVehicleId)) {
+      foundVehicle = await Vehicle().findById(cleanVehicleId);
     }
+    if (!foundVehicle) {
+      foundVehicle = await Vehicle().findOne({ $or: [{ id: cleanVehicleId }, { slug: cleanVehicleId }] });
+    }
+  }
+  if (!foundVehicle && resolvedVehicleName && serviceType !== 'DRIVER_ONLY' && serviceType !== 'TOUR_PACKAGES') {
+    const cleanName = resolvedVehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+    if (cleanName) {
+      foundVehicle = await Vehicle().findOne({
+        name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
+      });
+    }
+  }
+  if (foundVehicle) {
+    cleanVehicleId = foundVehicle._id;
+    resolvedVehicleName = foundVehicle.name;
+    resolvedVehicleImage = foundVehicle.images?.[0] || foundVehicle.primaryImage || '';
   }
 
   if (cleanBikeId) {
-    foundBike = await Bike().findById(cleanBikeId);
-    if (foundBike) {
-      resolvedVehicleName = foundBike.name;
-      resolvedVehicleImage = foundBike.images?.[0] || foundBike.primaryImage || '';
+    if (mongoose.Types.ObjectId.isValid(cleanBikeId)) {
+      foundBike = await Bike().findById(cleanBikeId);
     }
+    if (!foundBike) {
+      foundBike = await Bike().findOne({ $or: [{ id: cleanBikeId }, { slug: cleanBikeId }] });
+    }
+  }
+  if (!foundBike && resolvedVehicleName && serviceType === 'SELF_DRIVE_BIKE') {
+    const cleanName = resolvedVehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+    if (cleanName) {
+      foundBike = await Bike().findOne({
+        name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
+      });
+    }
+  }
+  if (foundBike) {
+    cleanBikeId = foundBike._id;
+    resolvedVehicleName = foundBike.name;
+    resolvedVehicleImage = foundBike.images?.[0] || foundBike.primaryImage || '';
   }
 
   if (cleanDriverId) {
@@ -628,31 +697,43 @@ async function createAdminBooking(adminUser, data) {
   const booking = await Booking.create(bookingPayload);
 
   // Decrement fleet inventory safely
-  if (foundVehicle && (foundVehicle.availableCount !== undefined || foundVehicle.count !== undefined)) {
+  if (foundVehicle) {
     try {
-      const current = foundVehicle.availableCount ?? foundVehicle.count ?? 1;
+      const current = foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? 1;
       const newCount = Math.max(0, current - 1);
       foundVehicle.availableCount = newCount;
+      if (!foundVehicle.specs) foundVehicle.specs = {};
+      foundVehicle.specs.availableUnits = newCount;
       if (newCount === 0) {
         foundVehicle.isAvailable = false;
         foundVehicle.availabilityStatus = 'UNAVAILABLE';
       }
       await foundVehicle.save();
+      try {
+        const { invalidateVehicleCache } = require('./vehicles.service');
+        invalidateVehicleCache();
+      } catch (_) {}
     } catch (vErr) {
       console.warn('Inventory decrement notice (vehicle):', vErr.message);
     }
   }
 
-  if (foundBike && (foundBike.availableCount !== undefined || foundBike.count !== undefined)) {
+  if (foundBike) {
     try {
-      const current = foundBike.availableCount ?? foundBike.count ?? 1;
+      const current = foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? 1;
       const newCount = Math.max(0, current - 1);
       foundBike.availableCount = newCount;
+      if (!foundBike.specs) foundBike.specs = {};
+      foundBike.specs.availableUnits = newCount;
       if (newCount === 0) {
         foundBike.isAvailable = false;
         foundBike.availabilityStatus = 'UNAVAILABLE';
       }
       await foundBike.save();
+      try {
+        const { invalidateBikeCache } = require('./bikes.service');
+        invalidateBikeCache();
+      } catch (_) {}
     } catch (bErr) {
       console.warn('Inventory decrement notice (bike):', bErr.message);
     }
@@ -815,18 +896,30 @@ async function updateBookingStatus(bookingId, newStatus, userId, userRole, note,
       const v = await Vehicle().findById(booking.vehicleId);
       if (v) {
         v.availableCount = (v.availableCount || 0) + 1;
+        if (!v.specs) v.specs = {};
+        v.specs.availableUnits = v.availableCount;
         v.isAvailable = true;
         v.availabilityStatus = 'AVAILABLE';
         await v.save();
+        try {
+          const { invalidateVehicleCache } = require('./vehicles.service');
+          invalidateVehicleCache();
+        } catch (_) {}
       }
     }
     if (booking.bikeId) {
       const b = await Bike().findById(booking.bikeId);
       if (b) {
         b.availableCount = (b.availableCount || 0) + 1;
+        if (!b.specs) b.specs = {};
+        b.specs.availableUnits = b.availableCount;
         b.isAvailable = true;
         b.availabilityStatus = 'AVAILABLE';
         await b.save();
+        try {
+          const { invalidateBikeCache } = require('./bikes.service');
+          invalidateBikeCache();
+        } catch (_) {}
       }
     }
   }
@@ -971,6 +1064,41 @@ async function deleteBooking(bookingId) {
     err.statusCode = 404;
     throw err;
   }
+
+  // Restore inventory if booking is deleted and wasn't already cancelled or completed
+  if (booking.status !== 'CANCELLED' && booking.status !== 'COMPLETED') {
+    if (booking.vehicleId) {
+      const v = await Vehicle().findById(booking.vehicleId);
+      if (v) {
+        v.availableCount = (v.availableCount || 0) + 1;
+        if (!v.specs) v.specs = {};
+        v.specs.availableUnits = v.availableCount;
+        v.isAvailable = true;
+        v.availabilityStatus = 'AVAILABLE';
+        await v.save();
+        try {
+          const { invalidateVehicleCache } = require('./vehicles.service');
+          invalidateVehicleCache();
+        } catch (_) {}
+      }
+    }
+    if (booking.bikeId) {
+      const b = await Bike().findById(booking.bikeId);
+      if (b) {
+        b.availableCount = (b.availableCount || 0) + 1;
+        if (!b.specs) b.specs = {};
+        b.specs.availableUnits = b.availableCount;
+        b.isAvailable = true;
+        b.availabilityStatus = 'AVAILABLE';
+        await b.save();
+        try {
+          const { invalidateBikeCache } = require('./bikes.service');
+          invalidateBikeCache();
+        } catch (_) {}
+      }
+    }
+  }
+
   const PaymentModel = require('../models/payment.model').Payment;
   await PaymentModel.deleteMany({ bookingId: booking._id });
   await Booking.findByIdAndDelete(bookingId);
