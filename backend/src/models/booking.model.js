@@ -20,6 +20,8 @@ const PAYMENT_STATUSES = ['PENDING', 'PROCESSING', 'PAID', 'PARTIALLY_PAID', 'OF
 const bookingSchema = new mongoose.Schema(
   {
     bookingNumber: { type: String, unique: true },
+    invoiceNumber: { type: String },
+    invoiceDate: { type: Date, default: Date.now },
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     serviceType: { type: String, required: true },
@@ -98,10 +100,17 @@ const bookingSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Production High-Performance Indexes
+bookingSchema.index({ customerId: 1, createdAt: -1 });
+bookingSchema.index({ vendorId: 1, createdAt: -1 });
 bookingSchema.index({ customerId: 1, status: 1 });
 bookingSchema.index({ status: 1, createdAt: -1 });
+bookingSchema.index({ vehicleId: 1, status: 1, startDate: 1, endDate: 1 });
+bookingSchema.index({ bikeId: 1, status: 1, startDate: 1, endDate: 1 });
 bookingSchema.index({ paymentId: 1 });
 bookingSchema.index({ transactionId: 1 });
+bookingSchema.index({ guestPhone: 1 });
+bookingSchema.index({ guestEmail: 1 });
 
 // Auto-generate booking voucher number (e.g. CZ-2026-X892)
 bookingSchema.pre('save', function (next) {
@@ -109,6 +118,12 @@ bookingSchema.pre('save', function (next) {
     const ts = Date.now().toString(36).toUpperCase();
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
     this.bookingNumber = `CZ-${ts}-${rand}`;
+  }
+  if (!this.invoiceNumber && this.bookingNumber) {
+    this.invoiceNumber = `INV-${this.bookingNumber.replace(/^CZ-/, '')}`;
+  }
+  if (!this.invoiceDate) {
+    this.invoiceDate = new Date();
   }
   // Sync startDate and endDate if string dates provided
   if (!this.startDate && this.pickupDate) {

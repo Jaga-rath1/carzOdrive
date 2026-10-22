@@ -1,13 +1,26 @@
+const dns = require('dns');
+
+// On Windows / local networks, Node's c-ares DNS resolver frequently throws
+// querySrv ECONNREFUSED for MongoDB Atlas mongodb+srv:// URIs using the default router DNS.
+// Setting public DNS servers (Google 8.8.8.8, Cloudflare 1.1.1.1) fixes SRV resolution reliably.
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+} catch (e) {
+  // Graceful fallback if custom DNS servers are restricted in the current runtime
+}
+
 const mongoose = require('mongoose');
 const { env } = require('./env');
 const logger = require('../utils/logger');
 
 const options = {
   maxPoolSize: 50,
-  minPoolSize: 5,
-  serverSelectionTimeoutMS: 5000,
+  minPoolSize: 10,
+  maxIdleTimeMS: 30000,
+  serverSelectionTimeoutMS: 8000,
   socketTimeoutMS: 45000,
   connectTimeoutMS: 10000,
+  compressors: ['zstd', 'snappy', 'zlib'],
 };
 
 // Dedicated Partner Database Connection for "Rent Your Car", "Rent Your Bike", and "Driver Registration"
@@ -32,6 +45,14 @@ if (isDedicatedPartnerUri) {
   });
 }
 
+mongoose.connection.on('disconnected', () => {
+  logger.warn('MongoDB primary connection lost. Retrying...');
+});
+
+mongoose.connection.on('reconnected', () => {
+  logger.success('MongoDB primary connection re-established.');
+});
+
 async function connectDB() {
   try {
     await mongoose.connect(env.mongodbUri, options);
@@ -47,6 +68,20 @@ async function connectDB() {
       process.exit(1);
     } else {
       logger.warn(`Local development MongoDB notice: retrying connection in background to ${env.mongodbUri}`);
+      const retryTimer = setInterval(async () => {
+        try {
+          if (mongoose.connection.readyState === 1) {
+            clearInterval(retryTimer);
+            return;
+          }
+          await mongoose.connect(env.mongodbUri, options);
+          clearInterval(retryTimer);
+          logger.success(`MongoDB reconnected successfully to host: ${mongoose.connection.host}`);
+        } catch (retryErr) {
+          logger.warn(`Retrying MongoDB connection: ${retryErr.message}`);
+        }
+      }, 5000);
+      retryTimer.unref();
     }
   }
 }

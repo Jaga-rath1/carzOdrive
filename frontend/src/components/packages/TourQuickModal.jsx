@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -14,7 +15,7 @@ import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getTourWhatsAppMessage } from '../../utils/whatsapp';
 
 export const TourQuickModal = ({ tour, isOpen, onClose, onOpenQuickBook }) => {
-  if (!isOpen || !tour) return null;
+  if (!isOpen || !tour || typeof document === 'undefined') return null;
 
   const detailUrl = `/tour/${tour.id || tour.slug || tour._id}`;
 
@@ -31,9 +32,9 @@ export const TourQuickModal = ({ tour, isOpen, onClose, onOpenQuickBook }) => {
     });
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -160,6 +161,7 @@ export const TourQuickModal = ({ tour, isOpen, onClose, onOpenQuickBook }) => {
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };

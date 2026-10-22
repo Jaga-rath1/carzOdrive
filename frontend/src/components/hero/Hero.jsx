@@ -6,6 +6,7 @@ import { Container } from '../common/Container';
 import heroBgImage from '../../assets/carzodrive-hero-bg.jpg';
 import { BHUBANESWAR_LOCATIONS, SERVICE_OPTIONS } from '../../config/bookingConfig';
 import { vehiclesAPI, bikesAPI, packagesAPI } from '../../services/api';
+import { getTodayDateString } from '../../utils/formatters';
 import { HeroServiceTabs } from './HeroServiceTabs';
 import { HeroSearchConsole } from './HeroSearchConsole';
 
@@ -140,10 +141,10 @@ export const Hero = ({ onOpenQuickBook }) => {
   const [pickupLocation, setPickupLocation] = useState(BHUBANESWAR_LOCATIONS[0] || 'SUM Hospital');
   const [dropLocation, setDropLocation] = useState('Same as Pick-up Location');
 
-  // 4. Dates & Times
-  const [pickupDate, setPickupDate] = useState('2026-10-12');
+  // 4. Dates & Times (Default to future dates)
+  const [pickupDate, setPickupDate] = useState(() => getTodayDateString(1));
   const [pickupTime, setPickupTime] = useState('10:00');
-  const [returnDate, setReturnDate] = useState('2026-10-15');
+  const [returnDate, setReturnDate] = useState(() => getTodayDateString(3));
   const [returnTime, setReturnTime] = useState('18:00');
 
   const activeService = SERVICE_OPTIONS.find((s) => s.id === activeTab) || SERVICE_OPTIONS[0];

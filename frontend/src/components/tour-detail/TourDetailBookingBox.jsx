@@ -2,16 +2,19 @@ import React, { useState } from 'react';
 import { Calendar, Users, ArrowRight, CheckCircle2, ShieldCheck, Clock } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getTourWhatsAppMessage } from '../../utils/whatsapp';
+import { getTodayDateString } from '../../utils/formatters';
 
 export const TourDetailBookingBox = ({ tour, onOpenQuickBook }) => {
-  const [departureDate, setDepartureDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 2);
-    return d.toISOString().split('T')[0];
-  });
+  const [departureDate, setDepartureDate] = useState(() => getTodayDateString(2));
   const [travelers, setTravelers] = useState('2 Adults');
 
   const handleReserve = () => {
+    const today = getTodayDateString(0);
+    if (!departureDate || departureDate < today) {
+      alert('Tour start date cannot be in the past. Please select today or a future date.');
+      setDepartureDate(today);
+      return;
+    }
     onOpenQuickBook?.({
       serviceType: 'tour-packages',
       vehicle: tour,
@@ -59,8 +62,13 @@ export const TourDetailBookingBox = ({ tour, onOpenQuickBook }) => {
           </label>
           <input
             type="date"
+            min={getTodayDateString(0)}
             value={departureDate}
-            onChange={(e) => setDepartureDate(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              const today = getTodayDateString(0);
+              setDepartureDate(val && val < today ? today : val);
+            }}
             className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
           />
         </div>

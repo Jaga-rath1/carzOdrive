@@ -208,6 +208,19 @@ const driverRegistrationSchema = new mongoose.Schema(
   }
 );
 
+// Production High-Performance Indexes for Partner Submissions
+partnerCarSchema.index({ status: 1, createdAt: -1 });
+partnerCarSchema.index({ vendorId: 1, createdAt: -1 });
+partnerCarSchema.index({ ownerPhone: 1 });
+
+partnerBikeSchema.index({ status: 1, createdAt: -1 });
+partnerBikeSchema.index({ vendorId: 1, createdAt: -1 });
+partnerBikeSchema.index({ ownerPhone: 1 });
+
+driverRegistrationSchema.index({ status: 1, createdAt: -1 });
+driverRegistrationSchema.index({ phone: 1 });
+driverRegistrationSchema.index({ userId: 1, createdAt: -1 });
+
 // Models compiled on dedicated partner connection
 const PartnerCarSubmission = partnerConnection.model('PartnerCarSubmission', partnerCarSchema);
 const PartnerBikeSubmission = partnerConnection.model('PartnerBikeSubmission', partnerBikeSchema);

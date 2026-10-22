@@ -74,10 +74,15 @@ const tourPackageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Production High-Performance Indexes
+tourPackageSchema.index({ status: 1, isPublished: 1, isAvailable: 1, rating: -1 });
+tourPackageSchema.index({ destination: 1, category: 1 });
+tourPackageSchema.index({ id: 1 });
 tourPackageSchema.index({ destination: 1 });
 tourPackageSchema.index({ category: 1 });
 tourPackageSchema.index({ odishaTheme: 1 });
 tourPackageSchema.index({ status: 1, isPublished: 1 });
+tourPackageSchema.index({ title: 'text', destination: 'text', category: 'text' });
 
 tourPackageSchema.pre('save', function (next) {
   if (!this.name && this.title) {

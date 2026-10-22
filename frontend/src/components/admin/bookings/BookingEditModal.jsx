@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import {
   Edit3,
   X,
@@ -19,10 +20,10 @@ export const BookingEditModal = ({
   isSavingEdit,
   onClose,
 }) => {
-  if (!editingBooking) return null;
+  if (!editingBooking || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto animate-in fade-in">
       <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-zinc-200 my-8 overflow-hidden">
         {/* Modal Header */}
         <div className="px-6 py-4 bg-zinc-950 text-white flex items-center justify-between">
@@ -299,6 +300,7 @@ export const BookingEditModal = ({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

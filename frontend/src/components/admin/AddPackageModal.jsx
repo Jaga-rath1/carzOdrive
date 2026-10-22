@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Compass,
@@ -230,7 +231,9 @@ export const AddPackageModal = ({ isOpen, packageToEdit, onClose, onPackageSaved
     { id: 'highlights', label: 'Narrative & Highlights', icon: Sparkles },
   ];
 
-  return (
+  if (!isOpen) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200">
       <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden my-6">
         
@@ -359,6 +362,7 @@ export const AddPackageModal = ({ isOpen, packageToEdit, onClose, onPackageSaved
         </form>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

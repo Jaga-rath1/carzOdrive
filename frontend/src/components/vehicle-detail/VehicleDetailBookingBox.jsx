@@ -12,21 +12,14 @@ import {
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
+import { getTodayDateString } from '../../utils/formatters';
 
 export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
   const count = vehicle.availableCount ?? vehicle.count ?? (vehicle.isAvailable !== false ? 1 : 0);
   const isAvailable = vehicle.isAvailable !== false && count > 0 && vehicle.availabilityStatus !== 'UNAVAILABLE';
 
-  const [pickupDate, setPickupDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split('T')[0];
-  });
-  const [returnDate, setReturnDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 3);
-    return d.toISOString().split('T')[0];
-  });
+  const [pickupDate, setPickupDate] = useState(() => getTodayDateString(1));
+  const [returnDate, setReturnDate] = useState(() => getTodayDateString(3));
   const [pickupLocation, setPickupLocation] = useState('SUM Hospital');
   const [paymentMode, setPaymentMode] = useState('full'); // 'full' | 'partial' | 'offline'
 
@@ -54,6 +47,17 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
 
   const handleBookNow = () => {
     if (!isAvailable) return;
+    const today = getTodayDateString(0);
+    if (!pickupDate || pickupDate < today) {
+      alert('Back-dated bookings are not allowed. Please choose today or a future date.');
+      setPickupDate(today);
+      return;
+    }
+    if (returnDate && returnDate < pickupDate) {
+      alert('Drop-off date cannot be earlier than pick-up date.');
+      setReturnDate(pickupDate);
+      return;
+    }
     onOpenQuickBook?.({
       vehicle,
       type: vehicle.vehicleType || 'vehicle',
@@ -120,8 +124,19 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
             </label>
             <input
               type="date"
+              min={getTodayDateString(0)}
               value={pickupDate}
-              onChange={(e) => setPickupDate(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                const today = getTodayDateString(0);
+                if (val && val < today) {
+                  setPickupDate(today);
+                  if (returnDate && returnDate < today) setReturnDate(today);
+                } else {
+                  setPickupDate(val);
+                  if (returnDate && returnDate < val) setReturnDate(val);
+                }
+              }}
               className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
             />
           </div>
@@ -133,8 +148,17 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
             </label>
             <input
               type="date"
+              min={pickupDate || getTodayDateString(0)}
               value={returnDate}
-              onChange={(e) => setReturnDate(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                const minAllowed = pickupDate || getTodayDateString(0);
+                if (val && val < minAllowed) {
+                  setReturnDate(minAllowed);
+                } else {
+                  setReturnDate(val);
+                }
+              }}
               className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
             />
           </div>

@@ -32,8 +32,29 @@ function addStatusHistory(booking, status, changedBy, note) {
   });
 }
 
-// ─── Payment Synchronization ───────────────────────────────────────────────
+// ─── Payment Synchronization & Notifications ──────────────────────────────
 const { createOrSyncPaymentForBooking } = require('./bookingPaymentSync');
+
+async function dispatchBookingNotificationsSafely(booking, fallbackEmail = null) {
+  try {
+    const { dispatchBookingEmails } = require('../utils/mailer');
+    let target = booking;
+    if ((!target.customerId?.email || !target.vehicleId) && target._id) {
+      target = (await Booking.findById(target._id)
+        .populate('customerId', 'name email phone')
+        .populate('vehicleId')
+        .populate('bikeId')
+        .populate('driverId')
+        .populate('packageId')
+        .populate('paymentId')) || target;
+    }
+    dispatchBookingEmails(target, fallbackEmail).catch((e) =>
+      console.error('Background dispatchBookingEmails error:', e?.message)
+    );
+  } catch (e) {
+    console.error('Nodemailer booking dispatch trigger error:', e?.message);
+  }
+}
 
 // ─── Self-Drive Car ────────────────────────────────────────────────────────
 
@@ -76,6 +97,8 @@ async function createSelfDriveCar(customerId, data) {
     paymentStatus: 'PENDING',
     statusHistory: [{ status: 'PENDING', changedBy: customerId, changedAt: new Date() }],
   });
+  await createOrSyncPaymentForBooking(booking);
+  dispatchBookingNotificationsSafely(booking, data.guestEmail || data.email);
   return booking;
 }
 
@@ -119,6 +142,8 @@ async function createSelfDriveBike(customerId, data) {
     paymentStatus: 'PENDING',
     statusHistory: [{ status: 'PENDING', changedBy: customerId, changedAt: new Date() }],
   });
+  await createOrSyncPaymentForBooking(booking);
+  dispatchBookingNotificationsSafely(booking, data.guestEmail || data.email);
   return booking;
 }
 
@@ -156,6 +181,8 @@ async function createCarWithDriver(customerId, data) {
     paymentStatus: 'PENDING',
     statusHistory: [{ status: 'PENDING', changedBy: customerId, changedAt: new Date() }],
   });
+  await createOrSyncPaymentForBooking(booking);
+  dispatchBookingNotificationsSafely(booking, data.guestEmail || data.email);
   return booking;
 }
 
@@ -183,6 +210,8 @@ async function createDriverOnly(customerId, data) {
     paymentStatus: 'PENDING',
     statusHistory: [{ status: 'PENDING', changedBy: customerId, changedAt: new Date() }],
   });
+  await createOrSyncPaymentForBooking(booking);
+  dispatchBookingNotificationsSafely(booking, data.guestEmail || data.email);
   return booking;
 }
 
@@ -247,6 +276,8 @@ async function createTourPackageBooking(customerId, data) {
     paymentStatus: data.paymentStatus || 'PAID',
     statusHistory: [{ status: 'CONFIRMED', changedBy: customerId || null, changedAt: new Date() }],
   });
+  await createOrSyncPaymentForBooking(booking);
+  dispatchBookingNotificationsSafely(booking, data.guestEmail || data.email);
   return booking;
 }
 
@@ -266,6 +297,19 @@ async function createUniversalBooking(customerId, data) {
   ) {
     if (!payload.packageId && payload.vehicleId) {
       payload.packageId = payload.vehicleId;
+    }
+  }
+
+  // Validate that booking pick-up / start date is not in the past
+  const targetStartDate = payload.pickupDate || payload.startDate;
+  if (targetStartDate) {
+    const parsedDate = new Date(targetStartDate);
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+    if (!isNaN(parsedDate.getTime()) && parsedDate < todayMidnight) {
+      const err = new Error('Booking pick-up date cannot be in the past. Please select today or a future date.');
+      err.statusCode = 400;
+      throw err;
     }
   }
 
@@ -361,20 +405,9 @@ async function createUniversalBooking(customerId, data) {
     .populate('packageId')
     .populate('paymentId');
 
-  // Dispatched booking confirmation email via Nodemailer asynchronously
-  const guestMail = payload.guestEmail || payload.email;
-  if (guestMail && guestMail.includes('@')) {
-    try {
-      const { sendBookingConfirmationEmail } = require('../utils/mailer');
-      sendBookingConfirmationEmail({
-        email: guestMail,
-        name: payload.guestName || 'Valued Guest',
-        booking: populated || booking,
-      }).catch((e) => console.error('Error dispatching confirmation email:', e?.message));
-    } catch (e) {
-      console.error('Nodemailer confirmation trigger error:', e?.message);
-    }
-  }
+  // Dispatched booking Tax Invoice & Admin Alert via Nodemailer asynchronously
+  const guestMail = payload.guestEmail || payload.email || populated?.customerId?.email;
+  dispatchBookingNotificationsSafely(populated || booking, guestMail);
 
   return populated || booking;
 }
@@ -457,7 +490,8 @@ async function listBookings(query, userId, userRole) {
       .populate('paymentId')
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 }),
+      .sort({ createdAt: -1 })
+      .lean(),
     Booking.countDocuments(filter),
   ]);
   return { bookings, pagination: buildPaginationMeta(total, page, limit) };
@@ -527,7 +561,15 @@ async function updateBookingStatus(bookingId, newStatus, userId, userRole, note,
   // Dynamically sync linked Payment record
   await createOrSyncPaymentForBooking(booking);
 
-  const updated = await Booking.findById(booking._id).populate('paymentId');
+  const updated = await Booking.findById(booking._id)
+    .populate('customerId', 'name email phone')
+    .populate('vehicleId')
+    .populate('bikeId')
+    .populate('driverId')
+    .populate('packageId')
+    .populate('paymentId');
+
+  dispatchBookingNotificationsSafely(updated || booking);
   return updated || booking;
 }
 
@@ -637,8 +679,14 @@ async function updateBooking(bookingId, updateData) {
   const updated = await Booking.findById(booking._id)
     .populate('customerId', 'name email phone')
     .populate('vehicleId')
+    .populate('bikeId')
+    .populate('driverId')
     .populate('packageId')
     .populate('paymentId');
+
+  if (updateData.status || updateData.paymentStatus) {
+    dispatchBookingNotificationsSafely(updated || booking);
+  }
 
   return updated || booking;
 }
@@ -656,7 +704,71 @@ async function deleteBooking(bookingId) {
   return { message: 'Booking and linked payment record deleted successfully' };
 }
 
+const COMPANY_INVOICE_DETAILS = {
+  legalName: 'CARZODRIVE LUXURY MOBILITY & TOURS PRIVATE LIMITED',
+  tradeName: 'CARZODRIVE',
+  address: 'Plot No. 42, Airport Square, Master Canteen, Bhubaneswar, Odisha - 751001, India',
+  gstin: '21AAACC1234D1Z5',
+  cin: 'U50100OR2026PTC045812',
+  pan: 'AAACC1234D',
+  state: 'Odisha',
+  stateCode: '21',
+  supportPhone: '+91 79780 00000',
+  supportEmail: 'concierge@carzodrive.com',
+  website: 'https://carzodrive.com',
+  sacCarRental: '996411',
+  sacTourOperator: '998553',
+};
+
+async function getBookingInvoice(identifier) {
+  let booking = null;
+  if (mongoose.Types.ObjectId.isValid(identifier)) {
+    booking = await Booking.findById(identifier)
+      .populate('customerId', 'name email phone')
+      .populate('vehicleId')
+      .populate('bikeId')
+      .populate('driverId')
+      .populate('packageId')
+      .populate('paymentId');
+  }
+  if (!booking) {
+    booking = await Booking.findOne({
+      $or: [
+        { bookingNumber: identifier },
+        { invoiceNumber: identifier },
+        { transactionId: identifier },
+      ],
+    })
+      .populate('customerId', 'name email phone')
+      .populate('vehicleId')
+      .populate('bikeId')
+      .populate('driverId')
+      .populate('packageId')
+      .populate('paymentId');
+  }
+
+  if (!booking) {
+    const err = new Error('Booking invoice not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (!booking.invoiceNumber && booking.bookingNumber) {
+    booking.invoiceNumber = `INV-${booking.bookingNumber.replace(/^CZ-/, '')}`;
+    await booking.save();
+  }
+
+  return {
+    company: COMPANY_INVOICE_DETAILS,
+    invoiceNumber: booking.invoiceNumber || `INV-${booking.bookingNumber?.replace(/^CZ-/, '') || booking._id}`,
+    invoiceDate: booking.invoiceDate || booking.createdAt || new Date(),
+    booking,
+  };
+}
+
 module.exports = {
+  COMPANY_INVOICE_DETAILS,
+  getBookingInvoice,
   createSelfDriveCar,
   createSelfDriveBike,
   createCarWithDriver,

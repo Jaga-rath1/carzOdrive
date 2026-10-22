@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { vehiclesAPI, bikesAPI, packagesAPI, driversAPI } from '../../services/api';
+import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 
 export const useQuickBookingFleet = (isOpen) => {
   const [dbCars, setDbCars] = useState([]);
@@ -36,7 +37,7 @@ export const useQuickBookingFleet = (isOpen) => {
               isAvailable: isAvail,
               availableCount: carCount,
               availabilityStatus: isAvail ? 'Available' : 'Currently Unavailable',
-              image: (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg',
+              image: resolveVehicleImageUrl((v.images && v.images[0]) || v.image, '/images/vehicles/swift-2026-grey.jpg'),
               seats: `${v.seats || 5} Seats`,
               priceNumeric: v.pricing?.selfDrive?.daily || v.pricing?.dailyRate || v.pricePerDay || 1499,
               pricePerDay: v.pricing?.selfDrive?.daily || v.pricing?.dailyRate || v.pricePerDay || 1499,
@@ -64,7 +65,7 @@ export const useQuickBookingFleet = (isOpen) => {
               isAvailable: isAvail,
               availableCount: bikeCount,
               availabilityStatus: isAvail ? 'Available' : 'Currently Unavailable',
-              image: (b.images && b.images[0]) || b.image || '/images/vehicles/royal-enfield.jpg',
+              image: resolveVehicleImageUrl((b.images && b.images[0]) || b.image, '/images/vehicles/royal-enfield.jpg'),
               rawBike: b,
             };
           });
@@ -82,7 +83,7 @@ export const useQuickBookingFleet = (isOpen) => {
             priceNumeric: t.pricing?.adultPrice || 5499,
             destination: t.destination || 'Odisha',
             duration: typeof t.duration === 'object' ? `${t.duration.days} Days / ${t.duration.nights} Nights` : (t.duration || '2 Days / 1 Night'),
-            image: (t.images && t.images[0]) || t.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop',
+            image: resolveVehicleImageUrl((t.images && t.images[0]) || t.image, 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'),
             rawTour: t,
           }));
           setDbTours(tours);

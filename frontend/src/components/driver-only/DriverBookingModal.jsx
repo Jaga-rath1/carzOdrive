@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -22,6 +23,7 @@ import { openWhatsAppChat, CARZODRIVE_WHATSAPP_NUMBER } from '../../utils/whatsa
 import { bookingsAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthRequiredNotice } from '../common/AuthRequiredNotice';
+import { getTodayDateString } from '../../utils/formatters';
 
 export const DriverBookingModal = ({
   isOpen,
@@ -32,11 +34,7 @@ export const DriverBookingModal = ({
   const [step, setStep] = useState(1);
   const [dutyType, setDutyType] = useState('Full Day City (8 Hours)');
   const [carType, setCarType] = useState('Sedan (Automatic)');
-  const [reportingDate, setReportingDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split('T')[0];
-  });
+  const [reportingDate, setReportingDate] = useState(() => getTodayDateString(1));
   const [reportingTime, setReportingTime] = useState('09:00 AM');
   const [reportingAddress, setReportingAddress] = useState('');
   
@@ -76,9 +74,9 @@ export const DriverBookingModal = ({
     try {
       const res = await bookingsAPI.create({
         serviceType: 'driver-only',
-        guestName: clientName || 'Guest User',
-        guestPhone: clientPhone,
-        guestEmail: `${(clientPhone || 'driver').replace(/[^0-9]/g, '')}@carzodrive.com`,
+        guestName: clientName || currentUser?.name || 'Guest User',
+        guestPhone: clientPhone || currentUser?.phone || '',
+        guestEmail: currentUser?.email || (clientPhone ? `${clientPhone.replace(/[^0-9]/g, '')}@carzodrive.com` : undefined),
         driverId: currentDriver.id,
         userCarModel: carType,
         pickupLocation: reportingAddress || 'Bhubaneswar',
@@ -121,7 +119,9 @@ ${bookingCode ? `• Booking Code: ${bookingCode}` : ''}
 
 Please confirm driver dispatch!`;
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <motion.div
@@ -249,8 +249,13 @@ Please confirm driver dispatch!`;
                   <input
                     type="date"
                     required
+                    min={getTodayDateString(0)}
                     value={reportingDate}
-                    onChange={(e) => setReportingDate(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const today = getTodayDateString(0);
+                      setReportingDate(val && val < today ? today : val);
+                    }}
                     className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
                   />
                 </div>
@@ -453,6 +458,7 @@ Please confirm driver dispatch!`;
           </div>
         )}
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };

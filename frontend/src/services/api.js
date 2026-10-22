@@ -3,7 +3,12 @@
  * Seamlessly connects React UI to the CarzoDrive Backend (http://localhost:5000/api/v1)
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const rawApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').trim().replace(/\/+$/, '');
+export const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
+  ? rawApiUrl
+  : rawApiUrl.endsWith('/api')
+  ? `${rawApiUrl}/v1`
+  : `${rawApiUrl}/api/v1`;
 
 // Token helpers
 export const getAccessToken = () => localStorage.getItem('carzodrive_access_token');
@@ -57,12 +62,54 @@ export const clearAuthSession = () => {
 };
 
 
+// Client-Side In-Memory Cache & In-Flight Request Deduplication for Instant UI
+const clientCache = new Map();
+const inFlightRequests = new Map();
+const DEFAULT_CLIENT_TTL = 30 * 1000; // 30 seconds
+
+export const invalidateClientCache = (prefix = '') => {
+  if (!prefix) {
+    clientCache.clear();
+  } else {
+    for (const key of clientCache.keys()) {
+      if (key.startsWith(prefix) || key.includes(prefix)) {
+        clientCache.delete(key);
+      }
+    }
+  }
+};
+
 /**
  * Universal API Request Wrapper with Auto-Auth Headers & JSON Handling
  */
-export async function apiRequest(endpoint, { method = 'GET', body, headers = {}, ...customOptions } = {}) {
+export async function apiRequest(endpoint, { method = 'GET', body, headers = {}, skipCache = false, ...customOptions } = {}) {
+  const isGet = method.toUpperCase() === 'GET';
   const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-  
+
+  // Purge relevant cache on state-modifying requests
+  if (!isGet) {
+    if (endpoint.includes('/vehicles')) invalidateClientCache('/vehicles');
+    else if (endpoint.includes('/bikes')) invalidateClientCache('/bikes');
+    else if (endpoint.includes('/packages') || endpoint.includes('/tours')) invalidateClientCache('/packages');
+    else if (endpoint.includes('/drivers')) invalidateClientCache('/drivers');
+    else if (endpoint.includes('/bookings')) invalidateClientCache('/bookings');
+    else invalidateClientCache();
+  }
+
+  // Return cached result if fresh
+  const cacheKey = `${url}`;
+  if (isGet && !skipCache) {
+    const cached = clientCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data;
+    }
+
+    // Deduplicate in-flight concurrent requests to the exact same URL
+    if (inFlightRequests.has(cacheKey)) {
+      return inFlightRequests.get(cacheKey);
+    }
+  }
+
   const token = getAccessToken();
   const requestHeaders = {
     'Content-Type': 'application/json',
@@ -77,12 +124,21 @@ export async function apiRequest(endpoint, { method = 'GET', body, headers = {},
     ...customOptions,
   };
 
-  try {
-    const response = await fetch(url, options);
-    const data = await response.json().catch(() => ({}));
+  const fetchPromise = (async () => {
+    try {
+      const response = await fetch(url, options);
+      const data = await response.json().catch(() => ({}));
 
-    // Auto-refresh token if 401 and token expired
-    if (response.status === 401 && (data?.message === 'Token expired' || data?.message === 'Invalid token')) {
+      // Cache successful GET responses in memory
+      if (response.ok && isGet && !skipCache) {
+        clientCache.set(cacheKey, {
+          data,
+          expiresAt: Date.now() + DEFAULT_CLIENT_TTL,
+        });
+      }
+
+      // Auto-refresh token if 401 and token expired
+      if (response.status === 401 && (data?.message === 'Token expired' || data?.message === 'Invalid token')) {
       const refreshToken = getRefreshToken();
       if (refreshToken && endpoint !== '/auth/refresh') {
         try {
@@ -127,9 +183,18 @@ export async function apiRequest(endpoint, { method = 'GET', body, headers = {},
     }
 
     return data;
-  } catch (err) {
-    throw err;
+  } finally {
+    if (isGet) {
+      inFlightRequests.delete(cacheKey);
+    }
   }
+})();
+
+  if (isGet && !skipCache) {
+    inFlightRequests.set(cacheKey, fetchPromise);
+  }
+
+  return fetchPromise;
 }
 
 /**
@@ -462,6 +527,10 @@ export const bookingsAPI = {
     return apiRequest(`/bookings/${id}`, {
       method: 'DELETE',
     });
+  },
+
+  async getInvoice(idOrCode) {
+    return apiRequest(`/bookings/${idOrCode}/invoice`);
   },
 };
 

@@ -166,11 +166,20 @@ const vehicleSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Production High-Performance Indexes
+vehicleSchema.index({ status: 1, isPublished: 1, isAvailable: 1, isFeatured: -1, rating: -1, createdAt: -1 });
+vehicleSchema.index({ status: 1, isPublished: 1, isAvailable: 1, category: 1, isFeatured: -1 });
+vehicleSchema.index({ vendorId: 1, status: 1, createdAt: -1 });
 vehicleSchema.index({ vendorId: 1, isVendorListing: 1 });
 vehicleSchema.index({ category: 1 });
 vehicleSchema.index({ isFeatured: 1 });
 vehicleSchema.index({ status: 1 });
 vehicleSchema.index({ isPublished: 1, isAvailable: 1 });
+vehicleSchema.index({ id: 1 });
+vehicleSchema.index(
+  { name: 'text', brand: 'text', make: 'text', model: 'text', category: 'text' },
+  { weights: { name: 10, brand: 5, model: 5, category: 2 }, name: 'vehicle_text_search' }
+);
 
 // Ensure priceNumeric and pricePerDay stay synchronized
 vehicleSchema.pre('save', function (next) {

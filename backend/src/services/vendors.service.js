@@ -190,23 +190,23 @@ async function attachBike(ownerData, bikeData) {
  */
 async function getVendorFleet(vendorId) {
   const [partnerCars, partnerBikes, legacyCars, legacyBikes] = await Promise.all([
-    PartnerCarSubmission.find({ vendorId }).sort({ createdAt: -1 }),
-    PartnerBikeSubmission.find({ vendorId }).sort({ createdAt: -1 }),
-    Vehicle.find({ vendorId }).sort({ createdAt: -1 }),
-    Bike.find({ vendorId }).sort({ createdAt: -1 }),
+    PartnerCarSubmission.find({ vendorId }).sort({ createdAt: -1 }).lean(),
+    PartnerBikeSubmission.find({ vendorId }).sort({ createdAt: -1 }).lean(),
+    Vehicle.find({ vendorId }).sort({ createdAt: -1 }).lean(),
+    Bike.find({ vendorId }).sort({ createdAt: -1 }).lean(),
   ]);
 
-  const allCars = [...partnerCars.map((c) => c.toObject())];
+  const allCars = [...partnerCars];
   legacyCars.forEach((lc) => {
     if (!allCars.some((c) => c.slug === lc.slug || c.id === lc.id)) {
-      allCars.push(lc.toObject());
+      allCars.push(lc);
     }
   });
 
-  const allBikes = [...partnerBikes.map((b) => b.toObject())];
+  const allBikes = [...partnerBikes];
   legacyBikes.forEach((lb) => {
     if (!allBikes.some((b) => b.slug === lb.slug || b.id === lb.id)) {
-      allBikes.push(lb.toObject());
+      allBikes.push(lb);
     }
   });
 
@@ -229,9 +229,9 @@ async function listVendorSubmissions({ status, type }) {
   let bikes = [];
 
   if (cleanType === 'ALL' || cleanType === 'car' || cleanType === 'cars') {
-    const partnerCars = await PartnerCarSubmission.find(query).sort({ createdAt: -1 });
+    const partnerCars = await PartnerCarSubmission.find(query).sort({ createdAt: -1 }).lean();
     cars = partnerCars.map((c) => ({
-      ...c.toObject(),
+      ...c,
       itemType: 'car',
       brand: c.vehicleBrand,
       model: c.vehicleModel,
@@ -241,18 +241,18 @@ async function listVendorSubmissions({ status, type }) {
     }));
 
     // If legacy cars exist in primary DB, append non-duplicates
-    const legacyCars = await Vehicle.find({ isVendorListing: true, ...(query.status ? { status: query.status } : {}) });
+    const legacyCars = await Vehicle.find({ isVendorListing: true, ...(query.status ? { status: query.status } : {}) }).lean();
     legacyCars.forEach((lc) => {
       if (!cars.some((c) => c.slug === lc.slug || c.id === lc.id || String(c._id) === String(lc._id))) {
-        cars.push({ ...lc.toObject(), itemType: 'car' });
+        cars.push({ ...lc, itemType: 'car' });
       }
     });
   }
 
   if (cleanType === 'ALL' || cleanType === 'bike' || cleanType === 'bikes') {
-    const partnerBikes = await PartnerBikeSubmission.find(query).sort({ createdAt: -1 });
+    const partnerBikes = await PartnerBikeSubmission.find(query).sort({ createdAt: -1 }).lean();
     bikes = partnerBikes.map((b) => ({
-      ...b.toObject(),
+      ...b,
       itemType: 'bike',
       brand: b.bikeBrand,
       model: b.bikeModel,
@@ -262,10 +262,10 @@ async function listVendorSubmissions({ status, type }) {
     }));
 
     // If legacy bikes exist in primary DB, append non-duplicates
-    const legacyBikes = await Bike.find({ isVendorListing: true, ...(query.status ? { status: query.status } : {}) });
+    const legacyBikes = await Bike.find({ isVendorListing: true, ...(query.status ? { status: query.status } : {}) }).lean();
     legacyBikes.forEach((lb) => {
       if (!bikes.some((b) => b.slug === lb.slug || b.id === lb.id || String(b._id) === String(lb._id))) {
-        bikes.push({ ...lb.toObject(), itemType: 'bike' });
+        bikes.push({ ...lb, itemType: 'bike' });
       }
     });
   }

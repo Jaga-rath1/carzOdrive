@@ -3,6 +3,7 @@ import { useParams, useOutletContext, Link } from 'react-router-dom';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { Container } from '../../components/common/Container';
 import { vehiclesAPI, bikesAPI } from '../../services/api';
+import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 import { VehicleDetailHero } from '../../components/vehicle-detail/VehicleDetailHero';
 import { VehicleDetailGallery } from '../../components/vehicle-detail/VehicleDetailGallery';
 import { VehicleDetailSpecs } from '../../components/vehicle-detail/VehicleDetailSpecs';
@@ -40,7 +41,12 @@ export const VehicleDetailPage = () => {
 
         if (res?.data && isMounted) {
           const raw = res.data;
-          const primaryImage = (raw.images && raw.images[0]) || raw.image || '/images/vehicles/swift-2026-grey.jpg';
+          const fallbackImg = isBike ? '/images/vehicles/hero-splendor.jpg' : '/images/vehicles/swift-2026-grey.jpg';
+          const rawImg = (raw.images && raw.images[0]) || raw.image || fallbackImg;
+          const primaryImage = resolveVehicleImageUrl(rawImg, fallbackImg);
+          const allImages = (raw.images && raw.images.length > 0)
+            ? raw.images.map((img) => resolveVehicleImageUrl(img, fallbackImg))
+            : [primaryImage];
           const price = raw.pricing?.dailyRate || raw.pricePerDay || (isBike ? 499 : 1499);
 
           const normalized = {
@@ -55,7 +61,7 @@ export const VehicleDetailPage = () => {
             color: raw.color || 'Standard',
             year: raw.year || 2024,
             image: primaryImage,
-            images: raw.images?.length ? raw.images : [primaryImage],
+            images: allImages,
             pricePerDay: price,
             priceDisplay: `₹${price.toLocaleString('en-IN')}`,
             badge: raw.badge || (raw.isAvailable !== false ? 'Verified' : 'Reserved'),

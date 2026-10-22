@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
+import { getTodayDateString } from '../../utils/formatters';
 
 export const HeroSearchWidget = ({
   onOpenQuickBook,
@@ -30,9 +31,9 @@ export const HeroSearchWidget = ({
   };
 
   const [location, setLocation] = useState('SUM Hospital');
-  const [pickupDate, setPickupDate] = useState('2026-10-12');
+  const [pickupDate, setPickupDate] = useState(() => getTodayDateString(1));
   const [pickupTime, setPickupTime] = useState('10:00');
-  const [returnDate, setReturnDate] = useState('2026-10-15');
+  const [returnDate, setReturnDate] = useState(() => getTodayDateString(3));
   const [returnTime, setReturnTime] = useState('18:00');
 
   const tabs = [
@@ -118,8 +119,19 @@ export const HeroSearchWidget = ({
           <div className="flex items-center gap-2">
             <input
               type="date"
+              min={getTodayDateString(0)}
               value={pickupDate}
-              onChange={(e) => setPickupDate(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                const today = getTodayDateString(0);
+                if (val && val < today) {
+                  setPickupDate(today);
+                  if (returnDate && returnDate < today) setReturnDate(today);
+                } else {
+                  setPickupDate(val);
+                  if (returnDate && returnDate < val) setReturnDate(val);
+                }
+              }}
               className="bg-slate-900 text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer w-full [color-scheme:dark]"
             />
             <input
@@ -140,8 +152,17 @@ export const HeroSearchWidget = ({
           <div className="flex items-center gap-2">
             <input
               type="date"
+              min={pickupDate || getTodayDateString(0)}
               value={returnDate}
-              onChange={(e) => setReturnDate(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                const minAllowed = pickupDate || getTodayDateString(0);
+                if (val && val < minAllowed) {
+                  setReturnDate(minAllowed);
+                } else {
+                  setReturnDate(val);
+                }
+              }}
               className="bg-slate-900 text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer w-full [color-scheme:dark]"
             />
             <input

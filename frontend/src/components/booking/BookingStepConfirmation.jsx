@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   MessageCircle,
   Coins,
   CheckCircle2,
   Printer,
   CalendarCheck,
+  FileText,
 } from 'lucide-react';
 import { Button } from '../common/Button';
 import { WhatsAppButton } from '../common/WhatsAppButton';
+import { InvoiceModal } from '../common/InvoiceModal';
 import { formatCurrency } from '../../utils/formatters';
 import { getQuickBookingWhatsAppMessage } from '../../utils/whatsapp';
 
@@ -15,6 +17,8 @@ export const BookingStepConfirmation = ({
   paymentMode,
   bookingCode,
   paymentNumber,
+  invoiceNumber,
+  confirmedBooking,
   transactionId,
   guestName,
   guestPhone,
@@ -38,6 +42,33 @@ export const BookingStepConfirmation = ({
   onResetAndClose,
   onViewBooking,
 }) => {
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+
+  const invoiceBookingData = confirmedBooking || {
+    bookingNumber: bookingCode,
+    invoiceNumber: invoiceNumber || (paymentNumber ? `INV-${paymentNumber.replace(/^PAY-/, '')}` : undefined),
+    guestName,
+    guestPhone,
+    guestEmail,
+    guestNotes,
+    serviceType: selectedService,
+    vehicleName: userCarModel ? `${currentItemName} (Client Car: ${userCarModel})` : currentItemName,
+    pickupLocation: effectivePickupLocation,
+    dropoffLocation: effectiveDropoffLocation,
+    pickupDate,
+    returnDate,
+    days: selectedService === 'tour-packages' ? 1 : days,
+    includeProtection,
+    totalAmount: total,
+    paidAmount: amountDueNow,
+    balanceAmount: amountDueAtPickup,
+    securityDeposit: deposit,
+    paymentMode,
+    paymentStatus: paymentMode === 'full' ? 'PAID' : paymentMode === 'partial' ? 'PARTIALLY_PAID' : 'OFFLINE_PENDING',
+    transactionId,
+    createdAt: new Date().toISOString(),
+  };
+
   return (
     <div className="space-y-5 text-center sm:text-left">
       {/* Dynamic Success Banner based on paymentMode */}
@@ -174,13 +205,11 @@ export const BookingStepConfirmation = ({
             variant="secondary"
             size="md"
             className="w-full sm:w-1/3"
-            icon={Printer}
+            icon={FileText}
             iconPosition="left"
-            onClick={() =>
-              alert(`Receipt ${bookingCode} (${paymentNumber}) saved. CARZODRIVE Concierge notified.`)
-            }
+            onClick={() => setShowInvoiceModal(true)}
           >
-            Print Voucher
+            Invoice / Voucher
           </Button>
 
           <button
@@ -238,6 +267,13 @@ export const BookingStepConfirmation = ({
           className="w-full py-3 text-xs"
         />
       </div>
+
+      <InvoiceModal
+        isOpen={showInvoiceModal}
+        onClose={() => setShowInvoiceModal(false)}
+        booking={invoiceBookingData}
+        bookingIdOrCode={bookingCode}
+      />
     </div>
   );
 };

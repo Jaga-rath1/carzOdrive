@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import {
   X,
@@ -128,7 +129,9 @@ export const DriverVerifyModal = ({ isOpen, onClose, driver, onStatusUpdated }) 
     driver.profilePhotoDoc || driver.photo || driver.avatar
   );
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
         <motion.div
@@ -395,6 +398,7 @@ export const DriverVerifyModal = ({ isOpen, onClose, driver, onStatusUpdated }) 
           verified={activeViewerDoc.verified}
         />
       )}
-    </>
+    </>,
+    document.body
   );
 };

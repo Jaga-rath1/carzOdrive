@@ -9,7 +9,8 @@
     "test": "jest --runInBand --forceExit",
     "test:watch": "jest --watch --runInBand",
     "seed:admin": "node src/scripts/seedAdmin.js",
-    "purge:demo": "node src/scripts/purgeDemoData.js"
+    "purge:demo": "node src/scripts/purgeDemoData.js",
+    "sync:indexes": "node src/scripts/syncIndexes.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -27,6 +28,7 @@
     "morgan": "^1.10.0",
     "multer": "^2.4.0",
     "nodemailer": "^10.1.1",
+    "pdfkit": "^0.20.2",
     "uuid": "^10.0.0"
   },
   "devDependencies": {

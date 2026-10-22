@@ -11,7 +11,8 @@ import {
   MessageCircle,
   Mail,
   MapPin,
-  CheckCircle2
+  CheckCircle2,
+  FileText
 } from 'lucide-react';
 import { STATUS_COLORS, PAYMENT_STATUS_COLORS } from './bookingConstants';
 
@@ -20,6 +21,7 @@ export const BookingCardItem = ({
   copiedId,
   handleCopyCode,
   handleOpenEdit,
+  handleOpenInvoice,
   setDeletingBooking,
   updatingId,
   handleQuickStatusUpdate,
@@ -94,6 +96,18 @@ export const BookingCardItem = ({
           </span>
 
           <div className="flex items-center gap-1 pl-2 border-l border-zinc-100">
+            {handleOpenInvoice && (
+              <button
+                type="button"
+                onClick={() => handleOpenInvoice(b)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors cursor-pointer"
+                title="View & Download Tax Invoice / Travel Voucher"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Invoice</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => handleOpenEdit(b)}
@@ -283,6 +297,18 @@ export const BookingCardItem = ({
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Settle Balance (₹{formattedBalance})</span>
+            </button>
+          )}
+
+          {handleOpenInvoice && (
+            <button
+              type="button"
+              onClick={() => handleOpenInvoice(b)}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors cursor-pointer"
+              title="Download PDF / Print Tax Invoice"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Tax Invoice</span>
             </button>
           )}
 

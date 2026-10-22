@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal } from '../common/Modal';
 import { BHUBANESWAR_LOCATIONS, SERVICE_OPTIONS } from '../../config/bookingConfig';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, getTodayDateString, ensureFutureDate } from '../../utils/formatters';
+import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 import { getQuickBookingWhatsAppMessage, openWhatsAppChat } from '../../utils/whatsapp';
 import { paymentsAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -45,9 +46,9 @@ export const QuickBookingModal = ({
   const [pickupLocation, setPickupLocation] = useState('SUM Hospital');
   const [dropoffLocation, setDropoffLocation] = useState('Same as Pick-up Address');
 
-  // 4. Dates & Optional Protection
-  const [pickupDate, setPickupDate] = useState(getTodayOffset(1));
-  const [returnDate, setReturnDate] = useState(getTodayOffset(3));
+  // 4. Dates & Optional Protection (Always default to future dates)
+  const [pickupDate, setPickupDate] = useState(() => getTodayDateString(1));
+  const [returnDate, setReturnDate] = useState(() => getTodayDateString(3));
   const [includeProtection, setIncludeProtection] = useState(false);
 
   const [guestName, setGuestName] = useState(() => currentUser?.name || '');
@@ -56,6 +57,8 @@ export const QuickBookingModal = ({
   const [guestNotes, setGuestNotes] = useState('');
   const [bookingCode, setBookingCode] = useState('');
   const [paymentNumber, setPaymentNumber] = useState('');
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [confirmedBooking, setConfirmedBooking] = useState(null);
 
   // Auto-sync guest fields if user logs in
   useEffect(() => {
@@ -127,8 +130,12 @@ export const QuickBookingModal = ({
     }
 
     if (targetService) setSelectedService(targetService);
-    if (initialData?.pickupDate) setPickupDate(initialData.pickupDate);
-    if (initialData?.returnDate) setReturnDate(initialData.returnDate);
+    if (initialData?.pickupDate) setPickupDate(ensureFutureDate(initialData.pickupDate, 1));
+    if (initialData?.returnDate) {
+      const sanitizedPickup = ensureFutureDate(initialData.pickupDate, 1);
+      const sanitizedReturn = ensureFutureDate(initialData.returnDate, 3);
+      setReturnDate(sanitizedReturn >= sanitizedPickup ? sanitizedReturn : sanitizedPickup);
+    }
     if (initialData?.location || initialData?.pickupLocation) {
       const loc = initialData.location || initialData.pickupLocation;
       if (BHUBANESWAR_LOCATIONS.includes(loc)) setPickupLocation(loc);
@@ -167,7 +174,7 @@ export const QuickBookingModal = ({
         const fallbackPrice = car?.priceNumeric ? car.priceNumeric + 700 : 3499;
         return {
           currentItemName: car?.name ? `${car.name} (with Chauffeur)` : 'Executive Car (with Chauffeur)',
-          currentItemImage: car?.image || '/images/vehicles/toyota-innova.jpg',
+          currentItemImage: resolveVehicleImageUrl(car?.image, '/images/vehicles/toyota-innova.jpg'),
           ratePerDay: rawPricing || fallbackPrice,
           deposit: '₹0 (Zero Deposit)',
           isAvailable: car?.isAvailable !== false && (car?.availableCount ?? 1) > 0 && car?.availabilityStatus !== 'UNAVAILABLE',
@@ -190,7 +197,7 @@ export const QuickBookingModal = ({
           : parseInt(String(bike?.pricePerDay || '1299').replace(/[^0-9]/g, ''), 10) || 1299;
         return {
           currentItemName: bike?.name || 'Self-Drive Two-Wheeler',
-          currentItemImage: bike?.image || '/images/vehicles/royal-enfield.jpg',
+          currentItemImage: resolveVehicleImageUrl(bike?.image, '/images/vehicles/royal-enfield.jpg'),
           ratePerDay: parsed,
           deposit: bike?.deposit || '₹2,000',
           isAvailable: bike?.isAvailable !== false && (bike?.availableCount ?? 1) > 0 && bike?.availabilityStatus !== 'UNAVAILABLE',
@@ -203,7 +210,7 @@ export const QuickBookingModal = ({
           : parseInt(String(tour?.startingPrice || '5499').replace(/[^0-9]/g, ''), 10) || 5499;
         return {
           currentItemName: tour?.title || tour?.name || 'Bhubaneswar Heritage Escape',
-          currentItemImage: tour?.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop',
+          currentItemImage: resolveVehicleImageUrl(tour?.image, 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'),
           ratePerDay: parsed,
           deposit: '₹0 (Zero Deposit)',
           isAvailable: true,
@@ -223,7 +230,7 @@ export const QuickBookingModal = ({
         }
         return {
           currentItemName: car?.name || 'Swift 2026',
-          currentItemImage: car?.image || '/images/vehicles/swift-2026-grey.jpg',
+          currentItemImage: resolveVehicleImageUrl(car?.image, '/images/vehicles/swift-2026-grey.jpg'),
           ratePerDay: rate,
           deposit: car?.depositNumeric ? `₹${car.depositNumeric}` : (car?.deposit || '₹5,000'),
           isAvailable: car?.isAvailable !== false && (car?.availableCount ?? 1) > 0 && car?.availabilityStatus !== 'UNAVAILABLE',
@@ -247,6 +254,20 @@ export const QuickBookingModal = ({
   const handleProceedToDetails = (e) => {
     e.preventDefault();
     if (!isAvailable) return;
+
+    // Strict validation: back-dated bookings forbidden
+    const today = getTodayDateString(0);
+    if (!pickupDate || pickupDate < today) {
+      alert('Back-dated bookings are not allowed. Please select today or a future date for pick-up.');
+      setPickupDate(today);
+      return;
+    }
+    if (selectedService !== 'tour-packages' && returnDate && returnDate < pickupDate) {
+      alert('Return date cannot be earlier than pick-up date.');
+      setReturnDate(pickupDate);
+      return;
+    }
+
     setStep(2);
   };
 
@@ -268,6 +289,14 @@ export const QuickBookingModal = ({
     }
     if (paymentMode !== 'offline' && (!guestEmail.trim() || !guestEmail.includes('@'))) {
       setPaymentError('Please enter a valid email address to receive your payment confirmation.');
+      return;
+    }
+
+    // Secondary back-date guard before processing payment
+    const today = getTodayDateString(0);
+    if (!pickupDate || pickupDate < today) {
+      setPaymentError('Pick-up date cannot be in the past. Please choose today or a future date.');
+      setStep(1);
       return;
     }
 
@@ -319,10 +348,13 @@ export const QuickBookingModal = ({
       const finalBookingNumber = resData.bookingNumber || bookingData.bookingNumber || ('CZ-' + Math.floor(1000 + Math.random() * 9000));
       const finalPaymentNumber = resData.paymentNumber || paymentData.paymentNumber || ('PAY-' + Math.floor(1000 + Math.random() * 9000));
       const finalTxnId = resData.transactionId || paymentData.transactionId || (paymentMode === 'offline' ? 'PAY_ON_PICKUP' : 'TXN-' + Math.floor(100000 + Math.random() * 900000));
+      const finalInvoiceNumber = resData.invoiceNumber || bookingData.invoiceNumber || `INV-${finalBookingNumber.replace(/^CZ-/, '')}`;
 
       setBookingCode(finalBookingNumber);
       setPaymentNumber(finalPaymentNumber);
       setTransactionId(finalTxnId);
+      setInvoiceNumber(finalInvoiceNumber);
+      setConfirmedBooking(bookingData);
 
       if (paymentMode === 'offline') {
         const waMsg = getQuickBookingWhatsAppMessage({
@@ -362,6 +394,8 @@ export const QuickBookingModal = ({
     setStep(1);
     setIsProcessingPayment(false);
     setPaymentError(null);
+    setConfirmedBooking(null);
+    setInvoiceNumber('');
     onClose();
   };
 
@@ -485,6 +519,8 @@ export const QuickBookingModal = ({
           paymentMode={paymentMode}
           bookingCode={bookingCode}
           paymentNumber={paymentNumber}
+          invoiceNumber={invoiceNumber}
+          confirmedBooking={confirmedBooking}
           transactionId={transactionId}
           guestName={guestName}
           guestPhone={guestPhone}

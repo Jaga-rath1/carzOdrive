@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Trash2, Loader2 } from 'lucide-react';
 
 export const BookingDeleteModal = ({
@@ -7,10 +8,10 @@ export const BookingDeleteModal = ({
   handleConfirmDelete,
   onClose,
 }) => {
-  if (!deletingBooking) return null;
+  if (!deletingBooking || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
       <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-zinc-200 p-6 space-y-4">
         <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
           <Trash2 className="w-6 h-6" />
@@ -59,6 +60,7 @@ export const BookingDeleteModal = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

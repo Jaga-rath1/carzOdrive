@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   UserCheck,
@@ -130,7 +131,9 @@ export const AddDriverModal = ({ isOpen, onClose, onDriverAdded }) => {
     }
   };
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
       <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
@@ -542,6 +545,7 @@ export const AddDriverModal = ({ isOpen, onClose, onDriverAdded }) => {
           verified={true}
         />
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
