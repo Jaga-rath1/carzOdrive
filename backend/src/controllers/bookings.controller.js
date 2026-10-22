@@ -97,8 +97,42 @@ const getBookingInvoice = asyncHandler(async (req, res) => {
   success(res, invoiceData, 'Booking invoice retrieved successfully');
 });
 
+const downloadBookingInvoicePdf = asyncHandler(async (req, res) => {
+  const identifier = req.params.code || req.params.id;
+  const { Booking } = require('../models/booking.model');
+  const mongoose = require('mongoose');
+
+  let booking = null;
+  if (mongoose.Types.ObjectId.isValid(identifier)) {
+    booking = await Booking.findById(identifier);
+  }
+  if (!booking) {
+    booking = await Booking.findOne({
+      $or: [
+        { bookingNumber: identifier },
+        { invoiceNumber: identifier },
+        { bookingNumber: new RegExp(`^${identifier}$`, 'i') },
+      ],
+    });
+  }
+
+  if (!booking) {
+    return res.status(404).json({ success: false, message: 'Booking invoice not found' });
+  }
+
+  const { generateInvoicePdfBuffer } = require('../utils/pdfInvoiceGenerator');
+  const buffer = await generateInvoicePdfBuffer(booking);
+
+  const filename = `Tax_Invoice_${booking.invoiceNumber || booking.bookingNumber}.pdf`;
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+  res.setHeader('Content-Length', buffer.length);
+  return res.send(buffer);
+});
+
 module.exports = {
   getBookingInvoice,
+  downloadBookingInvoicePdf,
   createUniversalBooking,
   getBookingByCode,
   lookupBookings,

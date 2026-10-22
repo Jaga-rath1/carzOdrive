@@ -143,11 +143,21 @@ const COMPANY_INVOICE_META = {
 };
 
 /**
- * Send official GST Tax Invoice & Travel Voucher email to Customer
+ * Send official GST Tax Invoice & Travel Voucher email to Customer with PDF Attachment
  */
-async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', booking }) {
+async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', booking, pdfBuffer = null }) {
   if (!email || !email.includes('@') || email.includes('@offline.carzodrive.com')) {
     return { success: false, reason: 'No valid customer email' };
+  }
+
+  // Generate official PDF Tax Invoice attachment if not pre-generated
+  if (!pdfBuffer) {
+    try {
+      const { generateInvoicePdfBuffer } = require('./pdfInvoiceGenerator');
+      pdfBuffer = await generateInvoicePdfBuffer(booking);
+    } catch (e) {
+      logger.warn('Could not generate PDF attachment for customer email:', e?.message);
+    }
   }
 
   const user = process.env.SMTP_USER || process.env.EMAIL_USER;
@@ -219,7 +229,8 @@ async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', book
     `• Grand Total: ₹${total.toLocaleString('en-IN')}\n` +
     `• Advance Paid: ₹${paid.toLocaleString('en-IN')}\n` +
     `• Balance Payable at Handover: ₹${balance.toLocaleString('en-IN')}\n\n` +
-    `View or download your full Tax Invoice anytime: ${voucherUrl}\n\n` +
+    `📎 ATTACHMENT: Official Tax Invoice PDF (${invoiceNumber}.pdf) is attached to this email for your corporate accounting and travel records.\n\n` +
+    `View or download your full Tax Invoice online anytime: ${voucherUrl}\n\n` +
     `24x7 Helpline: ${COMPANY_INVOICE_META.supportPhone}\n` +
     `CARZODRIVE Odisha Mobility Team`;
 
@@ -374,8 +385,21 @@ async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', book
                     </tr>
                   </table>
 
+                  <!-- PDF Attachment Badge Box -->
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0b1120; border: 1px dashed #38bdf8; border-radius: 12px; padding: 14px 18px; margin-top: 10px; margin-bottom: 20px;">
+                    <tr>
+                      <td width="36" style="vertical-align: middle; font-size: 22px;">📎</td>
+                      <td style="vertical-align: middle; padding-left: 6px;">
+                        <p style="margin: 0; color: #38bdf8; font-weight: 800; font-size: 13px;">Official GST Tax Invoice PDF Attached</p>
+                        <p style="margin: 2px 0 0 0; color: #94a3b8; font-size: 11px;">
+                          Your formal Tax Invoice (<code>Tax_Invoice_${invoiceNumber}.pdf</code>) is attached directly to this email. You can also view or print it anytime online using the button below.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+
                   <!-- Primary CTA Button -->
-                  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 8px; margin-bottom: 24px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 4px; margin-bottom: 24px;">
                     <tr>
                       <td align="center">
                         <a href="${voucherUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; text-decoration: none; font-weight: 800; font-size: 14px; padding: 14px 32px; border-radius: 12px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);">
@@ -413,14 +437,24 @@ async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', book
 
   try {
     const client = getTransporter();
+    const attachments = [];
+    if (pdfBuffer) {
+      attachments.push({
+        filename: `Tax_Invoice_${invoiceNumber || bookingNumber}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      });
+    }
+
     const info = await client.sendMail({
       from,
       to: email,
       subject,
       text: textContent,
       html: htmlContent,
+      attachments,
     });
-    logger.success(`✓ Customer Tax Invoice dispatched to: ${email} [Ref: #${bookingNumber}, MessageId: ${info.messageId}]`);
+    logger.success(`✓ Customer Tax Invoice dispatched to: ${email} [Ref: #${bookingNumber}, Attached: ${attachments.length > 0 ? 'YES' : 'NO'}, MessageId: ${info.messageId}]`);
     return { success: true, messageId: info.messageId };
   } catch (err) {
     logger.error(`Failed to send customer invoice email to ${email}:`, err.message);
@@ -429,12 +463,22 @@ async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', book
 }
 
 /**
- * Send instant high-priority new booking alert to Admin
+ * Send instant high-priority new booking alert to Admin with PDF Attachment
  */
-async function sendBookingAlertToAdmin({ booking, adminEmail }) {
+async function sendBookingAlertToAdmin({ booking, adminEmail, pdfBuffer = null }) {
   const targetAdminEmail = adminEmail || process.env.SUPER_ADMIN_EMAIL || process.env.SMTP_USER || 'jagankumarrath72@gmail.com';
   if (!targetAdminEmail || !targetAdminEmail.includes('@')) {
     return { success: false, reason: 'No admin email configured' };
+  }
+
+  // Generate official PDF Tax Invoice attachment if not pre-generated
+  if (!pdfBuffer) {
+    try {
+      const { generateInvoicePdfBuffer } = require('./pdfInvoiceGenerator');
+      pdfBuffer = await generateInvoicePdfBuffer(booking);
+    } catch (e) {
+      logger.warn('Could not generate PDF attachment for admin alert:', e?.message);
+    }
   }
 
   const user = process.env.SMTP_USER || process.env.EMAIL_USER;
@@ -498,6 +542,7 @@ async function sendBookingAlertToAdmin({ booking, adminEmail }) {
     `• Paid Online: ₹${paid.toLocaleString('en-IN')}\n` +
     `• Balance on Pickup: ₹${balance.toLocaleString('en-IN')}\n` +
     `• Transaction ID: ${booking.transactionId || 'OFFLINE'}\n\n` +
+    `📎 ATTACHMENT: Official Tax Invoice PDF (Booking_${bookingNumber}_Invoice_${invoiceNumber}.pdf) is attached.\n\n` +
     `Open Admin Dashboard: ${adminUrl}`;
 
   const htmlContent = `
@@ -556,6 +601,19 @@ async function sendBookingAlertToAdmin({ booking, adminEmail }) {
               <!-- Content Body -->
               <tr>
                 <td style="padding: 24px 28px;">
+
+                  <!-- PDF Attachment Callout -->
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0b1120; border: 1px dashed #ef4444; border-radius: 12px; padding: 12px 16px; margin-bottom: 18px;">
+                    <tr>
+                      <td width="30" style="vertical-align: middle; font-size: 18px;">📎</td>
+                      <td style="vertical-align: middle; padding-left: 6px;">
+                        <p style="margin: 0; color: #f87171; font-weight: 800; font-size: 12px;">Official PDF Tax Invoice Attached</p>
+                        <p style="margin: 2px 0 0 0; color: #94a3b8; font-size: 11px;">
+                          Attached: <code>Booking_${bookingNumber}_Invoice_${invoiceNumber}.pdf</code> (Accounts / Customer verification copy).
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
 
                   <!-- Customer Information -->
                   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 18px;">
@@ -652,14 +710,24 @@ async function sendBookingAlertToAdmin({ booking, adminEmail }) {
 
   try {
     const client = getTransporter();
+    const attachments = [];
+    if (pdfBuffer) {
+      attachments.push({
+        filename: `Booking_${bookingNumber}_Invoice_${invoiceNumber}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      });
+    }
+
     const info = await client.sendMail({
       from,
       to: targetAdminEmail,
       subject,
       text: textContent,
       html: htmlContent,
+      attachments,
     });
-    logger.success(`✓ Admin New Booking Alert dispatched to: ${targetAdminEmail} [Ref: #${bookingNumber}, MessageId: ${info.messageId}]`);
+    logger.success(`✓ Admin New Booking Alert dispatched to: ${targetAdminEmail} [Ref: #${bookingNumber}, Attached: ${attachments.length > 0 ? 'YES' : 'NO'}, MessageId: ${info.messageId}]`);
     return { success: true, messageId: info.messageId };
   } catch (err) {
     logger.error(`Failed to send Admin booking alert to ${targetAdminEmail}:`, err.message);
@@ -668,7 +736,7 @@ async function sendBookingAlertToAdmin({ booking, adminEmail }) {
 }
 
 /**
- * Unified dispatch: sends Tax Invoice email to Customer AND Alert to Admin
+ * Unified dispatch: sends Tax Invoice email to Customer AND Alert to Admin with PDF attachments
  */
 async function dispatchBookingEmails(booking, overrideCustomerEmail = null) {
   if (!booking) return;
@@ -688,15 +756,25 @@ async function dispatchBookingEmails(booking, overrideCustomerEmail = null) {
     } catch (_) {}
   }
 
+  // Pre-generate official PDF Tax Invoice attachment buffer (shared between customer & admin)
+  let pdfBuffer = null;
+  try {
+    const { generateInvoicePdfBuffer } = require('./pdfInvoiceGenerator');
+    pdfBuffer = await generateInvoicePdfBuffer(booking);
+  } catch (pdfErr) {
+    logger.warn('Could not pre-generate PDF invoice attachment:', pdfErr.message);
+  }
+
   const promises = [];
 
-  // 1. Send Tax Invoice to Customer (if valid email provided)
+  // 1. Send Tax Invoice to Customer (with PDF attachment)
   if (targetCustomerEmail && targetCustomerEmail.includes('@') && !targetCustomerEmail.includes('@offline.carzodrive.com')) {
     promises.push(
       sendBookingInvoiceToCustomer({
         email: targetCustomerEmail,
         name: customerName,
         booking,
+        pdfBuffer,
       }).catch((e) => {
         logger.error(`Error in sendBookingInvoiceToCustomer: ${e?.message}`);
         return { success: false, error: e?.message };
@@ -704,12 +782,13 @@ async function dispatchBookingEmails(booking, overrideCustomerEmail = null) {
     );
   }
 
-  // 2. Always send Alert to Admin
+  // 2. Always send Alert to Admin (with PDF attachment)
   const adminEmail = process.env.SUPER_ADMIN_EMAIL || process.env.SMTP_USER || 'jagankumarrath72@gmail.com';
   promises.push(
     sendBookingAlertToAdmin({
       booking,
       adminEmail,
+      pdfBuffer,
     }).catch((e) => {
       logger.error(`Error in sendBookingAlertToAdmin: ${e?.message}`);
       return { success: false, error: e?.message };
