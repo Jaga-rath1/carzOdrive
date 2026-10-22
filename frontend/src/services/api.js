@@ -3,7 +3,11 @@
  * Seamlessly connects React UI to the CarzoDrive Backend (http://localhost:5000/api/v1)
  */
 
-const rawApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').trim().replace(/\/+$/, '');
+const defaultApiUrl = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+  ? 'https://carzodrive-1.onrender.com/api/v1'
+  : 'http://localhost:5000/api/v1';
+
+const rawApiUrl = (import.meta.env.VITE_API_URL || defaultApiUrl).trim().replace(/\/+$/, '');
 export const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
   ? rawApiUrl
   : rawApiUrl.endsWith('/api')
