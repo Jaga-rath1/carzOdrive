@@ -6,13 +6,14 @@ import {
   User,
   LogOut,
   ChevronDown,
-  CalendarCheck
+  CalendarCheck,
+  LayoutDashboard
 } from 'lucide-react';
 import { NavLinks } from './NavLinks';
 import { MobileMenu } from './MobileMenu';
 import { DrivoraLogo } from './DrivoraLogo';
 import { useScrollPosition } from '../../hooks/useScrollPosition';
-import { getAccessToken, getCurrentUser, clearAuthSession, authAPI } from '../../services/api';
+import { getAccessToken, getCurrentUser, clearAuthSession, authAPI, isAdminUser } from '../../services/api';
 
 export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -96,6 +97,7 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
     'Customer';
 
   const userInitial = displayName.charAt(0).toUpperCase();
+  const isAdmin = isAdminUser(currentUser);
 
   return (
     <>
@@ -121,7 +123,12 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
               {currentUser ? (
                 /* Logged-in User Account Badge + Quick Logout Button */
                 <div className="flex items-center gap-2">
-                  <div className="relative" ref={dropdownRef}>
+                  <div
+                    className="relative"
+                    ref={dropdownRef}
+                    onMouseEnter={() => setUserDropdownOpen(true)}
+                    onMouseLeave={() => setUserDropdownOpen(false)}
+                  >
                     <button
                       type="button"
                       onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -166,16 +173,37 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
                           </div>
                         </div>
 
-                        {/* Customer / Rider Links */}
+                        {/* Role-Specific Links */}
                         <div className="space-y-1 pt-1">
-                          <Link
-                            to="/my-bookings"
-                            onClick={() => setUserDropdownOpen(false)}
-                            className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                          >
-                            <CalendarCheck className="w-4 h-4 text-cyan-400" />
-                            <span>My Bookings</span>
-                          </Link>
+                          {isAdmin ? (
+                            <>
+                              <Link
+                                to="/admin/dashboard"
+                                onClick={() => setUserDropdownOpen(false)}
+                                className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-black text-amber-300 hover:text-amber-100 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 transition-colors"
+                              >
+                                <LayoutDashboard className="w-4 h-4 text-amber-400" />
+                                <span>Admin Dashboard</span>
+                              </Link>
+                              <Link
+                                to="/admin/bookings"
+                                onClick={() => setUserDropdownOpen(false)}
+                                className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
+                              >
+                                <CalendarCheck className="w-4 h-4 text-cyan-400" />
+                                <span>Manage Bookings</span>
+                              </Link>
+                            </>
+                          ) : (
+                            <Link
+                              to="/my-bookings"
+                              onClick={() => setUserDropdownOpen(false)}
+                              className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
+                            >
+                              <CalendarCheck className="w-4 h-4 text-cyan-400" />
+                              <span>My Bookings</span>
+                            </Link>
+                          )}
 
                           <button
                             type="button"
@@ -283,6 +311,7 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
         onClose={() => setMobileMenuOpen(false)}
         onOpenQuickBook={onOpenQuickBook}
         onOpenAuth={onOpenAuth}
+        currentUser={currentUser}
       />
     </>
   );

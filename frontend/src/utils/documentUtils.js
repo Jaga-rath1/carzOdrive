@@ -3,7 +3,11 @@
  * Handles Cloudinary assets, local uploads, PDF image rasterization, and secure cross-origin display
  */
 
-const rawApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').trim().replace(/\/+$/, '');
+const defaultApiUrl = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+  ? 'https://carzodrive-1.onrender.com/api/v1'
+  : 'http://localhost:5000/api/v1';
+
+const rawApiUrl = (import.meta.env.VITE_API_URL || defaultApiUrl).trim().replace(/\/+$/, '');
 const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
   ? rawApiUrl
   : rawApiUrl.endsWith('/api')
@@ -12,6 +16,29 @@ const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
 
 // Base server origin (e.g., http://localhost:5000 or https://carzodrive-1.onrender.com)
 export const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+
+/**
+ * Contextual fallback image based on vehicle brand/model so different cars don't all show Swift
+ */
+export function getVehicleFallbackImage(vehicleOrName, defaultFallback = '/images/vehicles/swift-2026-grey.jpg') {
+  const name = typeof vehicleOrName === 'string' ? vehicleOrName.toLowerCase() : (vehicleOrName?.name || '').toLowerCase();
+  if (name.includes('creta') || name.includes('hyundai')) {
+    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792670282/carzodrive/vehicles/viphzd6gsxqnvqsyw95g.png';
+  }
+  if (name.includes('sonet') || name.includes('kia')) {
+    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792670286/carzodrive/vehicles/lljl1ithdbbjfmpvntvk.png';
+  }
+  if (name.includes('innova') || name.includes('toyota')) {
+    return '/images/vehicles/toyota-innova.jpg';
+  }
+  if (name.includes('scorpio') || name.includes('mahindra') || name.includes('thar')) {
+    return '/images/vehicles/mahindra-thar.jpg';
+  }
+  if (name.includes('bullet') || name.includes('enfield') || name.includes('classic')) {
+    return '/images/vehicles/royal-enfield.jpg';
+  }
+  return defaultFallback;
+}
 
 /**
  * Universal resolver for car, bike, and package vehicle images.

@@ -20,24 +20,31 @@ async function createOrSyncPaymentForBooking(booking) {
   }
 
   const total = Number(booking.totalAmount || booking.priceBreakdown?.totalAmount || 0);
-  let paid = Number(booking.paidAmount || 0);
-  let balance = booking.balanceAmount !== undefined ? Number(booking.balanceAmount) : Math.max(0, total - paid);
 
-  if (booking.paymentMode === 'full') {
-    paid = total;
-    balance = 0;
-  } else if (booking.paymentMode === 'offline') {
-    paid = 0;
-    balance = total;
-  } else if (booking.paymentMode === 'partial') {
-    if (!paid) paid = Math.max(499, Math.round(total * 0.25));
-    balance = Math.max(0, total - paid);
+  // Preserve explicit paidAmount and balanceAmount if already provided (e.g. from admin or online payment)
+  let paid =
+    booking.paidAmount !== undefined && booking.paidAmount !== null && booking.paidAmount !== ''
+      ? Number(booking.paidAmount)
+      : booking.paymentMode === 'full'
+      ? total
+      : 0;
+
+  if (booking.paymentMode === 'partial' && paid === 0) {
+    paid = Math.max(499, Math.round(total * 0.25));
   }
 
-  const paymentStatus = booking.paymentStatus || (
-    booking.paymentMode === 'offline' ? 'OFFLINE_PENDING' :
-    booking.paymentMode === 'partial' ? 'PARTIALLY_PAID' : 'PAID'
-  );
+  let balance =
+    booking.balanceAmount !== undefined && booking.balanceAmount !== null && booking.balanceAmount !== ''
+      ? Number(booking.balanceAmount)
+      : Math.max(0, total - paid);
+
+  let paymentStatus = booking.paymentStatus;
+  if (!paymentStatus) {
+    if (paid >= total && total > 0) paymentStatus = 'PAID';
+    else if (paid > 0 && paid < total) paymentStatus = 'PARTIALLY_PAID';
+    else if (booking.paymentMode === 'offline') paymentStatus = 'OFFLINE_PENDING';
+    else paymentStatus = 'PENDING';
+  }
 
   const txnId = booking.transactionId || `TXN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
@@ -55,11 +62,11 @@ async function createOrSyncPaymentForBooking(booking) {
       currency: 'INR',
       paymentMode: booking.paymentMode || 'full',
       method: booking.paymentMode === 'offline' ? 'OFFLINE' : 'ONLINE',
-      onlineMethod: booking.onlineMethod || 'upi',
+      onlineMethod: booking.onlineMethod || 'cash',
       upiApp: booking.upiApp,
       transactionId: txnId,
       status: paymentStatus,
-      offlineMethod: booking.paymentMode === 'offline' ? 'WHATSAPP' : undefined,
+      offlineMethod: booking.paymentMode === 'offline' ? (booking.onlineMethod === 'cash' ? 'CASH' : 'OFFLINE') : undefined,
     });
   } else {
     // Dynamic sync of existing payment

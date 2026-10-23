@@ -5,12 +5,29 @@ import { BHUBANESWAR_LOCATIONS, SERVICE_OPTIONS } from '../../config/bookingConf
 import { formatCurrency, getTodayDateString, ensureFutureDate } from '../../utils/formatters';
 import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 import { getQuickBookingWhatsAppMessage, openWhatsAppChat } from '../../utils/whatsapp';
-import { paymentsAPI } from '../../services/api';
+import { paymentsAPI, invalidateClientCache } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { BookingStepServiceItem } from './BookingStepServiceItem';
 import { BookingStepGuestReview } from './BookingStepGuestReview';
 import { BookingStepConfirmation } from './BookingStepConfirmation';
 import { useQuickBookingFleet } from './useQuickBookingFleet';
+
+const normalizeServiceType = (rawService, item = null) => {
+  const s = String(rawService || '').toLowerCase().trim();
+  if (s === 'self-drive-bike' || s.includes('bike') || s.includes('two-wheeler')) return 'self-drive-bike';
+  if (s === 'car-with-driver' || s.includes('chauffeur') || s.includes('with-driver')) return 'car-with-driver';
+  if (s === 'driver-only' || s.includes('driver')) return 'driver-only';
+  if (s === 'tour-packages' || s.includes('tour') || s.includes('package')) return 'tour-packages';
+  if (s === 'self-drive-car' || s.includes('self-drive') || s.includes('car')) return 'self-drive-car';
+
+  // Check item characteristics if raw was an auto category like 'SUV Rental' or 'Hatchback'
+  if (item) {
+    if (item.bikeType || item.vehicleType === 'BIKE' || item.category === 'bike') return 'self-drive-bike';
+    if (item.durationDays || item.itinerary || item.startingPrice) return 'tour-packages';
+    if (item.dailyRate || item.experienceYears) return 'driver-only';
+  }
+  return 'self-drive-car';
+};
 
 const getTodayOffset = (daysAhead = 1) => {
   const d = new Date();
@@ -87,8 +104,9 @@ export const QuickBookingModal = ({
     if (dbTours.length > 0 && !selectedTour) setSelectedTour(dbTours[0]);
     if (dbDrivers.length > 0 && !selectedDriver) setSelectedDriver(dbDrivers[0]);
 
-    const targetService = initialData?.serviceType || initialVehicle?.serviceType || initialVehicle?.type;
     const targetItem = initialVehicle || initialData?.vehicle;
+    const rawService = initialData?.serviceType || initialVehicle?.serviceType;
+    const targetService = normalizeServiceType(rawService, targetItem);
 
     if (targetItem) {
       if (targetService === 'self-drive-bike') {
@@ -301,11 +319,22 @@ export const QuickBookingModal = ({
     }
 
     const getActiveVehicleId = () => {
-      if (selectedService === 'self-drive-car') return selectedCar?._id || selectedCar?.id;
-      if (selectedService === 'car-with-driver') return selectedChauffeurCar?._id || selectedChauffeurCar?.id;
-      if (selectedService === 'self-drive-bike') return selectedBike?._id || selectedBike?.id;
-      if (selectedService === 'tour-packages') return selectedTour?._id || selectedTour?.id;
-      return selectedDriver?._id || selectedDriver?.id;
+      if (selectedService === 'self-drive-car') {
+        return selectedCar?._id || selectedCar?.id || initialVehicle?._id || initialVehicle?.id;
+      }
+      if (selectedService === 'car-with-driver') {
+        return selectedChauffeurCar?._id || selectedChauffeurCar?.id || selectedCar?._id || selectedCar?.id || initialVehicle?._id || initialVehicle?.id;
+      }
+      if (selectedService === 'self-drive-bike') {
+        return selectedBike?._id || selectedBike?.id || initialVehicle?._id || initialVehicle?.id;
+      }
+      if (selectedService === 'tour-packages') {
+        return selectedTour?._id || selectedTour?.id;
+      }
+      if (selectedService === 'driver-only') {
+        return selectedDriver?._id || selectedDriver?.id;
+      }
+      return selectedCar?._id || selectedCar?.id || initialVehicle?._id || initialVehicle?.id;
     };
 
     setIsProcessingPayment(true);
@@ -313,6 +342,11 @@ export const QuickBookingModal = ({
 
     try {
       const activeVehicleId = getActiveVehicleId();
+      const isCar = selectedService === 'self-drive-car' || selectedService === 'car-with-driver';
+      const isBike = selectedService === 'self-drive-bike';
+      const isDriver = selectedService === 'driver-only';
+      const isTour = selectedService === 'tour-packages';
+
       const checkoutPayload = {
         serviceType: selectedService,
         guestName: guestName.trim(),
@@ -320,16 +354,18 @@ export const QuickBookingModal = ({
         guestEmail: guestEmail.trim() || `${guestPhone.replace(/[^0-9]/g, '')}@offline.carzodrive.com`,
         guestNotes: guestNotes.trim(),
         userCarModel: userCarModel?.trim() || undefined,
-        vehicleId: activeVehicleId,
-        packageId: selectedService === 'tour-packages' ? (selectedTour?._id || selectedTour?.packageId || selectedTour?.id || activeVehicleId) : undefined,
-        tourDate: selectedService === 'tour-packages' ? pickupDate : undefined,
+        vehicleId: isCar ? activeVehicleId : undefined,
+        bikeId: isBike ? activeVehicleId : undefined,
+        driverId: isDriver ? activeVehicleId : undefined,
+        packageId: isTour ? (selectedTour?._id || selectedTour?.packageId || selectedTour?.id || activeVehicleId) : undefined,
+        tourDate: isTour ? pickupDate : undefined,
         vehicleName: userCarModel ? `${currentItemName} (Client Car: ${userCarModel})` : currentItemName,
         vehicleImage: currentItemImage,
         pickupLocation: effectivePickupLocation,
         dropoffLocation: effectiveDropoffLocation,
         pickupDate,
         returnDate,
-        days: selectedService === 'tour-packages' ? 1 : days,
+        days: isTour ? 1 : days,
         includeProtection,
         paymentMode,
         onlineMethod: paymentMode === 'offline' ? 'whatsapp' : onlineMethod,
@@ -355,6 +391,9 @@ export const QuickBookingModal = ({
       setTransactionId(finalTxnId);
       setInvoiceNumber(finalInvoiceNumber);
       setConfirmedBooking(bookingData);
+
+      // Invalidate client cache to immediately reflect updated fleet inventory count
+      invalidateClientCache();
 
       if (paymentMode === 'offline') {
         const waMsg = getQuickBookingWhatsAppMessage({

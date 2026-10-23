@@ -12,13 +12,15 @@ import {
   X,
   LayoutGrid,
   Table as TableIcon,
-  AlertTriangle
+  AlertTriangle,
+  Plus
 } from 'lucide-react';
 import { bookingsAPI } from '../../services/api';
 import { BookingTableView } from '../../components/admin/bookings/BookingTableView';
 import { BookingCardItem } from '../../components/admin/bookings/BookingCardItem';
 import { BookingEditModal } from '../../components/admin/bookings/BookingEditModal';
 import { BookingDeleteModal } from '../../components/admin/bookings/BookingDeleteModal';
+import { AdminCreateBookingModal } from '../../components/admin/bookings/AdminCreateBookingModal';
 import { InvoiceModal } from '../../components/common/InvoiceModal';
 
 export const AdminBookingsPage = () => {
@@ -43,11 +45,14 @@ export const AdminBookingsPage = () => {
   // Invoice / Voucher Modal State
   const [invoiceBooking, setInvoiceBooking] = useState(null);
 
+  // Manual Create Booking Modal State
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   const fetchBookings = async () => {
     setIsLoading(true);
     setStatusMessage(null);
     try {
-      const res = await bookingsAPI.getAll();
+      const res = await bookingsAPI.getAll({}, { skipCache: true });
       setBookings(res?.data || []);
     } catch (err) {
       console.warn('Failed to fetch bookings:', err);
@@ -223,9 +228,8 @@ export const AdminBookingsPage = () => {
             <button
               type="button"
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
-                viewMode === 'cards' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
-              }`}
+              className={`p-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${viewMode === 'cards' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
+                }`}
               title="Detailed Card View"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
@@ -234,9 +238,8 @@ export const AdminBookingsPage = () => {
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
-                viewMode === 'table' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
-              }`}
+              className={`p-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${viewMode === 'table' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
+                }`}
               title="Compact Table View"
             >
               <TableIcon className="w-3.5 h-3.5" />
@@ -253,19 +256,28 @@ export const AdminBookingsPage = () => {
             <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black text-zinc-950 bg-amber-400 hover:bg-amber-300 shadow-sm hover:shadow transition-all cursor-pointer active:scale-95"
+            title="Create manual booking for walk-in or customer"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Book For User</span>
+          </button>
         </div>
       </div>
 
       {/* Alert Notifications */}
       {statusMessage && (
         <div
-          className={`p-4 rounded-2xl border text-xs font-semibold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-200 ${
-            statusMessage.type === 'success'
+          className={`p-4 rounded-2xl border text-xs font-semibold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-200 ${statusMessage.type === 'success'
               ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
               : statusMessage.type === 'auth_error'
-              ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-xs'
-              : 'bg-rose-50 border-rose-200 text-rose-800'
-          }`}
+                ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-xs'
+                : 'bg-rose-50 border-rose-200 text-rose-800'
+            }`}
         >
           <div className="flex items-center gap-2.5">
             {statusMessage.type === 'success' ? (
@@ -364,11 +376,10 @@ export const AdminBookingsPage = () => {
               key={tab.id}
               type="button"
               onClick={() => setFilterTab(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer ${
-                filterTab === tab.id
+              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer ${filterTab === tab.id
                   ? 'bg-black text-white border-black shadow-2xs'
                   : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100 hover:text-black'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -391,6 +402,16 @@ export const AdminBookingsPage = () => {
               ? `No bookings match your search query "${searchTerm}".`
               : 'As customers make reservations, their vouchers and payment logs will appear here.'}
           </p>
+          {!searchTerm && (
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Book For Customer Now</span>
+            </button>
+          )}
         </div>
       ) : viewMode === 'table' ? (
         <BookingTableView
@@ -444,6 +465,26 @@ export const AdminBookingsPage = () => {
         booking={invoiceBooking}
         bookingIdOrCode={invoiceBooking?.bookingNumber || invoiceBooking?._id}
         onClose={() => setInvoiceBooking(null)}
+      />
+
+      {/* Admin Manual Booking Creation Modal */}
+      <AdminCreateBookingModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={(newBooking) => {
+          if (newBooking) {
+            setBookings((prev) => [
+              newBooking,
+              ...prev.filter((x) => (x._id || x.id) !== (newBooking._id || newBooking.id)),
+            ]);
+            setInvoiceBooking(newBooking);
+            showNotification(
+              'success',
+              `Booking #${newBooking.bookingNumber || newBooking._id} confirmed & invoice generated!`
+            );
+          }
+          fetchBookings();
+        }}
       />
     </div>
   );

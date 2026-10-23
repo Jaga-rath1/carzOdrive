@@ -3,7 +3,11 @@
  * Seamlessly connects React UI to the CarzoDrive Backend (http://localhost:5000/api/v1)
  */
 
-const rawApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').trim().replace(/\/+$/, '');
+const defaultApiUrl = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+  ? 'https://carzodrive-1.onrender.com/api/v1'
+  : 'http://localhost:5000/api/v1';
+
+const rawApiUrl = (import.meta.env.VITE_API_URL || defaultApiUrl).trim().replace(/\/+$/, '');
 export const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
   ? rawApiUrl
   : rawApiUrl.endsWith('/api')
@@ -61,6 +65,16 @@ export const clearAuthSession = () => {
   }
 };
 
+export const isAdminUser = (user) => {
+  if (!user || !user.role) return false;
+  const role = String(user.role).toUpperCase();
+  return (
+    role.includes('ADMIN') ||
+    role === 'SUPER_ADMIN' ||
+    ['SUPER_ADMIN', 'OPERATIONS_ADMIN', 'SUPPORT_ADMIN', 'FINANCE_ADMIN', 'STAFF_ADMIN', 'ADMIN'].includes(role)
+  );
+};
+
 
 // Client-Side In-Memory Cache & In-Flight Request Deduplication for Instant UI
 const clientCache = new Map();
@@ -88,12 +102,19 @@ export async function apiRequest(endpoint, { method = 'GET', body, headers = {},
 
   // Purge relevant cache on state-modifying requests
   if (!isGet) {
-    if (endpoint.includes('/vehicles')) invalidateClientCache('/vehicles');
-    else if (endpoint.includes('/bikes')) invalidateClientCache('/bikes');
-    else if (endpoint.includes('/packages') || endpoint.includes('/tours')) invalidateClientCache('/packages');
-    else if (endpoint.includes('/drivers')) invalidateClientCache('/drivers');
-    else if (endpoint.includes('/bookings')) invalidateClientCache('/bookings');
-    else invalidateClientCache();
+    if (endpoint.includes('/bookings') || endpoint.includes('/payments')) {
+      invalidateClientCache();
+    } else if (endpoint.includes('/vehicles')) {
+      invalidateClientCache('/vehicles');
+    } else if (endpoint.includes('/bikes')) {
+      invalidateClientCache('/bikes');
+    } else if (endpoint.includes('/packages') || endpoint.includes('/tours')) {
+      invalidateClientCache('/packages');
+    } else if (endpoint.includes('/drivers')) {
+      invalidateClientCache('/drivers');
+    } else {
+      invalidateClientCache();
+    }
   }
 
   // Return cached result if fresh
@@ -447,6 +468,20 @@ export const adminsAPI = {
 };
 
 /**
+ * Users API Endpoints (Admin Customer Management & Lookups)
+ */
+export const usersAPI = {
+  async getAll(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/users${query ? `?${query}` : ''}`);
+  },
+
+  async getById(id) {
+    return apiRequest(`/users/${id}`);
+  },
+};
+
+/**
  * Packages API Endpoints
  */
 export const packagesAPI = {
@@ -491,6 +526,13 @@ export const bookingsAPI = {
     });
   },
 
+  async createAdminBooking(bookingData) {
+    return apiRequest('/bookings/admin/create', {
+      method: 'POST',
+      body: bookingData,
+    });
+  },
+
   async getByCode(bookingCode) {
     return apiRequest(`/bookings/voucher/${bookingCode}`);
   },
@@ -500,9 +542,9 @@ export const bookingsAPI = {
     return apiRequest(`/bookings/lookup?${params}`);
   },
 
-  async getAll(params = {}) {
+  async getAll(params = {}, options = {}) {
     const query = new URLSearchParams(params).toString();
-    return apiRequest(`/bookings${query ? `?${query}` : ''}`);
+    return apiRequest(`/bookings${query ? `?${query}` : ''}`, options);
   },
 
   async getById(id) {

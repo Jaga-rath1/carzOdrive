@@ -40,13 +40,11 @@ async function dispatchBookingNotificationsSafely(booking, fallbackEmail = null)
     const { dispatchBookingEmails } = require('../utils/mailer');
     let target = booking;
     if ((!target.customerId?.email || !target.vehicleId) && target._id) {
-      target = (await Booking.findById(target._id)
-        .populate('customerId', 'name email phone')
-        .populate('vehicleId')
-        .populate('bikeId')
-        .populate('driverId')
-        .populate('packageId')
-        .populate('paymentId')) || target;
+      try {
+        target = (await Booking.findById(target._id)
+          .populate('customerId', 'name email phone')
+          .populate('paymentId')) || target;
+      } catch (_) {}
     }
     dispatchBookingEmails(target, fallbackEmail).catch((e) =>
       console.error('Background dispatchBookingEmails error:', e?.message)
@@ -340,58 +338,99 @@ async function createUniversalBooking(customerId, data) {
       : `TXN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
   }
 
-  // Validate that vehicle or bike is not currently unavailable (count 0)
+  // Resilient lookup for vehicle
   let foundVehicle = null;
   let foundBike = null;
 
-  if (payload.vehicleId && mongoose.Types.ObjectId.isValid(payload.vehicleId)) {
-    foundVehicle = await Vehicle().findById(payload.vehicleId);
-    if (foundVehicle) {
-      const vCount = foundVehicle.availableCount ?? foundVehicle.count ?? (foundVehicle.isAvailable !== false ? 1 : 0);
-      if (foundVehicle.isAvailable === false || vCount <= 0 || foundVehicle.availabilityStatus === 'UNAVAILABLE') {
-        const err = new Error(`${foundVehicle.name || 'Vehicle'} has 0 available units and is currently unavailable.`);
-        err.statusCode = 400;
-        throw err;
-      }
+  if (payload.vehicleId) {
+    if (mongoose.Types.ObjectId.isValid(payload.vehicleId)) {
+      foundVehicle = await Vehicle().findById(payload.vehicleId);
+    }
+    if (!foundVehicle) {
+      foundVehicle = await Vehicle().findOne({ $or: [{ id: payload.vehicleId }, { slug: payload.vehicleId }] });
+    }
+  }
+  if (!foundVehicle && payload.vehicleName && payload.serviceType !== 'DRIVER_ONLY' && payload.serviceType !== 'TOUR_PACKAGES' && payload.serviceType !== 'tour-packages') {
+    const cleanName = payload.vehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+    if (cleanName) {
+      foundVehicle = await Vehicle().findOne({
+        name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
+      });
+    }
+  }
+  if (foundVehicle) {
+    payload.vehicleId = foundVehicle._id;
+    const vCount = foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? (foundVehicle.isAvailable !== false ? 1 : 0);
+    if (foundVehicle.isAvailable === false || vCount <= 0 || foundVehicle.availabilityStatus === 'UNAVAILABLE') {
+      const err = new Error(`${foundVehicle.name || 'Vehicle'} has 0 available units and is currently unavailable.`);
+      err.statusCode = 400;
+      throw err;
     }
   }
 
-  if (payload.bikeId && mongoose.Types.ObjectId.isValid(payload.bikeId)) {
-    foundBike = await Bike().findById(payload.bikeId);
-    if (foundBike) {
-      const bCount = foundBike.availableCount ?? foundBike.count ?? (foundBike.isAvailable !== false ? 1 : 0);
-      if (foundBike.isAvailable === false || bCount <= 0 || foundBike.availabilityStatus === 'UNAVAILABLE') {
-        const err = new Error(`${foundBike.name || 'Bike'} has 0 available units and is currently unavailable.`);
-        err.statusCode = 400;
-        throw err;
-      }
+  // Resilient lookup for bike
+  if (payload.bikeId) {
+    if (mongoose.Types.ObjectId.isValid(payload.bikeId)) {
+      foundBike = await Bike().findById(payload.bikeId);
+    }
+    if (!foundBike) {
+      foundBike = await Bike().findOne({ $or: [{ id: payload.bikeId }, { slug: payload.bikeId }] });
+    }
+  }
+  if (!foundBike && payload.vehicleName && (payload.serviceType === 'SELF_DRIVE_BIKE' || payload.serviceType === 'self-drive-bike')) {
+    const cleanName = payload.vehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+    if (cleanName) {
+      foundBike = await Bike().findOne({
+        name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
+      });
+    }
+  }
+  if (foundBike) {
+    payload.bikeId = foundBike._id;
+    const bCount = foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? (foundBike.isAvailable !== false ? 1 : 0);
+    if (foundBike.isAvailable === false || bCount <= 0 || foundBike.availabilityStatus === 'UNAVAILABLE') {
+      const err = new Error(`${foundBike.name || 'Bike'} has 0 available units and is currently unavailable.`);
+      err.statusCode = 400;
+      throw err;
     }
   }
 
   const booking = await Booking.create(payload);
 
-  // Decrement vehicle inventory count upon booking
+  // Decrement vehicle inventory count upon booking & invalidate cache
   if (foundVehicle) {
-    const current = foundVehicle.availableCount ?? foundVehicle.count ?? 1;
+    const current = foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? 1;
     const newCount = Math.max(0, current - 1);
     foundVehicle.availableCount = newCount;
+    if (!foundVehicle.specs) foundVehicle.specs = {};
+    foundVehicle.specs.availableUnits = newCount;
     if (newCount === 0) {
       foundVehicle.isAvailable = false;
       foundVehicle.availabilityStatus = 'UNAVAILABLE';
     }
     await foundVehicle.save();
+    try {
+      const { invalidateVehicleCache } = require('./vehicles.service');
+      invalidateVehicleCache();
+    } catch (_) {}
   }
 
-  // Decrement bike inventory count upon booking
+  // Decrement bike inventory count upon booking & invalidate cache
   if (foundBike) {
-    const current = foundBike.availableCount ?? foundBike.count ?? 1;
+    const current = foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? 1;
     const newCount = Math.max(0, current - 1);
     foundBike.availableCount = newCount;
+    if (!foundBike.specs) foundBike.specs = {};
+    foundBike.specs.availableUnits = newCount;
     if (newCount === 0) {
       foundBike.isAvailable = false;
       foundBike.availabilityStatus = 'UNAVAILABLE';
     }
     await foundBike.save();
+    try {
+      const { invalidateBikeCache } = require('./bikes.service');
+      invalidateBikeCache();
+    } catch (_) {}
   }
 
   // Dynamically create and link corresponding Payment document
@@ -408,6 +447,321 @@ async function createUniversalBooking(customerId, data) {
   // Dispatched booking Tax Invoice & Admin Alert via Nodemailer asynchronously
   const guestMail = payload.guestEmail || payload.email || populated?.customerId?.email;
   dispatchBookingNotificationsSafely(populated || booking, guestMail);
+
+  return populated || booking;
+}
+
+// ─── Admin Manual Booking (Admin books directly for customer / walk-in) ────
+
+async function createAdminBooking(adminUser, data) {
+  const {
+    customerId,
+    customerName,
+    customerEmail,
+    customerPhone,
+    guestName,
+    guestEmail,
+    guestPhone,
+    guestNotes,
+    serviceType = 'SELF_DRIVE_CAR',
+    vehicleId,
+    bikeId,
+    driverId,
+    packageId,
+    userCarModel,
+    startDate,
+    endDate,
+    pickupDate,
+    returnDate,
+    pickupLocation,
+    dropoffLocation,
+    days,
+    paymentMode = 'offline',
+    onlineMethod = 'cash',
+    paymentStatus,
+    status = 'CONFIRMED',
+    transactionId,
+    totalAmount,
+    paidAmount,
+    balanceAmount,
+    securityDeposit,
+    priceBreakdown,
+    adminNotes,
+    customerNotes,
+  } = data;
+
+  // Helper to safely extract ObjectId string or null
+  const normalizeId = (id) =>
+    id && typeof id === 'string' && mongoose.Types.ObjectId.isValid(id)
+      ? id
+      : id && typeof id === 'object' && id._id && mongoose.Types.ObjectId.isValid(id._id)
+      ? String(id._id)
+      : null;
+
+  const cleanCustomerId = normalizeId(customerId);
+  const cleanVehicleId = normalizeId(vehicleId);
+  const cleanBikeId = normalizeId(bikeId);
+  const cleanDriverId = normalizeId(driverId);
+  const cleanPackageId = normalizeId(packageId);
+
+  // Resolve customer details
+  let resolvedCustomerId = cleanCustomerId;
+  let finalName = (guestName || customerName || '').trim();
+  let finalEmail = (guestEmail || customerEmail || '').trim().toLowerCase();
+  let finalPhone = (guestPhone || customerPhone || '').trim();
+
+  // If customerId is provided, fetch user if name/email/phone are not explicitly supplied
+  if (resolvedCustomerId && (!finalName || !finalEmail || !finalPhone)) {
+    try {
+      const User = require('../models/user.model').User;
+      const foundUser = await User.findById(resolvedCustomerId);
+      if (foundUser) {
+        if (!finalName) finalName = foundUser.name;
+        if (!finalEmail) finalEmail = foundUser.email;
+        if (!finalPhone) finalPhone = foundUser.phone;
+      }
+    } catch {
+      // Continue if lookup fails
+    }
+  }
+
+  // Resolve dates & duration
+  const start = startDate ? new Date(startDate) : (pickupDate ? new Date(pickupDate) : new Date());
+  let end = endDate ? new Date(endDate) : (returnDate ? new Date(returnDate) : null);
+  const numDays = Number(days) || (end ? Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24))) : 1);
+  if (!end) {
+    end = new Date(start.getTime() + numDays * 24 * 60 * 60 * 1000);
+  }
+
+  // Resolve asset snapshots
+  let foundVehicle = null;
+  let foundBike = null;
+  let foundDriver = null;
+  let foundPackage = null;
+  let resolvedVehicleName = data.vehicleName || '';
+  let resolvedVehicleImage = data.vehicleImage || '';
+
+  if (cleanVehicleId) {
+    if (mongoose.Types.ObjectId.isValid(cleanVehicleId)) {
+      foundVehicle = await Vehicle().findById(cleanVehicleId);
+    }
+    if (!foundVehicle) {
+      foundVehicle = await Vehicle().findOne({ $or: [{ id: cleanVehicleId }, { slug: cleanVehicleId }] });
+    }
+  }
+  if (!foundVehicle && resolvedVehicleName && serviceType !== 'DRIVER_ONLY' && serviceType !== 'TOUR_PACKAGES') {
+    const cleanName = resolvedVehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+    if (cleanName) {
+      foundVehicle = await Vehicle().findOne({
+        name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
+      });
+    }
+  }
+  if (foundVehicle) {
+    cleanVehicleId = foundVehicle._id;
+    resolvedVehicleName = foundVehicle.name;
+    resolvedVehicleImage = foundVehicle.images?.[0] || foundVehicle.primaryImage || '';
+  }
+
+  if (cleanBikeId) {
+    if (mongoose.Types.ObjectId.isValid(cleanBikeId)) {
+      foundBike = await Bike().findById(cleanBikeId);
+    }
+    if (!foundBike) {
+      foundBike = await Bike().findOne({ $or: [{ id: cleanBikeId }, { slug: cleanBikeId }] });
+    }
+  }
+  if (!foundBike && resolvedVehicleName && serviceType === 'SELF_DRIVE_BIKE') {
+    const cleanName = resolvedVehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+    if (cleanName) {
+      foundBike = await Bike().findOne({
+        name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
+      });
+    }
+  }
+  if (foundBike) {
+    cleanBikeId = foundBike._id;
+    resolvedVehicleName = foundBike.name;
+    resolvedVehicleImage = foundBike.images?.[0] || foundBike.primaryImage || '';
+  }
+
+  if (cleanDriverId) {
+    foundDriver = await Driver().findById(cleanDriverId);
+  }
+
+  if (cleanPackageId) {
+    foundPackage = await TourPackage().findById(cleanPackageId);
+    if (foundPackage) {
+      resolvedVehicleName = foundPackage.title || foundPackage.name;
+      resolvedVehicleImage = foundPackage.images?.[0] || '';
+    }
+  }
+
+  if (!resolvedVehicleName) {
+    resolvedVehicleName =
+      serviceType === 'DRIVER_ONLY'
+        ? userCarModel
+          ? `Chauffeur for ${userCarModel}`
+          : 'Professional Chauffeur'
+        : serviceType === 'SELF_DRIVE_BIKE'
+        ? 'Self-Drive Bike'
+        : 'Self-Drive Vehicle';
+  }
+
+  // Calculate pricing & payments cleanly
+  const total = Number(totalAmount) || 0;
+  let paid =
+    paidAmount !== undefined && paidAmount !== null && paidAmount !== ''
+      ? Number(paidAmount)
+      : paymentMode === 'full'
+      ? total
+      : 0;
+
+  if (paymentMode === 'partial' && paid === 0) {
+    paid = Math.max(499, Math.round(total * 0.25));
+  }
+
+  const balance =
+    balanceAmount !== undefined && balanceAmount !== null && balanceAmount !== ''
+      ? Number(balanceAmount)
+      : Math.max(0, total - paid);
+
+  let finalPaymentStatus = paymentStatus;
+  if (!finalPaymentStatus) {
+    if (paid >= total && total > 0) finalPaymentStatus = 'PAID';
+    else if (paid > 0 && paid < total) finalPaymentStatus = 'PARTIALLY_PAID';
+    else if (paymentMode === 'offline') finalPaymentStatus = 'OFFLINE_PENDING';
+    else finalPaymentStatus = 'PENDING';
+  }
+
+  const finalTxnId =
+    transactionId ||
+    (paymentMode === 'offline'
+      ? `ADMIN-CASH-${Date.now().toString(36).toUpperCase()}`
+      : `ADMIN-TXN-${Date.now().toString(36).toUpperCase()}`);
+
+  const adminId = adminUser?._id || adminUser?.id;
+  const changedBy = adminId && mongoose.Types.ObjectId.isValid(adminId) ? adminId : null;
+  const adminLabel = adminUser?.name || adminUser?.email || 'Admin';
+
+  const bookingPayload = {
+    customerId: resolvedCustomerId,
+    guestName: finalName || 'Valued Customer',
+    guestEmail: finalEmail || '',
+    guestPhone: finalPhone || '',
+    guestNotes: guestNotes || customerNotes || '',
+    userCarModel: userCarModel || '',
+    serviceType,
+    vehicleId: cleanVehicleId,
+    bikeId: cleanBikeId,
+    driverId: cleanDriverId,
+    packageId: cleanPackageId,
+    vehicleName: resolvedVehicleName,
+    vehicleImage: resolvedVehicleImage,
+    pickupLocation: pickupLocation || 'SUM Hospital Hub',
+    dropoffLocation: dropoffLocation || pickupLocation || 'Same as Pick-up Address',
+    startDate: start,
+    endDate: end,
+    pickupDate: pickupDate || start.toISOString().split('T')[0],
+    returnDate: returnDate || end.toISOString().split('T')[0],
+    days: numDays,
+    paymentMode,
+    onlineMethod,
+    transactionId: finalTxnId,
+    totalAmount: total,
+    paidAmount: paid,
+    balanceAmount: balance,
+    securityDeposit: Number(securityDeposit) || 0,
+    priceBreakdown: priceBreakdown || {
+      baseAmount: Math.max(0, total - (Number(securityDeposit) || 0)),
+      securityDeposit: Number(securityDeposit) || 0,
+      taxes: 0,
+      extraCharges: 0,
+      protectionFee: 0,
+      totalAmount: total,
+    },
+    status: status || 'CONFIRMED',
+    paymentStatus: finalPaymentStatus,
+    customerNotes: customerNotes || '',
+    adminNotes: adminNotes || `Booked manually by Admin: ${adminLabel}`,
+    statusHistory: [
+      {
+        status: status || 'CONFIRMED',
+        changedBy,
+        changedAt: new Date(),
+        note: `Manual booking created by Admin (${adminLabel})`,
+      },
+    ],
+  };
+
+  const booking = await Booking.create(bookingPayload);
+
+  // Decrement fleet inventory safely
+  if (foundVehicle) {
+    try {
+      const current = foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? 1;
+      const newCount = Math.max(0, current - 1);
+      foundVehicle.availableCount = newCount;
+      if (!foundVehicle.specs) foundVehicle.specs = {};
+      foundVehicle.specs.availableUnits = newCount;
+      if (newCount === 0) {
+        foundVehicle.isAvailable = false;
+        foundVehicle.availabilityStatus = 'UNAVAILABLE';
+      }
+      await foundVehicle.save();
+      try {
+        const { invalidateVehicleCache } = require('./vehicles.service');
+        invalidateVehicleCache();
+      } catch (_) {}
+    } catch (vErr) {
+      console.warn('Inventory decrement notice (vehicle):', vErr.message);
+    }
+  }
+
+  if (foundBike) {
+    try {
+      const current = foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? 1;
+      const newCount = Math.max(0, current - 1);
+      foundBike.availableCount = newCount;
+      if (!foundBike.specs) foundBike.specs = {};
+      foundBike.specs.availableUnits = newCount;
+      if (newCount === 0) {
+        foundBike.isAvailable = false;
+        foundBike.availabilityStatus = 'UNAVAILABLE';
+      }
+      await foundBike.save();
+      try {
+        const { invalidateBikeCache } = require('./bikes.service');
+        invalidateBikeCache();
+      } catch (_) {}
+    } catch (bErr) {
+      console.warn('Inventory decrement notice (bike):', bErr.message);
+    }
+  }
+
+  // Create & link Payment record (respecting custom paid/balance amounts)
+  try {
+    await createOrSyncPaymentForBooking(booking);
+  } catch (payErr) {
+    console.warn('Payment sync notice during admin booking:', payErr.message);
+  }
+
+  // Fetch populated booking safely
+  let populated = booking;
+  try {
+    populated = await Booking.findById(booking._id)
+      .populate('customerId', 'name email phone')
+      .populate('paymentId');
+  } catch (popErr) {
+    console.warn('Populate notice in createAdminBooking:', popErr.message);
+    populated = booking;
+  }
+
+  // Dispatch background notification without blocking response
+  const targetMail = finalEmail || populated?.customerId?.email;
+  if (targetMail && targetMail.includes('@') && !targetMail.includes('@offline.carzodrive.com')) {
+    dispatchBookingNotificationsSafely(populated || booking, targetMail);
+  }
 
   return populated || booking;
 }
@@ -542,18 +896,30 @@ async function updateBookingStatus(bookingId, newStatus, userId, userRole, note,
       const v = await Vehicle().findById(booking.vehicleId);
       if (v) {
         v.availableCount = (v.availableCount || 0) + 1;
+        if (!v.specs) v.specs = {};
+        v.specs.availableUnits = v.availableCount;
         v.isAvailable = true;
         v.availabilityStatus = 'AVAILABLE';
         await v.save();
+        try {
+          const { invalidateVehicleCache } = require('./vehicles.service');
+          invalidateVehicleCache();
+        } catch (_) {}
       }
     }
     if (booking.bikeId) {
       const b = await Bike().findById(booking.bikeId);
       if (b) {
         b.availableCount = (b.availableCount || 0) + 1;
+        if (!b.specs) b.specs = {};
+        b.specs.availableUnits = b.availableCount;
         b.isAvailable = true;
         b.availabilityStatus = 'AVAILABLE';
         await b.save();
+        try {
+          const { invalidateBikeCache } = require('./bikes.service');
+          invalidateBikeCache();
+        } catch (_) {}
       }
     }
   }
@@ -698,6 +1064,41 @@ async function deleteBooking(bookingId) {
     err.statusCode = 404;
     throw err;
   }
+
+  // Restore inventory if booking is deleted and wasn't already cancelled or completed
+  if (booking.status !== 'CANCELLED' && booking.status !== 'COMPLETED') {
+    if (booking.vehicleId) {
+      const v = await Vehicle().findById(booking.vehicleId);
+      if (v) {
+        v.availableCount = (v.availableCount || 0) + 1;
+        if (!v.specs) v.specs = {};
+        v.specs.availableUnits = v.availableCount;
+        v.isAvailable = true;
+        v.availabilityStatus = 'AVAILABLE';
+        await v.save();
+        try {
+          const { invalidateVehicleCache } = require('./vehicles.service');
+          invalidateVehicleCache();
+        } catch (_) {}
+      }
+    }
+    if (booking.bikeId) {
+      const b = await Bike().findById(booking.bikeId);
+      if (b) {
+        b.availableCount = (b.availableCount || 0) + 1;
+        if (!b.specs) b.specs = {};
+        b.specs.availableUnits = b.availableCount;
+        b.isAvailable = true;
+        b.availabilityStatus = 'AVAILABLE';
+        await b.save();
+        try {
+          const { invalidateBikeCache } = require('./bikes.service');
+          invalidateBikeCache();
+        } catch (_) {}
+      }
+    }
+  }
+
   const PaymentModel = require('../models/payment.model').Payment;
   await PaymentModel.deleteMany({ bookingId: booking._id });
   await Booking.findByIdAndDelete(bookingId);
@@ -775,6 +1176,7 @@ module.exports = {
   createDriverOnly,
   createTourPackageBooking,
   createUniversalBooking,
+  createAdminBooking,
   getBooking,
   listBookings,
   updateBookingStatus,

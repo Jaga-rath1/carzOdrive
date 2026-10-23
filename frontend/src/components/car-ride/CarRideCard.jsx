@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Users, Fuel, Gauge } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
+import { getVehicleFallbackImage } from '../../utils/documentUtils';
 
 export const CarRideCard = ({ vehicle, onOpenQuickBook }) => {
   const detailTarget = `/vehicle/${vehicle.id}`;
@@ -26,7 +27,7 @@ export const CarRideCard = ({ vehicle, onOpenQuickBook }) => {
           loading="lazy"
           onError={(e) => {
             e.currentTarget.onerror = null;
-            e.currentTarget.src = '/images/vehicles/swift-2026-grey.jpg';
+            e.currentTarget.src = getVehicleFallbackImage(vehicle);
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />

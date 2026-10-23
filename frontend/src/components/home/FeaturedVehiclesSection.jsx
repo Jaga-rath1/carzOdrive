@@ -6,7 +6,7 @@ import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { vehiclesAPI, bikesAPI } from '../../services/api';
-import { resolveVehicleImageUrl } from '../../utils/documentUtils';
+import { resolveVehicleImageUrl, getVehicleFallbackImage } from '../../utils/documentUtils';
 
 export const FeaturedVehiclesSection = ({ onQuickBook }) => {
   const [activeCategory, setActiveCategory] = useState('Available Now');
@@ -200,7 +200,7 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
                         loading="lazy"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
-                          e.currentTarget.src = vehicle.vehicleType === 'bike' ? '/images/vehicles/hero-splendor.jpg' : '/images/vehicles/swift-2026-grey.jpg';
+                          e.currentTarget.src = getVehicleFallbackImage(vehicle);
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />

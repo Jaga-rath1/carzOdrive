@@ -70,6 +70,11 @@ const createUniversalBooking = asyncHandler(async (req, res) => {
   created(res, booking, 'Booking created successfully');
 });
 
+const createAdminBooking = asyncHandler(async (req, res) => {
+  const booking = await svc.createAdminBooking(req.user, req.body);
+  created(res, booking, 'Admin booking created successfully');
+});
+
 const getBookingByCode = asyncHandler(async (req, res) => {
   const booking = await svc.getBookingByCode(req.params.code);
   success(res, booking, 'Booking details retrieved');
@@ -134,6 +139,7 @@ module.exports = {
   getBookingInvoice,
   downloadBookingInvoicePdf,
   createUniversalBooking,
+  createAdminBooking,
   getBookingByCode,
   lookupBookings,
   createSelfDriveCar,
