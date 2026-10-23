@@ -132,11 +132,12 @@ export const BookingStepServiceItem = ({
                 className="w-full bg-white border border-slate-300 text-xs text-slate-900 font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none cursor-pointer truncate shadow-sm"
               >
                 {dbCars.map((v) => {
-                  const isAvail = v.isAvailable !== false && (v.availableCount ?? 1) > 0;
+                  const count = v.quantity !== undefined ? v.quantity : (v.availableCount ?? 1);
+                  const isAvail = v.isAvailable !== false && count > 0;
                   return (
-                    <option key={v._id || v.id || v.name} value={v._id || v.id || v.name}>
+                    <option key={v._id || v.id || v.name} value={v._id || v.id || v.name} disabled={!isAvail}>
                       {isAvail
-                        ? `🟢 ${v.name} (${v.availableCount ?? 1} Available)`
+                        ? `🟢 ${v.name} (${count} Available)`
                         : `🔴 ${v.name} — Currently Unavailable`}
                     </option>
                   );
@@ -154,11 +155,12 @@ export const BookingStepServiceItem = ({
                 className="w-full bg-white border border-slate-300 text-xs text-slate-900 font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none cursor-pointer truncate shadow-sm"
               >
                 {dbCars.map((c) => {
-                  const isAvail = c.isAvailable !== false && (c.availableCount ?? 1) > 0;
+                  const count = c.quantity !== undefined ? c.quantity : (c.availableCount ?? 1);
+                  const isAvail = c.isAvailable !== false && count > 0;
                   return (
                     <option key={c._id || c.id} value={c._id || c.id} disabled={!isAvail}>
                       {isAvail
-                        ? `🟢 ${c.name} (${c.availableCount ?? 1} Available)`
+                        ? `🟢 ${c.name} (${count} Available)`
                         : `🔴 ${c.name} — Currently Unavailable`}
                     </option>
                   );
@@ -201,11 +203,12 @@ export const BookingStepServiceItem = ({
                 className="w-full bg-white border border-slate-300 text-xs text-slate-900 font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none cursor-pointer truncate shadow-sm"
               >
                 {dbBikes.map((b) => {
-                  const isAvail = b.isAvailable !== false && (b.availableCount ?? 1) > 0;
+                  const count = b.quantity !== undefined ? b.quantity : (b.availableCount ?? 1);
+                  const isAvail = b.isAvailable !== false && count > 0;
                   return (
-                    <option key={b._id || b.id || b.name} value={b._id || b.id || b.name}>
+                    <option key={b._id || b.id || b.name} value={b._id || b.id || b.name} disabled={!isAvail}>
                       {isAvail
-                        ? `🟢 ${b.name} (${b.availableCount ?? 1} Available • ₹${b.pricePerDay}/day)`
+                        ? `🟢 ${b.name} (${count} Available • ₹${b.pricePerDay}/day)`
                         : `🔴 ${b.name} — Currently Unavailable`}
                     </option>
                   );

@@ -14,36 +14,19 @@ const { env } = require('./env');
 const logger = require('../utils/logger');
 
 const options = {
-  maxPoolSize: 50,
-  minPoolSize: 10,
+  maxPoolSize: 20,
+  minPoolSize: 2,
   maxIdleTimeMS: 30000,
-  serverSelectionTimeoutMS: 8000,
+  serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
   connectTimeoutMS: 10000,
-  compressors: ['zstd', 'snappy', 'zlib'],
+  heartbeatFrequencyMS: 10000,
 };
 
-// Dedicated Partner Database Connection for "Rent Your Car", "Rent Your Bike", and "Driver Registration"
-// Uses useDb('carzodrive_partners', { useCache: true }) on the primary connection pool
-// This prevents buffering timeouts (10000ms timeout) and race conditions across local/Atlas setups.
-const isDedicatedPartnerUri =
-  Boolean(env.partnerMongodbUri) &&
-  env.partnerMongodbUri !== env.mongodbUri &&
-  !env.partnerMongodbUri.includes('localhost:27017/carzodrive_partners') &&
-  !env.partnerMongodbUri.includes('127.0.0.1:27017/carzodrive_partners');
-
-const partnerConnection = isDedicatedPartnerUri
-  ? mongoose.createConnection(env.partnerMongodbUri, options)
-  : mongoose.connection.useDb('carzodrive_partners', { useCache: true });
-
-if (isDedicatedPartnerUri) {
-  partnerConnection.on('connected', () => {
-    logger.success(`Dedicated Partner DB connected: ${partnerConnection.host} [database: ${partnerConnection.name}]`);
-  });
-  partnerConnection.on('error', (err) => {
-    logger.error('Partner DB connection error:', err);
-  });
-}
+// Partner Database Connection for "Rent Your Car", "Rent Your Bike", and "Driver Registration"
+// Sharing the primary cluster connection with useDb('carzodrive_partners', { useCache: true })
+// completely eliminates secondary TLS handshakes, SSL record layer failures, and 10000ms buffering timeouts!
+const partnerConnection = mongoose.connection.useDb('carzodrive_partners', { useCache: true });
 
 mongoose.connection.on('disconnected', () => {
   logger.warn('MongoDB primary connection lost. Retrying...');
@@ -54,14 +37,13 @@ mongoose.connection.on('reconnected', () => {
 });
 
 async function connectDB() {
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
   try {
     await mongoose.connect(env.mongodbUri, options);
     logger.success(`MongoDB connected successfully to host: ${mongoose.connection.host} [database: ${mongoose.connection.name}]`);
-    if (!isDedicatedPartnerUri) {
-      logger.success(`Dedicated Partner DB connected: ${mongoose.connection.host} [database: ${partnerConnection.name}]`);
-    } else if (partnerConnection.readyState !== 1) {
-      await partnerConnection.asPromise();
-    }
+    logger.success(`Dedicated Partner DB connected on shared pool [database: ${partnerConnection.name}]`);
   } catch (err) {
     logger.error('MongoDB initial connection error:', err);
     if (env.nodeEnv === 'production') {
@@ -100,7 +82,7 @@ async function checkDBHealth() {
         host: mongoose.connection.host,
         name: mongoose.connection.name,
         partnerDatabase: partnerConnection.name,
-        partnerStatus: partnerConnection.readyState === 1 ? 'connected' : 'connecting',
+        partnerStatus: 'connected',
         poolSize: options.maxPoolSize,
       };
     } catch (pingErr) {
@@ -111,4 +93,4 @@ async function checkDBHealth() {
   return { status };
 }
 
-module.exports = { connectDB, checkDBHealth, partnerConnection, isDedicatedPartnerUri };
+module.exports = { connectDB, checkDBHealth, partnerConnection, isDedicatedPartnerUri: false };

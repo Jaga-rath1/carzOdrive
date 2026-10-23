@@ -12,7 +12,8 @@ import {
 export const AdminBikeCard = ({ bike, onView, onEdit, onDelete }) => {
   const primaryImg = (bike.images && bike.images[0]) || bike.image || '/images/vehicles/hero-splendor.jpg';
   const price = bike.pricePerDay || bike.priceNumeric || 499;
-  const isAvailable = bike.isAvailable !== false && bike.availableCount !== 0;
+  const stockCount = bike.quantity !== undefined ? bike.quantity : (bike.availableCount ?? (bike.isAvailable !== false ? 1 : 0));
+  const isAvailable = bike.isAvailable !== false && stockCount > 0 && bike.availabilityStatus !== 'Currently Unavailable';
 
   const engineDisplay = bike.engineCC
     ? `${bike.engineCC} cc Engine`
@@ -100,10 +101,10 @@ export const AdminBikeCard = ({ bike, onView, onEdit, onDelete }) => {
           className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
             isAvailable
               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-              : 'bg-zinc-100 text-zinc-700 border-zinc-200'
+              : 'bg-rose-50 text-rose-700 border-rose-200'
           }`}
         >
-          {isAvailable ? `ACTIVE (${bike.availableCount || 1} units)` : 'RESERVED'}
+          {isAvailable ? `ACTIVE (${stockCount} units)` : 'CURRENTLY UNAVAILABLE (0 units)'}
         </span>
 
         <div className="flex items-center gap-1.5">

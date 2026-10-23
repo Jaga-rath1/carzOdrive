@@ -53,7 +53,8 @@ export const AdminBookingsPage = () => {
     setStatusMessage(null);
     try {
       const res = await bookingsAPI.getAll({}, { skipCache: true });
-      setBookings(res?.data || []);
+      const list = Array.isArray(res?.data) ? res.data : (res?.data?.bookings || []);
+      setBookings(list);
     } catch (err) {
       console.warn('Failed to fetch bookings:', err);
       if (err.status === 401 || err.message?.toLowerCase().includes('token')) {

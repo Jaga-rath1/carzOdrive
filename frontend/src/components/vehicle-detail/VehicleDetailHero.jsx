@@ -47,10 +47,10 @@ export const VehicleDetailHero = ({ vehicle }) => {
                 Color: {vehicle.color}
               </span>
             )}
-            {vehicle.isAvailable !== false && (vehicle.availableCount ?? 1) > 0 ? (
+            {(vehicle.isAvailable !== false && (vehicle.quantity !== undefined ? Number(vehicle.quantity) : (vehicle.availableCount ?? 1)) > 0 && vehicle.availabilityStatus !== 'Currently Unavailable' && vehicle.availabilityStatus !== 'UNAVAILABLE') ? (
               <span className="text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                {vehicle.availableCount ?? 1} Available in Hub
+                {vehicle.quantity !== undefined ? Number(vehicle.quantity) : (vehicle.availableCount ?? 1)} Available in Hub
               </span>
             ) : (
               <span className="text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 inline-flex items-center gap-1.5">

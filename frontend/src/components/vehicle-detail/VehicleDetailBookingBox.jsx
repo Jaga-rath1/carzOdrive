@@ -15,8 +15,8 @@ import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
 import { getTodayDateString } from '../../utils/formatters';
 
 export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
-  const count = vehicle.availableCount ?? vehicle.count ?? (vehicle.isAvailable !== false ? 1 : 0);
-  const isAvailable = vehicle.isAvailable !== false && count > 0 && vehicle.availabilityStatus !== 'UNAVAILABLE';
+  const count = vehicle.quantity !== undefined ? Number(vehicle.quantity) : (vehicle.availableCount ?? vehicle.count ?? (vehicle.isAvailable !== false ? 1 : 0));
+  const isAvailable = vehicle.isAvailable !== false && count > 0 && vehicle.availabilityStatus !== 'UNAVAILABLE' && vehicle.availabilityStatus !== 'Currently Unavailable';
 
   const [pickupDate, setPickupDate] = useState(() => getTodayDateString(1));
   const [returnDate, setReturnDate] = useState(() => getTodayDateString(3));

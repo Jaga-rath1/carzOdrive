@@ -21,6 +21,19 @@ export const Footer = () => {
               India's premier vehicle rental and curated mobility platform. Luxury self-drive cars, superbikes, professional drivers, and road trip packages.
             </p>
 
+            {/* Office Address */}
+            <a
+              href="https://www.google.com/maps/@20.2605665,85.7603121,21z/data=!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-start gap-2.5 text-xs text-slate-400 hover:text-slate-200 max-w-sm bg-slate-900/60 hover:bg-slate-900/90 p-3 rounded-xl border border-slate-800/80 hover:border-blue-500/40 transition-all group"
+            >
+              <MapPin className="w-4 h-4 text-blue-500 group-hover:text-blue-400 shrink-0 mt-0.5 transition-colors" />
+              <span className="leading-relaxed">
+                Plot no -1774. Ananda Bana Main Road. Kalinga Nagar, Ghatikia, Bhubaneswar, Pin- 751029
+              </span>
+            </a>
+
             {/* Social Icons */}
             <div className="pt-2 space-y-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">

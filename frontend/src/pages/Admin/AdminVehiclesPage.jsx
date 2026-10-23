@@ -27,7 +27,8 @@ export const AdminVehiclesPage = () => {
     setIsLoading(true);
     try {
       const res = await vehiclesAPI.getAll();
-      setVehicles(res?.data || []);
+      const list = Array.isArray(res?.data) ? res.data : (res?.data?.vehicles || []);
+      setVehicles(list);
     } catch (err) {
       console.warn('Vehicles fetch error:', err);
     } finally {

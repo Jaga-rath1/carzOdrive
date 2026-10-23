@@ -14,7 +14,8 @@ import {
 export const AdminVehicleCard = ({ car, onView, onEdit, onDelete }) => {
   const primaryImg = (car.images && car.images[0]) || car.image || '/images/vehicles/placeholder.jpg';
   const price = car.pricing?.dailyRate || car.pricePerDay || car.priceNumeric || 1999;
-  const isAvailable = car.isAvailable !== false && car.availableCount !== 0;
+  const stockCount = car.quantity !== undefined ? car.quantity : (car.availableCount ?? (car.isAvailable !== false ? 1 : 0));
+  const isAvailable = car.isAvailable !== false && stockCount > 0 && car.availabilityStatus !== 'Currently Unavailable';
 
   return (
     <div className="group bg-white rounded-2xl border border-zinc-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
@@ -96,10 +97,10 @@ export const AdminVehicleCard = ({ car, onView, onEdit, onDelete }) => {
           className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
             isAvailable
               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-              : 'bg-zinc-100 text-zinc-700 border-zinc-200'
+              : 'bg-rose-50 text-rose-700 border-rose-200'
           }`}
         >
-          {isAvailable ? `ACTIVE (${car.availableCount || 1} units)` : 'RESERVED'}
+          {isAvailable ? `ACTIVE (${stockCount} units)` : 'CURRENTLY UNAVAILABLE (0 units)'}
         </span>
 
         <div className="flex items-center gap-1.5">

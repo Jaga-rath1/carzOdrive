@@ -26,8 +26,8 @@ export const useQuickBookingFleet = (isOpen) => {
         let cars = [];
         if (carsRes.status === 'fulfilled' && carsRes.value?.data) {
           cars = carsRes.value.data.map((v) => {
-            const carCount = v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0);
-            const isAvail = v.isAvailable !== false && carCount > 0 && v.availabilityStatus !== 'UNAVAILABLE';
+            const carCount = v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0));
+            const isAvail = v.isAvailable !== false && carCount > 0 && v.availabilityStatus !== 'UNAVAILABLE' && v.availabilityStatus !== 'Currently Unavailable';
             return {
               id: v.slug || v._id || v.id,
               _id: v._id || v.id,
@@ -35,6 +35,7 @@ export const useQuickBookingFleet = (isOpen) => {
               brand: v.brand,
               color: v.color || 'Standard',
               isAvailable: isAvail,
+              quantity: carCount,
               availableCount: carCount,
               availabilityStatus: isAvail ? 'Available' : 'Currently Unavailable',
               image: resolveVehicleImageUrl((v.images && v.images[0]) || v.image, '/images/vehicles/swift-2026-grey.jpg'),
@@ -52,8 +53,8 @@ export const useQuickBookingFleet = (isOpen) => {
         let bikes = [];
         if (bikesRes.status === 'fulfilled' && bikesRes.value?.data) {
           bikes = bikesRes.value.data.map((b) => {
-            const bikeCount = b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0);
-            const isAvail = b.isAvailable !== false && bikeCount > 0 && b.availabilityStatus !== 'UNAVAILABLE';
+            const bikeCount = b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0));
+            const isAvail = b.isAvailable !== false && bikeCount > 0 && b.availabilityStatus !== 'UNAVAILABLE' && b.availabilityStatus !== 'Currently Unavailable';
             return {
               id: b.slug || b._id || b.id,
               _id: b._id || b.id,
@@ -63,6 +64,7 @@ export const useQuickBookingFleet = (isOpen) => {
               pricePerDay: b.pricing?.daily || b.pricePerDay || 1299,
               deposit: b.deposit || `₹${b.depositNumeric || 2000}`,
               isAvailable: isAvail,
+              quantity: bikeCount,
               availableCount: bikeCount,
               availabilityStatus: isAvail ? 'Available' : 'Currently Unavailable',
               image: resolveVehicleImageUrl((b.images && b.images[0]) || b.image, '/images/vehicles/royal-enfield.jpg'),

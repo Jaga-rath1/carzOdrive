@@ -578,17 +578,25 @@ export const AdminCreateBookingModal = ({ isOpen, onClose, onSuccess }) => {
                 >
                   <option value="">-- Choose from Available Fleet --</option>
                   {(serviceType === 'SELF_DRIVE_CAR' || serviceType === 'CAR_WITH_DRIVER') &&
-                    vehicles.map((v) => (
-                      <option key={v._id || v.id} value={v._id || v.id}>
-                        {v.name} ({v.transmission || 'Manual'} • {v.fuelType || 'Petrol'}) — ₹{v.pricing?.selfDrive?.daily || v.pricePerDay || 0}/day [Available: {v.availableCount ?? v.count ?? 1}]
-                      </option>
-                    ))}
+                    vehicles.map((v) => {
+                      const count = v.quantity !== undefined ? v.quantity : (v.availableCount ?? v.count ?? 1);
+                      const isAvail = v.isAvailable !== false && count > 0;
+                      return (
+                        <option key={v._id || v.id} value={v._id || v.id} disabled={!isAvail}>
+                          {isAvail ? '🟢' : '🔴'} {v.name} ({v.transmission || 'Manual'} • {v.fuelType || 'Petrol'}) — ₹{v.pricing?.selfDrive?.daily || v.pricePerDay || 0}/day [{isAvail ? `Available: ${count}` : 'Currently Unavailable'}]
+                        </option>
+                      );
+                    })}
                   {serviceType === 'SELF_DRIVE_BIKE' &&
-                    bikes.map((b) => (
-                      <option key={b._id || b.id} value={b._id || b.id}>
-                        {b.name} ({b.engineCapacity || '150cc'}) — ₹{b.pricing?.daily || b.pricePerDay || 0}/day [Available: {b.availableCount ?? b.count ?? 1}]
-                      </option>
-                    ))}
+                    bikes.map((b) => {
+                      const count = b.quantity !== undefined ? b.quantity : (b.availableCount ?? b.count ?? 1);
+                      const isAvail = b.isAvailable !== false && count > 0;
+                      return (
+                        <option key={b._id || b.id} value={b._id || b.id} disabled={!isAvail}>
+                          {isAvail ? '🟢' : '🔴'} {b.name} ({b.engineCapacity || '150cc'}) — ₹{b.pricing?.daily || b.pricePerDay || 0}/day [{isAvail ? `Available: ${count}` : 'Currently Unavailable'}]
+                        </option>
+                      );
+                    })}
                   {serviceType === 'TOUR_PACKAGE' &&
                     packages.map((p) => (
                       <option key={p._id || p.id} value={p._id || p.id}>

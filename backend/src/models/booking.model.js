@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 try {
   require('./user.model');
   require('./payment.model');
+  require('./driver.model');
+  require('./vehicle.model');
+  require('./bike.model');
 } catch (_) {}
 
 const SERVICE_TYPES = [

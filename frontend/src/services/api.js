@@ -3,16 +3,37 @@
  * Seamlessly connects React UI to the CarzoDrive Backend (http://localhost:5000/api/v1)
  */
 
-const defaultApiUrl = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-  ? 'https://carzodrive-1.onrender.com/api/v1'
-  : 'http://localhost:5000/api/v1';
+const getInitialApiBaseUrl = () => {
+  const isBrowser = typeof window !== 'undefined';
+  const isLocalHost = isBrowser && (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '[::1]'
+  );
 
-const rawApiUrl = (import.meta.env.VITE_API_URL || defaultApiUrl).trim().replace(/\/+$/, '');
-export const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
-  ? rawApiUrl
-  : rawApiUrl.endsWith('/api')
-  ? `${rawApiUrl}/v1`
-  : `${rawApiUrl}/api/v1`;
+  const envUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+
+  // If in browser and NOT on localhost (e.g. deployed on Vercel or accessed via remote host),
+  // NEVER use localhost URL even if it was present in .env during build
+  if (isBrowser && !isLocalHost && (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
+    return 'https://carzodrive-1.onrender.com/api/v1';
+  }
+
+  // In local Vite dev mode, use /api/v1 (which Vite proxies to http://localhost:5000/api/v1)
+  // This completely eliminates CORS issues, IPv6/IPv4 mismatch, and firewall port blocking
+  if (isBrowser && isLocalHost && import.meta.env.DEV) {
+    return '/api/v1';
+  }
+
+  const raw = envUrl || (isLocalHost ? 'http://localhost:5000/api/v1' : 'https://carzodrive-1.onrender.com/api/v1');
+  return raw.endsWith('/api/v1')
+    ? raw
+    : raw.endsWith('/api')
+    ? `${raw}/v1`
+    : `${raw}/api/v1`;
+};
+
+export const API_BASE_URL = getInitialApiBaseUrl();
 
 // Token helpers
 export const getAccessToken = () => localStorage.getItem('carzodrive_access_token');
@@ -147,7 +168,43 @@ export async function apiRequest(endpoint, { method = 'GET', body, headers = {},
 
   const fetchPromise = (async () => {
     try {
-      const response = await fetch(url, options);
+      let response;
+      try {
+        response = await fetch(url, options);
+      } catch (networkErr) {
+        // Automatic fallback on network failure (e.g. if relative /api/v1 proxy or direct localhost:5000 was unreachable)
+        const isLocal = typeof window !== 'undefined' && (
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1'
+        );
+
+        if (isLocal && url.startsWith('/api/v1')) {
+          try {
+            const directUrl = `http://localhost:5000${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+            response = await fetch(directUrl, options);
+          } catch {
+            // direct attempt also failed
+          }
+        } else if (isLocal && url.includes('localhost:5000')) {
+          try {
+            const proxyUrl = `/api/v1${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+            response = await fetch(proxyUrl, options);
+          } catch {
+            // proxy attempt also failed
+          }
+        }
+
+        if (!response) {
+          const isRemote = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+          const errorMsg = isRemote
+            ? 'Server se connection establish nahi ho paya. Backend server wake up ho raha ho sakta hai, kripya 10 second baad dobara try karein.'
+            : 'Backend server unreachable hai. Kripya check karein ki backend terminal me "npm run dev" chal raha hai (port 5000 pe).';
+          const err = new Error(errorMsg);
+          err.isNetworkError = true;
+          throw err;
+        }
+      }
+
       const data = await response.json().catch(() => ({}));
 
       // Cache successful GET responses in memory

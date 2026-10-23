@@ -52,11 +52,15 @@ export const AdminDashboardPage = () => {
         bookingsAPI.getAll().catch(() => ({ data: [] })),
       ]);
 
-      const driverList = dRes?.data || [];
-      setVehicles(vRes?.data || []);
-      setBikes(bRes?.data || []);
+      const vehicleList = Array.isArray(vRes?.data) ? vRes.data : (vRes?.data?.vehicles || []);
+      const bikeList = Array.isArray(bRes?.data) ? bRes.data : (bRes?.data?.bikes || []);
+      const driverList = Array.isArray(dRes?.data) ? dRes.data : (dRes?.data?.drivers || []);
+      const bookingList = Array.isArray(bkRes?.data) ? bkRes.data : (bkRes?.data?.bookings || []);
+
+      setVehicles(vehicleList);
+      setBikes(bikeList);
       setDrivers(driverList);
-      setBookings(bkRes?.data || []);
+      setBookings(bookingList);
 
       const hasPending = driverList.some((d) => d.status === 'PENDING');
       if (hasPending) {

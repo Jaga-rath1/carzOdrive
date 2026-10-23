@@ -19,7 +19,8 @@ const vehicleSchema = new mongoose.Schema(
     year: { type: Number, default: 2024 },
     buyingYear: { type: Number, default: 2024 },
     color: { type: String, trim: true, default: 'White' },
-    availableCount: { type: Number, default: 1 },
+    availableCount: { type: Number, default: 1, min: 0 },
+    quantity: { type: Number, default: 1, min: 0 },
     isAvailable: { type: Boolean, default: true },
     availabilityStatus: { type: String, default: 'Available' },
     tagline: { type: String, trim: true },
@@ -204,6 +205,39 @@ vehicleSchema.pre('save', function (next) {
   if (!this.slug && this.name) {
     this.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.floor(100 + Math.random() * 900);
   }
+
+  // Synchronize quantity and availableCount
+  if (this.quantity !== undefined && this.availableCount === undefined) {
+    this.availableCount = Number(this.quantity);
+  } else if (this.availableCount !== undefined && this.quantity === undefined) {
+    this.quantity = Number(this.availableCount);
+  } else if (this.isModified && (this.isModified('quantity') || this.isModified('availableCount'))) {
+    if (this.isModified('quantity')) {
+      this.availableCount = Number(this.quantity);
+    } else {
+      this.quantity = Number(this.availableCount);
+    }
+  }
+
+  // Keep specs.availableUnits synchronized
+  const effectiveStock = this.quantity !== undefined ? Number(this.quantity) : Number(this.availableCount ?? 1);
+  if (!this.specs) this.specs = {};
+  this.specs.availableUnits = effectiveStock;
+
+  // When quantity / availableCount is 0, mark as Currently Unavailable
+  if (effectiveStock <= 0) {
+    this.quantity = 0;
+    this.availableCount = 0;
+    this.specs.availableUnits = 0;
+    this.isAvailable = false;
+    this.availabilityStatus = 'Currently Unavailable';
+  } else {
+    if (this.availabilityStatus === 'Currently Unavailable' || this.availabilityStatus === 'UNAVAILABLE') {
+      this.isAvailable = true;
+      this.availabilityStatus = 'Available';
+    }
+  }
+
   next();
 });
 

@@ -25,7 +25,8 @@ export const AdminPackagesPage = () => {
     setIsLoading(true);
     try {
       const res = await packagesAPI.getAll();
-      setPackages(res?.data || []);
+      const list = Array.isArray(res?.data) ? res.data : (res?.data?.packages || []);
+      setPackages(list);
     } catch (err) {
       console.warn('Packages fetch error:', err);
     } finally {

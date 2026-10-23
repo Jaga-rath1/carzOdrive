@@ -27,7 +27,8 @@ export const AdminBikesPage = () => {
     setIsLoading(true);
     try {
       const res = await bikesAPI.getAll();
-      setBikes(res?.data || []);
+      const list = Array.isArray(res?.data) ? res.data : (res?.data?.bikes || []);
+      setBikes(list);
     } catch (err) {
       console.warn('Bikes fetch error:', err);
     } finally {

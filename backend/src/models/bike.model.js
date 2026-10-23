@@ -28,7 +28,8 @@ const bikeSchema = new mongoose.Schema(
     reviewsCount: { type: Number, default: 40, min: 0 },
     isAvailable: { type: Boolean, default: true },
     availabilityStatus: { type: String, default: 'Available' },
-    availableCount: { type: Number, default: 1 },
+    availableCount: { type: Number, default: 1, min: 0 },
+    quantity: { type: Number, default: 1, min: 0 },
     badge: { type: String, trim: true },
     isFeatured: { type: Boolean, default: false },
 
@@ -193,6 +194,36 @@ bikeSchema.pre('save', function (next) {
 
   if (this.specs && !this.specs.engine && (this.engineCapacity || this.engineCC)) {
     this.specs.engine = this.engineCapacity || `${this.engineCC} cc`;
+  }
+
+  // Synchronize quantity and availableCount
+  if (this.quantity !== undefined && this.availableCount === undefined) {
+    this.availableCount = Number(this.quantity);
+  } else if (this.availableCount !== undefined && this.quantity === undefined) {
+    this.quantity = Number(this.availableCount);
+  } else if (this.isModified && (this.isModified('quantity') || this.isModified('availableCount'))) {
+    if (this.isModified('quantity')) {
+      this.availableCount = Number(this.quantity);
+    } else {
+      this.quantity = Number(this.availableCount);
+    }
+  }
+
+  const effectiveStock = this.quantity !== undefined ? Number(this.quantity) : Number(this.availableCount ?? 1);
+  if (!this.specs) this.specs = {};
+  this.specs.availableUnits = effectiveStock;
+
+  if (effectiveStock <= 0) {
+    this.quantity = 0;
+    this.availableCount = 0;
+    this.specs.availableUnits = 0;
+    this.isAvailable = false;
+    this.availabilityStatus = 'Currently Unavailable';
+  } else {
+    if (this.availabilityStatus === 'Currently Unavailable' || this.availabilityStatus === 'UNAVAILABLE') {
+      this.isAvailable = true;
+      this.availabilityStatus = 'Available';
+    }
   }
 
   next();

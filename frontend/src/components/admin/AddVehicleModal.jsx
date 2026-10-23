@@ -41,6 +41,7 @@ const INITIAL_FORM_STATE = {
   pricePerHour: '',
   depositNumeric: '',
   extraKmCharge: 12,
+  quantity: 1,
   availableCount: 1,
   isAvailable: true,
   isFeatured: false,
@@ -122,8 +123,9 @@ export const AddVehicleModal = ({ isOpen, onClose, onVehicleAdded, vehicleToEdit
         pricePerHour: v.pricePerHour || v.pricing?.hourlyRate || '',
         depositNumeric: v.depositNumeric || v.securityDeposit || v.pricing?.securityDeposit || '',
         extraKmCharge: v.extraKmCharge || v.pricing?.extraKmCharge || 12,
-        availableCount: v.availableCount ?? (v.isAvailable !== false ? 1 : 0),
-        isAvailable: v.isAvailable !== false,
+        quantity: v.quantity ?? v.availableCount ?? (v.isAvailable !== false ? 1 : 0),
+        availableCount: v.quantity ?? v.availableCount ?? (v.isAvailable !== false ? 1 : 0),
+        isAvailable: v.isAvailable !== false && (v.quantity ?? v.availableCount ?? 1) > 0,
         isFeatured: Boolean(v.isFeatured),
         serviceTypes: v.serviceTypes || ['SELF_DRIVE', 'WITH_DRIVER'],
 
@@ -313,9 +315,24 @@ export const AddVehicleModal = ({ isOpen, onClose, onVehicleAdded, vehicleToEdit
         securityDeposit: deposit,
         extraKmCharge: Number(formData.extraKmCharge || 12),
 
-        availableCount: Number(formData.availableCount || 1),
-        isAvailable: Boolean(formData.isAvailable),
-        availabilityStatus: formData.isAvailable ? 'Available' : 'Reserved',
+        quantity: (() => {
+          const raw = formData.quantity !== undefined && formData.quantity !== '' ? Number(formData.quantity) : Number(formData.availableCount ?? 1);
+          return isNaN(raw) ? 0 : Math.max(0, raw);
+        })(),
+        availableCount: (() => {
+          const raw = formData.quantity !== undefined && formData.quantity !== '' ? Number(formData.quantity) : Number(formData.availableCount ?? 1);
+          return isNaN(raw) ? 0 : Math.max(0, raw);
+        })(),
+        isAvailable: (() => {
+          const raw = formData.quantity !== undefined && formData.quantity !== '' ? Number(formData.quantity) : Number(formData.availableCount ?? 1);
+          const stock = isNaN(raw) ? 0 : Math.max(0, raw);
+          return stock > 0 && Boolean(formData.isAvailable);
+        })(),
+        availabilityStatus: (() => {
+          const raw = formData.quantity !== undefined && formData.quantity !== '' ? Number(formData.quantity) : Number(formData.availableCount ?? 1);
+          const stock = isNaN(raw) ? 0 : Math.max(0, raw);
+          return (stock > 0 && Boolean(formData.isAvailable)) ? 'Available' : 'Currently Unavailable';
+        })(),
         isFeatured: Boolean(formData.isFeatured),
         isPublished: true,
         status: 'APPROVED',

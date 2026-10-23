@@ -360,8 +360,8 @@ async function createUniversalBooking(customerId, data) {
   }
   if (foundVehicle) {
     payload.vehicleId = foundVehicle._id;
-    const vCount = foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? (foundVehicle.isAvailable !== false ? 1 : 0);
-    if (foundVehicle.isAvailable === false || vCount <= 0 || foundVehicle.availabilityStatus === 'UNAVAILABLE') {
+    const vCount = foundVehicle.quantity ?? foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? (foundVehicle.isAvailable !== false ? 1 : 0);
+    if (foundVehicle.isAvailable === false || vCount <= 0 || foundVehicle.availabilityStatus === 'UNAVAILABLE' || foundVehicle.availabilityStatus === 'Currently Unavailable') {
       const err = new Error(`${foundVehicle.name || 'Vehicle'} has 0 available units and is currently unavailable.`);
       err.statusCode = 400;
       throw err;
@@ -387,8 +387,8 @@ async function createUniversalBooking(customerId, data) {
   }
   if (foundBike) {
     payload.bikeId = foundBike._id;
-    const bCount = foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? (foundBike.isAvailable !== false ? 1 : 0);
-    if (foundBike.isAvailable === false || bCount <= 0 || foundBike.availabilityStatus === 'UNAVAILABLE') {
+    const bCount = foundBike.quantity ?? foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? (foundBike.isAvailable !== false ? 1 : 0);
+    if (foundBike.isAvailable === false || bCount <= 0 || foundBike.availabilityStatus === 'UNAVAILABLE' || foundBike.availabilityStatus === 'Currently Unavailable') {
       const err = new Error(`${foundBike.name || 'Bike'} has 0 available units and is currently unavailable.`);
       err.statusCode = 400;
       throw err;
@@ -399,14 +399,15 @@ async function createUniversalBooking(customerId, data) {
 
   // Decrement vehicle inventory count upon booking & invalidate cache
   if (foundVehicle) {
-    const current = foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? 1;
+    const current = foundVehicle.quantity ?? foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? 1;
     const newCount = Math.max(0, current - 1);
+    foundVehicle.quantity = newCount;
     foundVehicle.availableCount = newCount;
     if (!foundVehicle.specs) foundVehicle.specs = {};
     foundVehicle.specs.availableUnits = newCount;
     if (newCount === 0) {
       foundVehicle.isAvailable = false;
-      foundVehicle.availabilityStatus = 'UNAVAILABLE';
+      foundVehicle.availabilityStatus = 'Currently Unavailable';
     }
     await foundVehicle.save();
     try {
@@ -417,14 +418,15 @@ async function createUniversalBooking(customerId, data) {
 
   // Decrement bike inventory count upon booking & invalidate cache
   if (foundBike) {
-    const current = foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? 1;
+    const current = foundBike.quantity ?? foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? 1;
     const newCount = Math.max(0, current - 1);
+    foundBike.quantity = newCount;
     foundBike.availableCount = newCount;
     if (!foundBike.specs) foundBike.specs = {};
     foundBike.specs.availableUnits = newCount;
     if (newCount === 0) {
       foundBike.isAvailable = false;
-      foundBike.availabilityStatus = 'UNAVAILABLE';
+      foundBike.availabilityStatus = 'Currently Unavailable';
     }
     await foundBike.save();
     try {
@@ -699,14 +701,15 @@ async function createAdminBooking(adminUser, data) {
   // Decrement fleet inventory safely
   if (foundVehicle) {
     try {
-      const current = foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? 1;
+      const current = foundVehicle.quantity ?? foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? 1;
       const newCount = Math.max(0, current - 1);
+      foundVehicle.quantity = newCount;
       foundVehicle.availableCount = newCount;
       if (!foundVehicle.specs) foundVehicle.specs = {};
       foundVehicle.specs.availableUnits = newCount;
       if (newCount === 0) {
         foundVehicle.isAvailable = false;
-        foundVehicle.availabilityStatus = 'UNAVAILABLE';
+        foundVehicle.availabilityStatus = 'Currently Unavailable';
       }
       await foundVehicle.save();
       try {
@@ -720,14 +723,15 @@ async function createAdminBooking(adminUser, data) {
 
   if (foundBike) {
     try {
-      const current = foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? 1;
+      const current = foundBike.quantity ?? foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? 1;
       const newCount = Math.max(0, current - 1);
+      foundBike.quantity = newCount;
       foundBike.availableCount = newCount;
       if (!foundBike.specs) foundBike.specs = {};
       foundBike.specs.availableUnits = newCount;
       if (newCount === 0) {
         foundBike.isAvailable = false;
-        foundBike.availabilityStatus = 'UNAVAILABLE';
+        foundBike.availabilityStatus = 'Currently Unavailable';
       }
       await foundBike.save();
       try {
@@ -895,11 +899,13 @@ async function updateBookingStatus(bookingId, newStatus, userId, userRole, note,
     if (booking.vehicleId) {
       const v = await Vehicle().findById(booking.vehicleId);
       if (v) {
-        v.availableCount = (v.availableCount || 0) + 1;
+        const nextVal = (v.quantity !== undefined ? v.quantity : (v.availableCount || 0)) + 1;
+        v.quantity = nextVal;
+        v.availableCount = nextVal;
         if (!v.specs) v.specs = {};
-        v.specs.availableUnits = v.availableCount;
+        v.specs.availableUnits = nextVal;
         v.isAvailable = true;
-        v.availabilityStatus = 'AVAILABLE';
+        v.availabilityStatus = 'Available';
         await v.save();
         try {
           const { invalidateVehicleCache } = require('./vehicles.service');
@@ -910,11 +916,13 @@ async function updateBookingStatus(bookingId, newStatus, userId, userRole, note,
     if (booking.bikeId) {
       const b = await Bike().findById(booking.bikeId);
       if (b) {
-        b.availableCount = (b.availableCount || 0) + 1;
+        const nextVal = (b.quantity !== undefined ? b.quantity : (b.availableCount || 0)) + 1;
+        b.quantity = nextVal;
+        b.availableCount = nextVal;
         if (!b.specs) b.specs = {};
-        b.specs.availableUnits = b.availableCount;
+        b.specs.availableUnits = nextVal;
         b.isAvailable = true;
-        b.availabilityStatus = 'AVAILABLE';
+        b.availabilityStatus = 'Available';
         await b.save();
         try {
           const { invalidateBikeCache } = require('./bikes.service');
@@ -1070,11 +1078,13 @@ async function deleteBooking(bookingId) {
     if (booking.vehicleId) {
       const v = await Vehicle().findById(booking.vehicleId);
       if (v) {
-        v.availableCount = (v.availableCount || 0) + 1;
+        const nextVal = (v.quantity !== undefined ? v.quantity : (v.availableCount || 0)) + 1;
+        v.quantity = nextVal;
+        v.availableCount = nextVal;
         if (!v.specs) v.specs = {};
-        v.specs.availableUnits = v.availableCount;
+        v.specs.availableUnits = nextVal;
         v.isAvailable = true;
-        v.availabilityStatus = 'AVAILABLE';
+        v.availabilityStatus = 'Available';
         await v.save();
         try {
           const { invalidateVehicleCache } = require('./vehicles.service');
@@ -1085,11 +1095,13 @@ async function deleteBooking(bookingId) {
     if (booking.bikeId) {
       const b = await Bike().findById(booking.bikeId);
       if (b) {
-        b.availableCount = (b.availableCount || 0) + 1;
+        const nextVal = (b.quantity !== undefined ? b.quantity : (b.availableCount || 0)) + 1;
+        b.quantity = nextVal;
+        b.availableCount = nextVal;
         if (!b.specs) b.specs = {};
-        b.specs.availableUnits = b.availableCount;
+        b.specs.availableUnits = nextVal;
         b.isAvailable = true;
-        b.availabilityStatus = 'AVAILABLE';
+        b.availabilityStatus = 'Available';
         await b.save();
         try {
           const { invalidateBikeCache } = require('./bikes.service');

@@ -22,6 +22,8 @@ export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
             .map((v) => {
               const price = v.pricing?.dailyRate || v.pricePerDay || (isBike ? 499 : 1499);
               const image = (v.images && v.images[0]) || v.image || (isBike ? '/images/vehicles/hero-splendor.jpg' : '/images/vehicles/swift-2026-grey.jpg');
+              const count = v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0));
+              const isAvail = v.isAvailable !== false && count > 0 && v.availabilityStatus !== 'UNAVAILABLE' && v.availabilityStatus !== 'Currently Unavailable';
 
               return {
                 id: v.slug || v._id || v.id,
@@ -35,8 +37,11 @@ export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
                 image,
                 pricePerDay: price,
                 priceDisplay: `₹${price.toLocaleString('en-IN')}`,
-                badge: v.badge || (v.isAvailable !== false ? 'Verified' : 'Reserved'),
-                isAvailable: v.isAvailable !== false,
+                badge: v.badge || (isAvail ? 'Verified' : 'Reserved'),
+                isAvailable: isAvail,
+                quantity: count,
+                availableCount: count,
+                availabilityStatus: isAvail ? 'Available' : 'Currently Unavailable',
                 rawVehicle: v,
               };
             });
@@ -154,10 +159,10 @@ export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
                   <button
                     type="button"
                     disabled
-                    className="py-2.5 px-2 rounded-xl font-bold text-xs text-slate-400 bg-slate-100 border border-slate-200 opacity-40 cursor-not-allowed select-none text-center"
-                    title="Vehicle is currently not available for booking"
+                    className="py-2.5 px-2 rounded-xl font-black text-xs text-rose-500 bg-rose-50 border border-rose-200 cursor-not-allowed select-none text-center"
+                    title="This vehicle has 0 units available and is currently unavailable"
                   >
-                    Not Available
+                    Currently Unavailable
                   </button>
                 )}
               </div>

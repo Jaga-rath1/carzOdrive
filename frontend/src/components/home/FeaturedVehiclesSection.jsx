@@ -9,7 +9,7 @@ import { vehiclesAPI, bikesAPI } from '../../services/api';
 import { resolveVehicleImageUrl, getVehicleFallbackImage } from '../../utils/documentUtils';
 
 export const FeaturedVehiclesSection = ({ onQuickBook }) => {
-  const [activeCategory, setActiveCategory] = useState('Available Now');
+  const [activeCategory, setActiveCategory] = useState('All Fleet');
   const [vehicles, setVehicles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -37,8 +37,9 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
               : 'Sedan',
           color: v.color || 'Standard',
           year: v.year || 2024,
-          availableCount: v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0),
-          isAvailable: v.isAvailable !== false && (v.availableCount ?? v.count ?? 1) > 0 && v.availabilityStatus !== 'UNAVAILABLE',
+          quantity: v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0)),
+          availableCount: v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0)),
+          isAvailable: v.isAvailable !== false && (v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? 1)) > 0 && v.availabilityStatus !== 'UNAVAILABLE' && v.availabilityStatus !== 'Currently Unavailable',
           image: resolveVehicleImageUrl((v.images && v.images[0]) || v.image, '/images/vehicles/swift-2026-grey.jpg'),
           seats: `${v.seats || 5} Seats`,
           fuel: v.fuelType ? v.fuelType.charAt(0).toUpperCase() + v.fuelType.slice(1) : 'Petrol',
@@ -60,8 +61,9 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
           category: 'Bike',
           color: b.color || 'Standard',
           year: b.year || 2024,
-          availableCount: b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0),
-          isAvailable: b.isAvailable !== false && (b.availableCount ?? b.count ?? 1) > 0 && b.availabilityStatus !== 'UNAVAILABLE',
+          quantity: b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0)),
+          availableCount: b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0)),
+          isAvailable: b.isAvailable !== false && (b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? 1)) > 0 && b.availabilityStatus !== 'UNAVAILABLE' && b.availabilityStatus !== 'Currently Unavailable',
           image: resolveVehicleImageUrl((b.images && b.images[0]) || b.image, '/images/vehicles/hero-splendor.jpg'),
           seats: '2 Seats',
           fuel: 'Petrol',
@@ -89,9 +91,12 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
     };
   }, []);
 
-  const categories = ['Available Now', 'SUV', 'Sedan', 'Luxury', 'Bike'];
+  const categories = ['All Fleet', 'Available Now', 'SUV', 'Sedan', 'Luxury', 'Bike'];
 
   const filteredVehicles = useMemo(() => {
+    if (activeCategory === 'All Fleet') {
+      return vehicles;
+    }
     if (activeCategory === 'Available Now') {
       return vehicles.filter((v) => v.isAvailable);
     }
@@ -151,7 +156,9 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
                   : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
               }`}
             >
-              {cat === 'Available Now'
+              {cat === 'All Fleet'
+                ? '⚡ All Fleet'
+                : cat === 'Available Now'
                 ? '🟢 Available Now'
                 : cat === 'Bike'
                 ? '🏍️ Bikes & Scooters'

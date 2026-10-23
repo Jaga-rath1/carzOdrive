@@ -87,10 +87,29 @@ export const AdminLoginPage = () => {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold">
-              {error}
+            <div className="mb-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+              <span>{error}</span>
             </div>
           )}
+
+          {/* Quick Credential Hint */}
+          <div className="mb-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-slate-300 flex items-center justify-between gap-2">
+            <div>
+              <p className="font-semibold text-blue-300">Quick Access Credentials:</p>
+              <p className="text-[11px] text-slate-400 font-mono mt-0.5">admin@carzodrive.com • Admin@123</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin@carzodrive.com');
+                setPassword('Admin@123');
+              }}
+              className="text-[11px] px-2.5 py-1 rounded-lg bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-400/30 font-semibold transition-all cursor-pointer whitespace-nowrap"
+            >
+              Auto-fill
+            </button>
+          </div>
 
           <form onSubmit={handleAdminLogin} className="space-y-4">
             <div>

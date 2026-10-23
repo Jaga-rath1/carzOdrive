@@ -39,7 +39,7 @@ export const AdminDriversPage = () => {
     setIsLoading(true);
     try {
       const res = await driversAPI.getAll();
-      const list = res?.data || [];
+      const list = Array.isArray(res?.data) ? res.data : (res?.data?.drivers || []);
       setDrivers(list);
       const pending = list.filter((d) => d.status === 'PENDING').length;
       if (pending === 0 && list.length > 0) {

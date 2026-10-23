@@ -40,13 +40,18 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       if (env.nodeEnv !== 'production') return callback(null, true);
-      const allowed = [
-        env.frontendUrl,
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-      ];
-      if (allowed.includes(origin)) return callback(null, true);
+      if (env.frontendUrl && (origin === env.frontendUrl || env.frontendUrl.includes(origin))) {
+        return callback(null, true);
+      }
+      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+      if (/^https:\/\/([a-zA-Z0-9-]+\.)*vercel\.app$/.test(origin)) {
+        return callback(null, true);
+      }
+      if (/^https:\/\/([a-zA-Z0-9-]+\.)*onrender\.com$/.test(origin)) {
+        return callback(null, true);
+      }
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,

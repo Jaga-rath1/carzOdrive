@@ -18,6 +18,7 @@ const PUBLIC_VEHICLE_FIELDS = {
   buyingYear: 1,
   color: 1,
   availableCount: 1,
+  quantity: 1,
   isAvailable: 1,
   availabilityStatus: 1,
   tagline: 1,
@@ -90,7 +91,7 @@ async function createVehicle(vendorId, data) {
 }
 
 /**
- * Public search — only APPROVED + isPublished + isAvailable vehicles.
+ * Public search — APPROVED + isPublished vehicles (both Available & Currently Unavailable).
  * Cached in-memory with automatic TTL and lean document streaming.
  */
 async function listVehicles(query) {
@@ -102,8 +103,11 @@ async function listVehicles(query) {
     const filter = {
       status: 'APPROVED',
       isPublished: true,
-      isAvailable: true,
     };
+
+    if (query.isAvailable !== undefined) {
+      filter.isAvailable = query.isAvailable === 'true' || query.isAvailable === true;
+    }
 
     if (query.city) filter['location.city'] = { $regex: query.city, $options: 'i' };
     if (query.vehicleType) filter.vehicleType = query.vehicleType.toUpperCase();

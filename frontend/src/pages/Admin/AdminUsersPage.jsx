@@ -95,7 +95,8 @@ export const AdminUsersPage = () => {
     setIsLoading(true);
     try {
       const res = await adminsAPI.getAll();
-      setAdmins(res?.data || []);
+      const list = Array.isArray(res?.data) ? res.data : (res?.data?.admins || res?.data?.users || []);
+      setAdmins(list);
     } catch (err) {
       console.warn('Admin list notice:', err);
       setAdmins([]);

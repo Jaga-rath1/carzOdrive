@@ -7,8 +7,8 @@ import { getVehicleFallbackImage } from '../../utils/documentUtils';
 
 export const CarRideCard = ({ vehicle, onOpenQuickBook }) => {
   const detailTarget = `/vehicle/${vehicle.id}`;
-  const count = vehicle.availableCount ?? vehicle.count ?? (vehicle.isAvailable !== false ? 1 : 0);
-  const isAvailable = vehicle.isAvailable !== false && count > 0 && vehicle.availabilityStatus !== 'UNAVAILABLE';
+  const count = vehicle.quantity !== undefined ? Number(vehicle.quantity) : (vehicle.availableCount ?? vehicle.count ?? (vehicle.isAvailable !== false ? 1 : 0));
+  const isAvailable = vehicle.isAvailable !== false && count > 0 && vehicle.availabilityStatus !== 'UNAVAILABLE' && vehicle.availabilityStatus !== 'Currently Unavailable';
 
   return (
     <div

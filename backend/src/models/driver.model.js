@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+require('./user.model');
 
 const driverSchema = new mongoose.Schema(
   {

@@ -54,9 +54,10 @@ export const BikeRideGrid = ({ onOpenQuickBook }) => {
               depositNumeric: deposit,
               image: image,
               badge: b.badge || (b.isAvailable !== false ? 'Live in Hub' : 'Reserved'),
-              availableCount: b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0),
-              isAvailable: b.isAvailable !== false && (b.availableCount ?? b.count ?? 1) > 0 && b.availabilityStatus !== 'UNAVAILABLE',
-              availabilityStatus: (b.isAvailable !== false && (b.availableCount ?? b.count ?? 1) > 0 && b.availabilityStatus !== 'UNAVAILABLE') ? 'Available' : 'Currently Unavailable',
+              quantity: b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0)),
+              availableCount: b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0)),
+              isAvailable: b.isAvailable !== false && (b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? 1)) > 0 && b.availabilityStatus !== 'UNAVAILABLE' && b.availabilityStatus !== 'Currently Unavailable',
+              availabilityStatus: (b.isAvailable !== false && (b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? 1)) > 0 && b.availabilityStatus !== 'UNAVAILABLE' && b.availabilityStatus !== 'Currently Unavailable') ? 'Available' : 'Currently Unavailable',
               rawBike: b,
               vehicleType: 'bike',
             };

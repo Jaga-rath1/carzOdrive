@@ -3,8 +3,8 @@ require('dotenv').config();
 const env = {
   port: parseInt(process.env.PORT, 10) || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
-  mongodbUri: process.env.MONGODB_URI || 'mongodb+srv://jagankumarrath72_db_user:jk1234@cluster0.osk4ogm.mongodb.net/carzOdrive?retryWrites=true&w=majority',
-  partnerMongodbUri: process.env.PARTNER_MONGODB_URI || 'mongodb+srv://jagankumarrath72_db_user:jk12@cluster0.vtfqaff.mongodb.net/carzoDrive_Partner',
+  mongodbUri: process.env.MONGODB_URI || 'mongodb+srv://projects_db_user:7VDK36eARhpljVex@cluster0.cuqh0bd.mongodb.net/carzOdrive?retryWrites=true&w=majority',
+  partnerMongodbUri: process.env.PARTNER_MONGODB_URI || 'mongodb+srv://projects_db_user:7VDK36eARhpljVex@cluster0.cuqh0bd.mongodb.net/carzoDrive_Partner?retryWrites=true&w=majority',
   jwt: {
     secret: process.env.JWT_SECRET || 'dev_jwt_secret_carzodrive_2026_super_secure_key_32chars',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev_jwt_refresh_secret_carzodrive_2026_super_secure_key_32chars',

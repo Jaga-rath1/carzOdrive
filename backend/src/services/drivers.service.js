@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { Driver } = require('../models/driver.model');
+const { User } = require('../models/user.model');
 const { DriverRegistrationSubmission } = require('../models/partner.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
 const cache = require('../utils/cache');

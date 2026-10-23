@@ -46,7 +46,8 @@ export const BikeViewModal = ({ isOpen, bike, onClose, onEdit }) => {
     ? (String(bike.specs.engine).includes('cc') ? bike.specs.engine : `${bike.specs.engine} cc`)
     : '350 cc';
 
-  const isAvailable = bike.isAvailable !== false && bike.availableCount !== 0;
+  const stockCount = bike.quantity !== undefined ? bike.quantity : (bike.availableCount ?? (bike.isAvailable !== false ? 1 : 0));
+  const isAvailable = bike.isAvailable !== false && stockCount > 0 && bike.availabilityStatus !== 'Currently Unavailable';
 
   const specsList = [
     { label: 'Engine Capacity', value: engineDisplay, icon: Gauge, highlight: true },
@@ -105,9 +106,9 @@ export const BikeViewModal = ({ isOpen, bike, onClose, onEdit }) => {
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                   isAvailable
                     ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                    : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                    : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
                 }`}>
-                  {isAvailable ? `ACTIVE (${bike.availableCount || 1} units)` : 'RESERVED'}
+                  {isAvailable ? `ACTIVE (${stockCount} units)` : 'CURRENTLY UNAVAILABLE (0 units)'}
                 </span>
               </div>
               <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">

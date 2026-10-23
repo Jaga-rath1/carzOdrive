@@ -25,7 +25,7 @@ export const CONTACT_CONFIG = {
   // Clickable mailto: URI
   emailMailto: `mailto:${rawEmail}`,
   // Office info
-  officeLocation: 'CARZODRIVE Tower, Infocity, Bhubaneswar, Odisha',
+  officeLocation: 'Plot no -1774. Ananda Bana Main Road. Kalinga Nagar, Ghatikia, Bhubaneswar, Pin- 751029',
 };
 
 // Direct named exports for backwards-compatibility

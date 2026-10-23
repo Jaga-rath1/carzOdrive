@@ -34,6 +34,7 @@ const PUBLIC_BIKE_FIELDS = {
   isAvailable: 1,
   availabilityStatus: 1,
   availableCount: 1,
+  quantity: 1,
   badge: 1,
   isFeatured: 1,
   engineCapacity: 1,
@@ -79,8 +80,11 @@ async function listBikes(query) {
     const filter = {
       status: 'APPROVED',
       isPublished: true,
-      isAvailable: true,
     };
+
+    if (query.isAvailable !== undefined) {
+      filter.isAvailable = query.isAvailable === 'true' || query.isAvailable === true;
+    }
 
     if (query.city) {
       filter['location.city'] = new RegExp(query.city, 'i');

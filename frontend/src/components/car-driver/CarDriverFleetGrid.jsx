@@ -18,6 +18,9 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
             const chauffeurRate = v.pricing?.dailyRateWithFuel || (baseRate + 800);
             const image = (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg';
 
+            const stockCount = v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? (v.isAvailable !== false ? 1 : 0));
+            const isAvail = v.isAvailable !== false && stockCount > 0 && v.availabilityStatus !== 'Currently Unavailable';
+
             return {
               id: v.slug || v._id || v.id,
               rawId: v._id || v.id,
@@ -28,9 +31,11 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
               priceNumeric: chauffeurRate,
               image: image,
               color: v.color || 'Executive Finish',
-              badge: v.badge || (v.isAvailable !== false ? 'Verified Chauffeur' : 'Reserved'),
-              isAvailable: v.isAvailable !== false,
-              availabilityStatus: v.isAvailable !== false ? 'Available' : 'Currently Unavailable',
+              badge: v.badge || (isAvail ? 'Verified Chauffeur' : 'Reserved'),
+              quantity: stockCount,
+              availableCount: stockCount,
+              isAvailable: isAvail,
+              availabilityStatus: isAvail ? 'Available' : 'Currently Unavailable',
               driver: {
                 name: 'Professional Odisha Chauffeur',
                 experience: '8+ Years Experience',

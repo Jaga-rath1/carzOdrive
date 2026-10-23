@@ -6,8 +6,8 @@ import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 
 export const BikeRideCard = ({ bike, onOpenQuickBook }) => {
   const detailTarget = `/bike/${bike.id}`;
-  const count = bike.availableCount ?? bike.count ?? (bike.isAvailable !== false ? 1 : 0);
-  const isAvailable = bike.isAvailable !== false && count > 0 && bike.availabilityStatus !== 'UNAVAILABLE';
+  const count = bike.quantity !== undefined ? Number(bike.quantity) : (bike.availableCount ?? bike.count ?? (bike.isAvailable !== false ? 1 : 0));
+  const isAvailable = bike.isAvailable !== false && count > 0 && bike.availabilityStatus !== 'UNAVAILABLE' && bike.availabilityStatus !== 'Currently Unavailable';
 
   return (
     <div className="group rounded-3xl bg-white border border-slate-200/80 hover:border-blue-500/50 transition-all duration-500 shadow-card hover:shadow-card-hover overflow-hidden flex flex-col justify-between">
