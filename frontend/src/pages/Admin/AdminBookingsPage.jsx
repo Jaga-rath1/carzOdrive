@@ -228,9 +228,8 @@ export const AdminBookingsPage = () => {
             <button
               type="button"
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
-                viewMode === 'cards' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
-              }`}
+              className={`p-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${viewMode === 'cards' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
+                }`}
               title="Detailed Card View"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
@@ -239,9 +238,8 @@ export const AdminBookingsPage = () => {
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
-                viewMode === 'table' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
-              }`}
+              className={`p-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${viewMode === 'table' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
+                }`}
               title="Compact Table View"
             >
               <TableIcon className="w-3.5 h-3.5" />
@@ -274,13 +272,12 @@ export const AdminBookingsPage = () => {
       {/* Alert Notifications */}
       {statusMessage && (
         <div
-          className={`p-4 rounded-2xl border text-xs font-semibold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-200 ${
-            statusMessage.type === 'success'
+          className={`p-4 rounded-2xl border text-xs font-semibold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-200 ${statusMessage.type === 'success'
               ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
               : statusMessage.type === 'auth_error'
-              ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-xs'
-              : 'bg-rose-50 border-rose-200 text-rose-800'
-          }`}
+                ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-xs'
+                : 'bg-rose-50 border-rose-200 text-rose-800'
+            }`}
         >
           <div className="flex items-center gap-2.5">
             {statusMessage.type === 'success' ? (
@@ -379,11 +376,10 @@ export const AdminBookingsPage = () => {
               key={tab.id}
               type="button"
               onClick={() => setFilterTab(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer ${
-                filterTab === tab.id
+              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer ${filterTab === tab.id
                   ? 'bg-black text-white border-black shadow-2xs'
                   : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100 hover:text-black'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
