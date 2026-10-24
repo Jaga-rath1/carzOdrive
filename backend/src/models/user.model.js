@@ -51,8 +51,14 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-userSchema.methods.comparePassword = function (candidate) {
-  return bcrypt.compare(candidate, this.password);
+userSchema.methods.comparePassword = async function (candidate) {
+  if (!candidate || !this.password) return false;
+  const match = await bcrypt.compare(candidate, this.password);
+  if (match) return true;
+  // If first character case is different (e.g., admin@123 vs Admin@123), verify fallback
+  const first = candidate.charAt(0);
+  const toggled = (first === first.toUpperCase() ? first.toLowerCase() : first.toUpperCase()) + candidate.slice(1);
+  return bcrypt.compare(toggled, this.password);
 };
 
 userSchema.methods.toSafeObject = function () {
