@@ -67,22 +67,31 @@ export const AdminBikesPage = () => {
     }
   };
 
-  const filteredBikes = bikes.filter((b) => {
-    const q = searchTerm.toLowerCase();
-    const matchesSearch =
-      b.name?.toLowerCase().includes(q) ||
-      b.brand?.toLowerCase().includes(q) ||
-      b.category?.toLowerCase().includes(q) ||
-      b.registrationNumber?.toLowerCase().includes(q) ||
-      b.rcNumber?.toLowerCase().includes(q) ||
-      b.color?.toLowerCase().includes(q);
+  const filteredBikes = bikes
+    .filter((b) => {
+      const q = searchTerm.toLowerCase();
+      const matchesSearch =
+        b.name?.toLowerCase().includes(q) ||
+        b.brand?.toLowerCase().includes(q) ||
+        b.category?.toLowerCase().includes(q) ||
+        b.registrationNumber?.toLowerCase().includes(q) ||
+        b.rcNumber?.toLowerCase().includes(q) ||
+        b.color?.toLowerCase().includes(q);
 
-    const matchesCategory =
-      categoryFilter === 'ALL' ||
-      b.category?.toLowerCase() === categoryFilter.toLowerCase();
+      const matchesCategory =
+        categoryFilter === 'ALL' ||
+        b.category?.toLowerCase() === categoryFilter.toLowerCase();
 
-    return matchesSearch && matchesCategory;
-  });
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      const aStock = a.quantity !== undefined ? Number(a.quantity) : (a.availableCount ?? (a.isAvailable !== false ? 1 : 0));
+      const aAvail = a.isAvailable !== false && aStock > 0 && a.availabilityStatus !== 'Currently Unavailable';
+      const bStock = b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? (b.isAvailable !== false ? 1 : 0));
+      const bAvail = b.isAvailable !== false && bStock > 0 && b.availabilityStatus !== 'Currently Unavailable';
+      if (aAvail === bAvail) return 0;
+      return aAvail ? -1 : 1;
+    });
 
   return (
     <div className="space-y-6">

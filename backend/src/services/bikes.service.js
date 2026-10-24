@@ -114,7 +114,7 @@ async function listBikes(query) {
 
     const [bikes, total] = await Promise.all([
       Bike.find(filter, PUBLIC_BIKE_FIELDS)
-        .sort({ isFeatured: -1, rating: -1, createdAt: -1 })
+        .sort({ isAvailable: -1, isFeatured: -1, rating: -1, createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),

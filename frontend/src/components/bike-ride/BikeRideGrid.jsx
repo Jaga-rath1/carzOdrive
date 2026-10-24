@@ -62,7 +62,11 @@ export const BikeRideGrid = ({ onOpenQuickBook }) => {
               vehicleType: 'bike',
             };
           });
-          setFleetBikes(mapped);
+          const sorted = mapped.sort((a, b) => {
+            if (a.isAvailable === b.isAvailable) return 0;
+            return a.isAvailable ? -1 : 1;
+          });
+          setFleetBikes(sorted);
           setLoading(false);
         } else {
           setLoading(false);
@@ -81,8 +85,11 @@ export const BikeRideGrid = ({ onOpenQuickBook }) => {
   const categories = ['All', 'Scooter', 'Commuter', 'Sports', 'Luxury'];
 
   const filteredBikes = useMemo(() => {
-    if (activeCategory === 'All') return fleetBikes;
-    return fleetBikes.filter((b) => b.category === activeCategory);
+    let list = activeCategory === 'All' ? [...fleetBikes] : fleetBikes.filter((b) => b.category === activeCategory);
+    return list.sort((a, b) => {
+      if (a.isAvailable === b.isAvailable) return 0;
+      return a.isAvailable ? -1 : 1;
+    });
   }, [activeCategory, fleetBikes]);
 
   return (

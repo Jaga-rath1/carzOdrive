@@ -46,7 +46,11 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
               rawVehicle: v,
             };
           });
-          setChauffeurCars(mapped);
+          const sorted = mapped.sort((a, b) => {
+            if (a.isAvailable === b.isAvailable) return 0;
+            return a.isAvailable ? -1 : 1;
+          });
+          setChauffeurCars(sorted);
           setLoading(false);
         } else {
           setLoading(false);

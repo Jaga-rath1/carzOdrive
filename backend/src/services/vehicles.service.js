@@ -137,7 +137,7 @@ async function listVehicles(query) {
     // High performance query: .lean() bypasses full Mongoose hydration
     const [vehicles, total] = await Promise.all([
       Vehicle.find(filter, PUBLIC_VEHICLE_FIELDS)
-        .sort({ isFeatured: -1, rating: -1, createdAt: -1 })
+        .sort({ isAvailable: -1, isFeatured: -1, rating: -1, createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),

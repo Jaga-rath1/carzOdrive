@@ -58,7 +58,11 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
               vehicleType: 'car',
             };
           });
-          setFleetCars(mapped);
+          const sorted = mapped.sort((a, b) => {
+            if (a.isAvailable === b.isAvailable) return 0;
+            return a.isAvailable ? -1 : 1;
+          });
+          setFleetCars(sorted);
           setLoading(false);
         } else {
           setLoading(false);
@@ -92,6 +96,13 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
     } else {
       result.sort((a, b) => b.popularity - a.popularity);
     }
+
+    // Always keep available vehicles on top, unavailable at the bottom
+    result.sort((a, b) => {
+      if (a.isAvailable === b.isAvailable) return 0;
+      return a.isAvailable ? -1 : 1;
+    });
+
     return result;
   }, [fleetCars, activeCategory, sortBy]);
 

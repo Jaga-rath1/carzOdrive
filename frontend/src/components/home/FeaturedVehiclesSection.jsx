@@ -76,7 +76,11 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
         }));
 
         if (isMounted) {
-          setVehicles([...carItems, ...bikeItems]);
+          const combined = [...carItems, ...bikeItems].sort((a, b) => {
+            if (a.isAvailable === b.isAvailable) return 0;
+            return a.isAvailable ? -1 : 1;
+          });
+          setVehicles(combined);
           setIsLoading(false);
         }
       } catch (err) {
@@ -94,13 +98,19 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
   const categories = ['All Fleet', 'Available Now', 'SUV', 'Sedan', 'Luxury', 'Bike'];
 
   const filteredVehicles = useMemo(() => {
+    let list = [];
     if (activeCategory === 'All Fleet') {
-      return vehicles;
+      list = [...vehicles];
+    } else if (activeCategory === 'Available Now') {
+      list = vehicles.filter((v) => v.isAvailable);
+    } else {
+      list = vehicles.filter((v) => v.category === activeCategory);
     }
-    if (activeCategory === 'Available Now') {
-      return vehicles.filter((v) => v.isAvailable);
-    }
-    return vehicles.filter((v) => v.category === activeCategory);
+
+    return list.sort((a, b) => {
+      if (a.isAvailable === b.isAvailable) return 0;
+      return a.isAvailable ? -1 : 1;
+    });
   }, [vehicles, activeCategory]);
 
   return (

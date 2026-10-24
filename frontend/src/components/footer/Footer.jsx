@@ -227,7 +227,6 @@ export const Footer = () => {
             <Link to="/about" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
             <Link to="/about" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
             <Link to="/contact" className="hover:text-slate-300 transition-colors">Concierge Support</Link>
-            <Link to="/admin/login" className="text-amber-400/80 hover:text-amber-300 transition-colors font-bold">Admin Portal</Link>
           </div>
         </div>
       </Container>

@@ -67,22 +67,31 @@ export const AdminVehiclesPage = () => {
     }
   };
 
-  const filteredVehicles = vehicles.filter((v) => {
-    const q = searchTerm.toLowerCase();
-    const matchesSearch =
-      v.name?.toLowerCase().includes(q) ||
-      v.brand?.toLowerCase().includes(q) ||
-      v.category?.toLowerCase().includes(q) ||
-      v.registrationNumber?.toLowerCase().includes(q) ||
-      v.rcNumber?.toLowerCase().includes(q) ||
-      v.color?.toLowerCase().includes(q);
+  const filteredVehicles = vehicles
+    .filter((v) => {
+      const q = searchTerm.toLowerCase();
+      const matchesSearch =
+        v.name?.toLowerCase().includes(q) ||
+        v.brand?.toLowerCase().includes(q) ||
+        v.category?.toLowerCase().includes(q) ||
+        v.registrationNumber?.toLowerCase().includes(q) ||
+        v.rcNumber?.toLowerCase().includes(q) ||
+        v.color?.toLowerCase().includes(q);
 
-    const matchesCategory =
-      categoryFilter === 'ALL' ||
-      v.category?.toLowerCase() === categoryFilter.toLowerCase();
+      const matchesCategory =
+        categoryFilter === 'ALL' ||
+        v.category?.toLowerCase() === categoryFilter.toLowerCase();
 
-    return matchesSearch && matchesCategory;
-  });
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      const aStock = a.quantity !== undefined ? Number(a.quantity) : (a.availableCount ?? (a.isAvailable !== false ? 1 : 0));
+      const aAvail = a.isAvailable !== false && aStock > 0 && a.availabilityStatus !== 'Currently Unavailable';
+      const bStock = b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? (b.isAvailable !== false ? 1 : 0));
+      const bAvail = b.isAvailable !== false && bStock > 0 && b.availabilityStatus !== 'Currently Unavailable';
+      if (aAvail === bAvail) return 0;
+      return aAvail ? -1 : 1;
+    });
 
   return (
     <div className="space-y-6">
