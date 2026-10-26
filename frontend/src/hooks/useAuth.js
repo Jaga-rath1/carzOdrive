@@ -10,17 +10,24 @@ export function useAuth() {
   const [token, setToken] = useState(() => getAccessToken());
 
   useEffect(() => {
-    const syncAuth = () => {
-      setCurrentUser(getCurrentUser());
+    const syncAuth = (event) => {
+      const explicitUser = event?.detail?.user;
+      if (explicitUser !== undefined) {
+        setCurrentUser(explicitUser);
+      } else {
+        setCurrentUser(getCurrentUser());
+      }
       setToken(getAccessToken());
     };
 
     window.addEventListener('carzodrive-auth-change', syncAuth);
     window.addEventListener('storage', syncAuth);
+    window.addEventListener('focus', syncAuth);
 
     return () => {
       window.removeEventListener('carzodrive-auth-change', syncAuth);
       window.removeEventListener('storage', syncAuth);
+      window.removeEventListener('focus', syncAuth);
     };
   }, []);
 

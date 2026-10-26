@@ -10,6 +10,17 @@ export const LoginPage = () => {
   const location = useLocation();
   const [currentUser, setCurrentUser] = React.useState(() => getCurrentUser());
 
+  const prefilledEmail = location.state?.email || '';
+  const resetSuccessMsg = location.state?.message || (location.state?.resetSuccess ? 'Password reset successful! Please log in with your new password.' : null);
+
+  React.useEffect(() => {
+    const handleAuthChange = () => {
+      setCurrentUser(getCurrentUser());
+    };
+    window.addEventListener('carzodrive-auth-change', handleAuthChange);
+    return () => window.removeEventListener('carzodrive-auth-change', handleAuthChange);
+  }, []);
+
   const handleLogout = () => {
     clearAuthSession();
     setCurrentUser(null);
@@ -31,13 +42,21 @@ export const LoginPage = () => {
 
       {/* Top Navigation Bar: Back to Home */}
       <div className="relative z-10 max-w-7xl mx-auto w-full flex items-center justify-between">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-300 hover:text-cyan-300 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Home</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-300 hover:text-cyan-300 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Home</span>
+          </Link>
+          <Link
+            to="/signup"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-cyan-300 hover:text-cyan-200 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/30 transition-all"
+          >
+            <span>Create Account</span>
+          </Link>
+        </div>
 
         <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-300 font-semibold bg-slate-900/80 border border-slate-800 px-3 py-1 rounded-full">
           <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
@@ -80,13 +99,16 @@ export const LoginPage = () => {
         ) : (
           <AuthCard
             initialMode="login"
-            onSuccess={(user) => {
+            initialEmail={prefilledEmail}
+            initialStatusMessage={resetSuccessMsg ? { type: 'success', text: resetSuccessMsg } : null}
+            onSuccess={(data) => {
               if (typeof window !== 'undefined') {
-                window.dispatchEvent(new Event('carzodrive-auth-change'));
+                window.dispatchEvent(new CustomEvent('carzodrive-auth-change', { detail: { user: data?.user || data } }));
               }
+              const user = data?.user || data;
+              const role = user?.role || '';
+              const returnTo = location.state?.from || location.state?.returnTo;
               setTimeout(() => {
-                const role = user?.role || '';
-                const returnTo = location.state?.from || location.state?.returnTo;
                 if (returnTo) {
                   navigate(returnTo);
                 } else if (role === 'VENDOR') {
@@ -94,7 +116,7 @@ export const LoginPage = () => {
                 } else {
                   navigate('/');
                 }
-              }, 600);
+              }, 400);
             }}
           />
         )}

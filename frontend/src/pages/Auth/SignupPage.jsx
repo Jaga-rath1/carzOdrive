@@ -22,15 +22,24 @@ export const SignupPage = () => {
         <div className="absolute bottom-10 right-10 w-[500px] h-[300px] bg-blue-600/12 rounded-full blur-[140px]" />
       </div>
 
-      {/* Top Navigation Bar: Back to Home */}
+      {/* Top Navigation Bar: Sign In & Home */}
       <div className="relative z-10 max-w-7xl mx-auto w-full flex items-center justify-between">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-300 hover:text-cyan-300 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Home</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-cyan-300 hover:text-cyan-200 px-3.5 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 transition-all shadow-[0_0_12px_rgba(0,240,255,0.2)]"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Sign In</span>
+          </Link>
+
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-400 hover:text-white px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+          >
+            <span>Home</span>
+          </Link>
+        </div>
 
         <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-400 font-semibold bg-slate-900/60 border border-slate-800 px-3 py-1 rounded-full">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
@@ -42,9 +51,12 @@ export const SignupPage = () => {
       <div className="relative z-10 my-auto py-8">
         <AuthCard
           initialMode="signup"
-          onSuccess={(user) => {
+          onSuccess={(data) => {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('carzodrive-auth-change', { detail: { user: data?.user || data } }));
+            }
             const returnTo = location.state?.from || location.state?.returnTo;
-            setTimeout(() => navigate(returnTo || '/'), 1200);
+            setTimeout(() => navigate(returnTo || '/'), 800);
           }}
         />
       </div>

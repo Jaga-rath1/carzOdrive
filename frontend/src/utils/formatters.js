@@ -65,12 +65,24 @@ export const getTodayDateString = (daysAhead = 0) => {
 };
 
 /**
+ * Returns current local time in HH:MM format with optional buffer minutes (e.g. +30 mins)
+ */
+export const getCurrentTimeString = (bufferMinutes = 0) => {
+  const d = new Date();
+  if (bufferMinutes) {
+    d.setMinutes(d.getMinutes() + Number(bufferMinutes));
+  }
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+/**
  * Returns true if the date string (YYYY-MM-DD) is in the past (before today)
  */
 export const isPastDate = (dateString) => {
   if (!dateString) return false;
   const today = getTodayDateString(0);
-  // Normalize comparison by ISO prefix
   const cleanDate = String(dateString).split('T')[0].trim();
   return cleanDate < today;
 };
@@ -84,3 +96,71 @@ export const ensureFutureDate = (dateString, fallbackDaysAhead = 1) => {
   }
   return String(dateString).split('T')[0].trim();
 };
+
+/**
+ * Ensures that if selected date is today, the time is in the future.
+ */
+export const ensureFutureTime = (dateString, timeString, bufferMinutes = 30) => {
+  const today = getTodayDateString(0);
+  const nowTime = getCurrentTimeString(0);
+  if (dateString === today && (!timeString || timeString < nowTime)) {
+    return getCurrentTimeString(bufferMinutes);
+  }
+  return timeString || '10:00';
+};
+
+/**
+ * Checks if a given date & time combination is in the past compared to Date.now & Time.now
+ */
+export const isPastDateTime = (dateString, timeString) => {
+  if (!dateString) return false;
+  const today = getTodayDateString(0);
+  const cleanDate = String(dateString).split('T')[0].trim();
+  if (cleanDate < today) return true;
+  if (cleanDate === today && timeString) {
+    const nowTime = getCurrentTimeString(0);
+    return timeString < nowTime;
+  }
+  return false;
+};
+
+/**
+ * Returns safe future pickup date and time, auto-clamping if in the past
+ */
+export const getSafeFuturePickupDateTime = (dateString, timeString, bufferMinutes = 30) => {
+  const today = getTodayDateString(0);
+  const nowTime = getCurrentTimeString(0);
+  let safeDate = dateString && dateString >= today ? dateString : today;
+  let safeTime = timeString;
+
+  if (safeDate === today) {
+    if (!safeTime || safeTime < nowTime) {
+      safeTime = getCurrentTimeString(bufferMinutes);
+    }
+  } else if (!safeTime) {
+    safeTime = '10:00';
+  }
+
+  return { date: safeDate, time: safeTime };
+};
+
+/**
+ * Returns safe return date and time, ensuring it is not before pickup date/time
+ */
+export const getSafeReturnDateTime = (pickupDate, pickupTime, returnDate, returnTime) => {
+  const today = getTodayDateString(0);
+  const safePickupDate = pickupDate && pickupDate >= today ? pickupDate : today;
+  let safeReturnDate = returnDate && returnDate >= safePickupDate ? returnDate : safePickupDate;
+  let safeReturnTime = returnTime || '18:00';
+
+  if (safeReturnDate === safePickupDate && pickupTime) {
+    if (!safeReturnTime || safeReturnTime <= pickupTime) {
+      const [h, m] = pickupTime.split(':').map(Number);
+      const nextH = Math.min(23, (h || 10) + 2);
+      safeReturnTime = `${String(nextH).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
+    }
+  }
+
+  return { returnDate: safeReturnDate, returnTime: safeReturnTime };
+};
+

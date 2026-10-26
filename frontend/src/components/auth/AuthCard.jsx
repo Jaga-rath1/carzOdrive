@@ -13,17 +13,29 @@ export const AuthCard = ({
   initialMode = 'login',
   initialEmail = '',
   initialToken = '',
+  initialStatusMessage = null,
   onSuccess,
   onClose,
   onOtpSent,
+  onBackToLogin,
   isModal = false,
 }) => {
   const navigate = useNavigate();
   const [mode, setMode] = useState(initialMode);
 
+  const handleBackToLogin = () => {
+    if (onBackToLogin) {
+      onBackToLogin();
+    } else if (!isModal) {
+      navigate('/login');
+    } else {
+      switchMode('login');
+    }
+  };
+
   // Form Fields
   const [name, setName] = useState('');
-  const [email, setEmail] = useState(initialEmail);
+  const [email, setEmail] = useState(() => initialEmail || '');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -34,14 +46,15 @@ export const AuthCard = ({
   // UI States
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState(null);
+  const [statusMessage, setStatusMessage] = useState(() => initialStatusMessage || null);
   const [resendTimer, setResendTimer] = useState(0);
   const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
     if (initialEmail && !email) setEmail(initialEmail);
     if (initialToken && !resetToken) setResetToken(initialToken);
-  }, [initialEmail, initialToken]);
+    if (initialStatusMessage && !statusMessage) setStatusMessage(initialStatusMessage);
+  }, [initialEmail, initialToken, initialStatusMessage]);
 
   useEffect(() => {
     let interval = null;
@@ -58,11 +71,15 @@ export const AuthCard = ({
     setResendLoading(true);
     setStatusMessage(null);
     try {
-      await authAPI.forgotPassword(email);
+      const res = await authAPI.forgotPassword(email);
+      const devOtp = res?.data?.devOtp;
+      if (devOtp) setResetToken(devOtp);
       setResendTimer(30);
       setStatusMessage({
         type: 'success',
-        text: `A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox.`,
+        text: devOtp
+          ? `Fresh verification code generated! (Dev Code: ${devOtp}). Check inbox or spam.`
+          : `A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox and spam folder.`,
       });
     } catch (err) {
       setStatusMessage({
@@ -108,14 +125,20 @@ export const AuthCard = ({
           type: 'success',
           text: `Welcome back, ${res.data?.user?.name || 'Valued Member'}! Synchronizing session...`,
         });
-        if (onSuccess) onSuccess(res.data);
-        setTimeout(() => {
-          if (isModal && onClose) {
-            onClose();
-          } else {
-            navigate('/');
-          }
-        }, 600);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('carzodrive-auth-change', { detail: { user: res.data?.user } }));
+        }
+        if (onSuccess) {
+          onSuccess(res.data);
+        } else {
+          setTimeout(() => {
+            if (isModal && onClose) {
+              onClose();
+            } else {
+              navigate('/');
+            }
+          }, 600);
+        }
 
       } else if (mode === 'signup') {
         if (!agreeTerms) {
@@ -138,26 +161,40 @@ export const AuthCard = ({
           type: 'success',
           text: `Account created successfully! Welcome, ${res.data?.user?.name || name}!`,
         });
-        if (onSuccess) onSuccess(res.data);
-        setTimeout(() => {
-          if (isModal && onClose) {
-            onClose();
-          } else {
-            navigate('/');
-          }
-        }, 700);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('carzodrive-auth-change', { detail: { user: res.data?.user } }));
+        }
+        if (onSuccess) {
+          onSuccess(res.data);
+        } else {
+          setTimeout(() => {
+            if (isModal && onClose) {
+              onClose();
+            } else {
+              navigate('/');
+            }
+          }, 700);
+        }
 
       } else if (mode === 'forgot-password') {
-        await authAPI.forgotPassword(email);
+        const res = await authAPI.forgotPassword(email);
+        const devOtp = res?.data?.devOtp;
+        if (devOtp) {
+          setResetToken(devOtp);
+        }
         setStatusMessage({
           type: 'success',
-          text: `Security OTP dispatched to ${email}. Please check your inbox and enter the 6-digit code.`,
+          text: devOtp
+            ? `Security OTP dispatched! (Dev Code: ${devOtp}) Please check inbox/spam or proceed below.`
+            : `Security OTP dispatched to ${email}. Please check your inbox and spam folder.`,
         });
         if (onOtpSent) onOtpSent(email);
 
         if (!isModal) {
           setTimeout(() => {
-            navigate('/reset-password', { state: { email, otpSent: true } });
+            navigate(`/reset-password?email=${encodeURIComponent(email)}${devOtp ? `&otp=${devOtp}` : ''}`, {
+              state: { email, otpSent: true, devOtp },
+            });
           }, 800);
         } else {
           setResendTimer(30);
@@ -190,14 +227,27 @@ export const AuthCard = ({
           type: 'success',
           text: 'Password reset successful! Redirecting to sign in...',
         });
-        if (onSuccess) onSuccess({ email, mode: 'reset-password' });
-        setTimeout(() => {
-          if (isModal) {
-            setMode('login');
-          } else {
-            navigate('/login');
-          }
-        }, 1200);
+        if (onSuccess) {
+          onSuccess({ email, mode: 'reset-password' });
+        } else {
+          setTimeout(() => {
+            if (isModal) {
+              setMode('login');
+              setStatusMessage({
+                type: 'success',
+                text: 'Password reset successful! Please log in with your new password.',
+              });
+            } else {
+              navigate('/login', {
+                state: {
+                  email,
+                  resetSuccess: true,
+                  message: 'Password reset successful! Please log in with your new password.',
+                },
+              });
+            }
+          }, 1000);
+        }
       }
     } catch (err) {
       if (err.message && err.message.includes('Failed to fetch')) {
@@ -357,7 +407,7 @@ export const AuthCard = ({
             email={email}
             setEmail={setEmail}
             isLoading={isLoading}
-            onBackToLogin={() => switchMode('login')}
+            onBackToLogin={handleBackToLogin}
           />
         )}
 
@@ -377,7 +427,7 @@ export const AuthCard = ({
             resendLoading={resendLoading}
             onResendOtp={handleResendOtp}
             isLoading={isLoading}
-            onBackToLogin={() => switchMode('login')}
+            onBackToLogin={handleBackToLogin}
           />
         )}
       </form>

@@ -49,12 +49,15 @@ export const setRefreshToken = (token) => {
 };
 
 export const getCurrentUser = () => {
-  const raw = localStorage.getItem('carzodrive_user');
   try {
-    if (!raw) return null;
+    const raw = localStorage.getItem('carzodrive_user');
+    if (!raw || raw === 'undefined' || raw === 'null') return null;
     let parsed = JSON.parse(raw);
     while (parsed && parsed.user && typeof parsed.user === 'object') {
       parsed = parsed.user;
+    }
+    if (parsed && parsed.data && typeof parsed.data === 'object') {
+      parsed = parsed.data;
     }
     return parsed;
   } catch {
@@ -63,17 +66,24 @@ export const getCurrentUser = () => {
 };
 
 export const setCurrentUser = (user) => {
-  if (user) {
+  if (user && typeof user === 'object') {
     let cleanUser = user;
     while (cleanUser && cleanUser.user && typeof cleanUser.user === 'object') {
       cleanUser = cleanUser.user;
     }
-    localStorage.setItem('carzodrive_user', JSON.stringify(cleanUser));
+    if (cleanUser && cleanUser.data && typeof cleanUser.data === 'object') {
+      cleanUser = cleanUser.data;
+    }
+    try {
+      localStorage.setItem('carzodrive_user', JSON.stringify(cleanUser));
+    } catch {
+      // ignore
+    }
   } else {
     localStorage.removeItem('carzodrive_user');
   }
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('carzodrive-auth-change'));
+    window.dispatchEvent(new CustomEvent('carzodrive-auth-change', { detail: { user } }));
   }
 };
 
@@ -82,7 +92,7 @@ export const clearAuthSession = () => {
   setRefreshToken(null);
   setCurrentUser(null);
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('carzodrive-auth-change'));
+    window.dispatchEvent(new CustomEvent('carzodrive-auth-change', { detail: { user: null } }));
   }
 };
 

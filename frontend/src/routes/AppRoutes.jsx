@@ -19,6 +19,7 @@ import { SignupPage } from '../pages/Auth/SignupPage';
 import { ForgotPasswordPage } from '../pages/Auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '../pages/Auth/ResetPasswordPage';
 import { MyBookingsPage } from '../pages/MyBookings/MyBookingsPage';
+import { BookOnWhatsAppPage } from '../pages/BookOnWhatsApp/BookOnWhatsAppPage';
 
 // Admin Portal Pages
 import { AdminLayout } from '../pages/Admin/AdminLayout';
@@ -78,6 +79,10 @@ export const AppRoutes = () => {
           <Route path="my-bookings" element={<MyBookingsPage />} />
           <Route path="bookings" element={<MyBookingsPage />} />
           <Route path="booking-history" element={<MyBookingsPage />} />
+          
+          {/* Dedicated WhatsApp Direct Booking Page */}
+          <Route path="book-on-whatsapp" element={<BookOnWhatsAppPage />} />
+          <Route path="whatsapp-booking" element={<BookOnWhatsAppPage />} />
           
           {/* Shorthand / backward compatible aliases */}
           <Route path="bike-rental" element={<BikeSelfRidePage />} />

@@ -338,60 +338,120 @@ async function createUniversalBooking(customerId, data) {
       : `TXN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
   }
 
-  // Resilient lookup for vehicle
+  // Resilient lookup separated by service type
   let foundVehicle = null;
   let foundBike = null;
+  let foundTour = null;
+  let foundDriver = null;
 
-  if (payload.vehicleId) {
-    if (mongoose.Types.ObjectId.isValid(payload.vehicleId)) {
-      foundVehicle = await Vehicle().findById(payload.vehicleId);
+  const rawService = String(payload.serviceType || '').toLowerCase();
+  const isBikeBooking = rawService === 'self-drive-bike' || rawService === 'self_drive_bike' || rawService.includes('bike');
+  const isTourBooking = rawService === 'tour-packages' || rawService === 'tour-package' || rawService === 'tour_package' || rawService.includes('tour') || rawService.includes('package');
+  const isDriverBooking = rawService === 'driver-only' || rawService === 'driver_only' || rawService.includes('driver-only');
+  const isCarBooking = !isBikeBooking && !isTourBooking && !isDriverBooking;
+
+  // 1. CAR LOOKUP (Only for self-drive-car and car-with-driver)
+  if (isCarBooking) {
+    if (payload.vehicleId) {
+      if (mongoose.Types.ObjectId.isValid(payload.vehicleId)) {
+        foundVehicle = await Vehicle().findById(payload.vehicleId);
+      }
+      if (!foundVehicle) {
+        foundVehicle = await Vehicle().findOne({ $or: [{ id: payload.vehicleId }, { slug: payload.vehicleId }] });
+      }
     }
-    if (!foundVehicle) {
-      foundVehicle = await Vehicle().findOne({ $or: [{ id: payload.vehicleId }, { slug: payload.vehicleId }] });
+    if (!foundVehicle && payload.vehicleName) {
+      const cleanName = payload.vehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+      if (cleanName) {
+        foundVehicle = await Vehicle().findOne({
+          name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
+        });
+      }
     }
-  }
-  if (!foundVehicle && payload.vehicleName && payload.serviceType !== 'DRIVER_ONLY' && payload.serviceType !== 'TOUR_PACKAGES' && payload.serviceType !== 'tour-packages') {
-    const cleanName = payload.vehicleName.replace(/\s*\([^)]*\)/g, '').trim();
-    if (cleanName) {
-      foundVehicle = await Vehicle().findOne({
-        name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
-      });
-    }
-  }
-  if (foundVehicle) {
-    payload.vehicleId = foundVehicle._id;
-    const vCount = foundVehicle.quantity ?? foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? (foundVehicle.isAvailable !== false ? 1 : 0);
-    if (foundVehicle.isAvailable === false || vCount <= 0 || foundVehicle.availabilityStatus === 'UNAVAILABLE' || foundVehicle.availabilityStatus === 'Currently Unavailable') {
-      const err = new Error(`${foundVehicle.name || 'Vehicle'} has 0 available units and is currently unavailable.`);
-      err.statusCode = 400;
-      throw err;
+    if (foundVehicle) {
+      payload.vehicleId = foundVehicle._id;
+      const vCount = foundVehicle.quantity ?? foundVehicle.availableCount ?? foundVehicle.specs?.availableUnits ?? foundVehicle.count ?? (foundVehicle.isAvailable !== false ? 1 : 0);
+      if (foundVehicle.isAvailable === false || vCount <= 0 || foundVehicle.availabilityStatus === 'UNAVAILABLE' || foundVehicle.availabilityStatus === 'Currently Unavailable') {
+        const err = new Error(`${foundVehicle.name || 'Vehicle'} has 0 available units and is currently unavailable.`);
+        err.statusCode = 400;
+        throw err;
+      }
     }
   }
 
-  // Resilient lookup for bike
-  if (payload.bikeId) {
-    if (mongoose.Types.ObjectId.isValid(payload.bikeId)) {
-      foundBike = await Bike().findById(payload.bikeId);
+  // 2. BIKE LOOKUP (Only for self-drive-bike)
+  if (isBikeBooking) {
+    const targetBikeId = payload.bikeId || payload.vehicleId;
+    if (targetBikeId) {
+      if (mongoose.Types.ObjectId.isValid(targetBikeId)) {
+        foundBike = await Bike().findById(targetBikeId);
+      }
+      if (!foundBike) {
+        foundBike = await Bike().findOne({ $or: [{ id: targetBikeId }, { slug: targetBikeId }] });
+      }
     }
-    if (!foundBike) {
-      foundBike = await Bike().findOne({ $or: [{ id: payload.bikeId }, { slug: payload.bikeId }] });
+    if (!foundBike && payload.vehicleName) {
+      const cleanName = payload.vehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+      if (cleanName) {
+        foundBike = await Bike().findOne({
+          name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
+        });
+      }
+    }
+    if (foundBike) {
+      payload.bikeId = foundBike._id;
+      delete payload.vehicleId;
+      const bCount = foundBike.quantity ?? foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? (foundBike.isAvailable !== false ? 1 : 0);
+      if (foundBike.isAvailable === false || bCount <= 0 || foundBike.availabilityStatus === 'UNAVAILABLE' || foundBike.availabilityStatus === 'Currently Unavailable') {
+        const err = new Error(`${foundBike.name || 'Bike'} has 0 available units and is currently unavailable.`);
+        err.statusCode = 400;
+        throw err;
+      }
     }
   }
-  if (!foundBike && payload.vehicleName && (payload.serviceType === 'SELF_DRIVE_BIKE' || payload.serviceType === 'self-drive-bike')) {
-    const cleanName = payload.vehicleName.replace(/\s*\([^)]*\)/g, '').trim();
-    if (cleanName) {
-      foundBike = await Bike().findOne({
-        name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') }
-      });
+
+  // 3. TOUR PACKAGE LOOKUP
+  if (isTourBooking) {
+    const targetTourId = payload.packageId || payload.vehicleId;
+    if (targetTourId) {
+      if (mongoose.Types.ObjectId.isValid(targetTourId)) {
+        foundTour = await TourPackage().findById(targetTourId);
+      }
+      if (!foundTour) {
+        foundTour = await TourPackage().findOne({ $or: [{ id: targetTourId }, { slug: targetTourId }] });
+      }
+    }
+    if (!foundTour && payload.vehicleName) {
+      const cleanName = payload.vehicleName.replace(/\s*\([^)]*\)/g, '').trim();
+      if (cleanName) {
+        foundTour = await TourPackage().findOne({
+          $or: [
+            { name: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') } },
+            { title: { $regex: new RegExp(`^${cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') } }
+          ]
+        });
+      }
+    }
+    if (foundTour) {
+      payload.packageId = foundTour._id;
+      delete payload.vehicleId;
     }
   }
-  if (foundBike) {
-    payload.bikeId = foundBike._id;
-    const bCount = foundBike.quantity ?? foundBike.availableCount ?? foundBike.specs?.availableUnits ?? foundBike.count ?? (foundBike.isAvailable !== false ? 1 : 0);
-    if (foundBike.isAvailable === false || bCount <= 0 || foundBike.availabilityStatus === 'UNAVAILABLE' || foundBike.availabilityStatus === 'Currently Unavailable') {
-      const err = new Error(`${foundBike.name || 'Bike'} has 0 available units and is currently unavailable.`);
-      err.statusCode = 400;
-      throw err;
+
+  // 4. DRIVER LOOKUP
+  if (isDriverBooking) {
+    const targetDriverId = payload.driverId || payload.vehicleId;
+    if (targetDriverId) {
+      if (mongoose.Types.ObjectId.isValid(targetDriverId)) {
+        foundDriver = await Driver().findById(targetDriverId);
+      }
+      if (!foundDriver) {
+        foundDriver = await Driver().findOne({ $or: [{ id: targetDriverId }, { slug: targetDriverId }] });
+      }
+    }
+    if (foundDriver) {
+      payload.driverId = foundDriver._id;
+      delete payload.vehicleId;
     }
   }
 
@@ -408,6 +468,9 @@ async function createUniversalBooking(customerId, data) {
     if (newCount === 0) {
       foundVehicle.isAvailable = false;
       foundVehicle.availabilityStatus = 'Currently Unavailable';
+    } else {
+      foundVehicle.isAvailable = true;
+      foundVehicle.availabilityStatus = 'Available';
     }
     await foundVehicle.save();
     try {
@@ -427,6 +490,9 @@ async function createUniversalBooking(customerId, data) {
     if (newCount === 0) {
       foundBike.isAvailable = false;
       foundBike.availabilityStatus = 'Currently Unavailable';
+    } else {
+      foundBike.isAvailable = true;
+      foundBike.availabilityStatus = 'Available';
     }
     await foundBike.save();
     try {

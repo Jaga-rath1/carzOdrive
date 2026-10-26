@@ -7,31 +7,32 @@ let transporter = null;
 function getTransporter() {
   if (transporter) return transporter;
 
-  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const isSecure = process.env.SMTP_SECURE === 'true' || port === 465;
+  const rawUser = process.env.SMTP_USER || process.env.EMAIL_USER || '';
+  const rawPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || '';
+  const user = rawUser.trim();
+  const pass = rawPass.replace(/\s+/g, ''); // Strip all spaces (common when copying Google App Passwords)
+
+  const service = (process.env.SMTP_SERVICE || '').trim().toLowerCase();
+  const host = (process.env.SMTP_HOST || (service === 'gmail' ? 'smtp.gmail.com' : 'smtp.gmail.com')).trim();
+  const port = parseInt(process.env.SMTP_PORT || (host === 'smtp.gmail.com' ? '465' : '587'), 10);
+  const isSecure = process.env.SMTP_SECURE !== undefined
+    ? process.env.SMTP_SECURE === 'true'
+    : port === 465;
 
   if (user && pass) {
-    if (host.includes('gmail') || process.env.SMTP_SERVICE === 'gmail') {
-      transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: { user, pass },
-      });
-      logger.success(`✓ Nodemailer configured with Gmail SMTP [User: ${user}]`);
-    } else {
-      transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: isSecure,
-        auth: { user, pass },
-        tls: {
-          rejectUnauthorized: process.env.NODE_ENV === 'production',
-        },
-      });
-      logger.success(`✓ Nodemailer configured with SMTP [${host}:${port}]`);
-    }
+    transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: isSecure,
+      auth: { user, pass },
+      tls: {
+        rejectUnauthorized: false,
+      },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
+    });
+    logger.success(`✓ Nodemailer configured with ${host}:${port} [Secure: ${isSecure}, User: ${user}]`);
   } else {
     // Development / fallback transporter using JSON transport or logging
     transporter = nodemailer.createTransport({
@@ -47,11 +48,13 @@ function getTransporter() {
  * Verify transporter connection
  */
 async function verifyMailer() {
-  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+  const rawUser = process.env.SMTP_USER || process.env.EMAIL_USER || '';
+  const rawPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || '';
+  const user = rawUser.trim();
+  const pass = rawPass.replace(/\s+/g, '');
 
   if (!user || !pass) {
-    return { configured: false, message: 'SMTP credentials pending in .env' };
+    return { configured: false, message: 'SMTP credentials pending in .env (SMTP_USER / SMTP_PASS)' };
   }
 
   try {
@@ -69,9 +72,10 @@ async function verifyMailer() {
  * Send 6-digit password reset OTP email
  */
 async function sendPasswordResetOtp({ email, name = 'Customer', otp }) {
-  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-  const from = process.env.EMAIL_FROM || (user ? `CARZODRIVE Concierge <${user}>` : 'CARZODRIVE Concierge <no-reply@carzodrive.com>');
-  const subject = `${otp} is your CARZODRIVE Password Reset Verification Code`;
+  const rawUser = process.env.SMTP_USER || process.env.EMAIL_USER || '';
+  const user = rawUser.trim();
+  const from = process.env.EMAIL_FROM || (user ? `"CARZODRIVE Concierge" <${user}>` : '"CARZODRIVE Concierge" <no-reply@carzodrive.com>');
+  const subject = `CARZODRIVE Verification Code: ${otp}`;
 
   const textContent = `Hello ${name},\n\nYour 6-digit verification code to reset your CARZODRIVE password is:\n\n${otp}\n\nThis OTP is valid for 15 minutes. If you did not request this, please ignore this email or contact support.\n\nWarm regards,\nCARZODRIVE Odisha Mobility Team`;
 
@@ -96,10 +100,13 @@ async function sendPasswordResetOtp({ email, name = 'Customer', otp }) {
         <p style="margin: 0 0 16px 0; color: #94a3b8; font-size: 13px; line-height: 1.5;">
           If you did not make this request, you can safely ignore this email. Your password will remain unchanged.
         </p>
+        <p style="margin: 16px 0 0 0; color: #64748b; font-size: 12px; border-top: 1px solid #1e293b; padding-top: 12px;">
+          💡 <em>Tip: If this email landed in your Spam/Junk folder, please click "Report Not Spam" to ensure future booking confirmations reach your Primary Inbox.</em>
+        </p>
       </div>
       <div style="background-color: #020617; padding: 16px 24px; text-align: center; border-top: 1px solid #1e293b;">
         <p style="margin: 0; color: #64748b; font-size: 11px;">
-          © ${new Date().getFullYear()} CARZODRIVE. Bhubaneswar, Odisha. All rights reserved.
+          © ${new Date().getFullYear()} CARZODRIVE LUXURY MOBILITY. Bhubaneswar, Odisha. All rights reserved.
         </p>
       </div>
     </div>
@@ -116,14 +123,20 @@ async function sendPasswordResetOtp({ email, name = 'Customer', otp }) {
     const client = getTransporter();
     const info = await client.sendMail({
       from,
+      replyTo: user || 'support@carzodrive.com',
       to: email,
       subject,
+      headers: {
+        'X-Priority': '1',
+        'Importance': 'high',
+      },
       text: textContent,
       html: htmlContent,
     });
+    logger.success(`✓ Password reset OTP sent successfully to: ${email} [MessageId: ${info.messageId}]`);
     return { success: true, messageId: info.messageId, otp };
   } catch (err) {
-    logger.error('Email sending error (falling back to logged OTP):', err.message);
+    logger.error(`Email sending error for ${email}:`, err.message);
     return { success: false, error: err.message, otp };
   }
 }

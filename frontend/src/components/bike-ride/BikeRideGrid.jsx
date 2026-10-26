@@ -9,7 +9,7 @@ import { bikesAPI } from '../../services/api';
 import { BikeRideCard } from './BikeRideCard';
 
 export const BikeRideGrid = ({ onOpenQuickBook }) => {
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [activeCategory, setActiveCategory] = useState('Available Now');
   const [fleetBikes, setFleetBikes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -82,10 +82,17 @@ export const BikeRideGrid = ({ onOpenQuickBook }) => {
     };
   }, []);
 
-  const categories = ['All', 'Scooter', 'Commuter', 'Sports', 'Luxury'];
+  const categories = ['Available Now', 'All', 'Scooter', 'Commuter', 'Sports', 'Luxury'];
 
   const filteredBikes = useMemo(() => {
-    let list = activeCategory === 'All' ? [...fleetBikes] : fleetBikes.filter((b) => b.category === activeCategory);
+    let list = [];
+    if (activeCategory === 'Available Now') {
+      list = fleetBikes.filter((b) => b.isAvailable);
+    } else if (activeCategory === 'All') {
+      list = [...fleetBikes];
+    } else {
+      list = fleetBikes.filter((b) => b.category === activeCategory);
+    }
     return list.sort((a, b) => {
       if (a.isAvailable === b.isAvailable) return 0;
       return a.isAvailable ? -1 : 1;

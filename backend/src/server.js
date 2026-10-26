@@ -1,6 +1,9 @@
 const dns = require('dns');
 try {
   dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+  if (typeof dns.setDefaultResultOrder === 'function') {
+    dns.setDefaultResultOrder('ipv4first');
+  }
 } catch (e) {}
 
 require('dotenv').config();
@@ -17,9 +20,19 @@ let server;
 async function start() {
   await connectDB();
 
-  // Database connected - ready for live operations
+  // Verify email transport
   const { verifyMailer } = require('./utils/mailer');
-  verifyMailer().catch(() => {});
+  verifyMailer()
+    .then((status) => {
+      if (status.configured) {
+        logger.success('✓ Nodemailer Email Service verified: Ready to dispatch OTPs and invoices');
+      } else {
+        logger.warn(`⚠️ Nodemailer Service warning: ${status.message || status.error}`);
+      }
+    })
+    .catch((err) => {
+      logger.warn(`⚠️ Nodemailer verification handshake error: ${err.message}`);
+    });
 
   server = app.listen(env.port, () => {
     logger.success(`CarzoDrive Production Server listening on http://localhost:${env.port} [Environment: ${env.nodeEnv}]`);

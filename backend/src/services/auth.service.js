@@ -159,13 +159,13 @@ async function initiatePasswordReset(email) {
   user.passwordResetExpires = Date.now() + 15 * 60 * 1000;
   await user.save({ validateBeforeSave: false });
 
-  await sendPasswordResetOtp({
+  const mailResult = await sendPasswordResetOtp({
     email: user.email,
     name: user.name,
     otp,
   });
 
-  return { otp, email: user.email };
+  return { otp, email: user.email, mailResult };
 }
 
 async function resetPassword({ token, email, password }) {

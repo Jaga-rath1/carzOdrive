@@ -9,7 +9,7 @@ import { vehiclesAPI, bikesAPI } from '../../services/api';
 import { resolveVehicleImageUrl, getVehicleFallbackImage } from '../../utils/documentUtils';
 
 export const FeaturedVehiclesSection = ({ onQuickBook }) => {
-  const [activeCategory, setActiveCategory] = useState('All Fleet');
+  const [activeCategory, setActiveCategory] = useState('Available Now');
   const [vehicles, setVehicles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -95,7 +95,7 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
     };
   }, []);
 
-  const categories = ['All Fleet', 'Available Now', 'SUV', 'Sedan', 'Luxury', 'Bike'];
+  const categories = ['Available Now', 'All Fleet', 'SUV', 'Sedan', 'Luxury', 'Bike'];
 
   const filteredVehicles = useMemo(() => {
     let list = [];

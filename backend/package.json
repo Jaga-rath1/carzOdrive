@@ -10,7 +10,8 @@
     "test:watch": "jest --watch --runInBand",
     "seed:admin": "node src/scripts/seedAdmin.js",
     "purge:demo": "node src/scripts/purgeDemoData.js",
-    "sync:indexes": "node src/scripts/syncIndexes.js"
+    "sync:indexes": "node src/scripts/syncIndexes.js",
+    "test:email": "node src/scripts/testEmail.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

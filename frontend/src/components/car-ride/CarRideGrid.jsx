@@ -10,7 +10,7 @@ import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 import { CarRideCard } from './CarRideCard';
 
 export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [activeCategory, setActiveCategory] = useState('Available Now');
   const [sortBy, setSortBy] = useState('popular');
   const [fleetCars, setFleetCars] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +77,7 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
     };
   }, []);
 
-  const categories = ['All', 'Available Now', 'Hatchback', 'SUV', 'Sedan', 'Luxury'];
+  const categories = ['Available Now', 'All', 'Hatchback', 'SUV', 'Sedan', 'Luxury'];
 
   const filteredAndSortedCars = useMemo(() => {
     let result = [...fleetCars];

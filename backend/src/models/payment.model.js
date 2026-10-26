@@ -45,7 +45,7 @@ const paymentSchema = new mongoose.Schema(
     gatewayResponse: mongoose.Schema.Types.Mixed,
 
     // Offline payment (Pay on Delivery / Pickup)
-    offlineMethod: { type: String, enum: ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'UPI', 'WHATSAPP', 'OTHER'] },
+    offlineMethod: { type: String, enum: ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'UPI', 'WHATSAPP', 'OFFLINE', 'OTHER'] },
     offlineReference: String,
     offlineReceiptUrl: String,
     verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

@@ -72,6 +72,9 @@ export const ResetPasswordForm = ({
           placeholder="Enter 6-digit OTP"
           className="w-full bg-slate-900 border border-cyan-500/50 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 rounded-xl px-3.5 py-2.5 text-sm sm:text-base font-mono font-bold tracking-widest text-center text-cyan-300 placeholder-slate-600 transition-all focus:outline-none"
         />
+        <p className="text-[10px] text-slate-500 pt-0.5 flex items-center justify-between">
+          <span>💡 Check <strong>Spam / Junk</strong> folder if email takes a moment.</span>
+        </p>
       </div>
 
       {/* New Password */}

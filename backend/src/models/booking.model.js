@@ -40,6 +40,8 @@ const bookingSchema = new mongoose.Schema(
     guestEmail: { type: String, trim: true, lowercase: true },
     guestPhone: { type: String, trim: true },
     guestNotes: { type: String, trim: true },
+    drivingLicenseNumber: { type: String, trim: true },
+    drivingLicenseDoc: { type: String, trim: true },
     userCarModel: { type: String, trim: true }, // For driver-only service
 
     // Selected vehicle / bike / driver / tour snapshot

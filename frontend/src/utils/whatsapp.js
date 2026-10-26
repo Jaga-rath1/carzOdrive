@@ -96,6 +96,7 @@ export const getQuickBookingWhatsAppMessage = ({
   guestName = '',
   guestPhone = '',
   guestEmail = '',
+  drivingLicenseNumber = '',
   notes = '',
 } = {}) => {
   let msg = `Hello CARZODRIVE! 🏎️\n\nI want to book my ride with the following details:\n\n`;
@@ -140,6 +141,9 @@ export const getQuickBookingWhatsAppMessage = ({
   }
   if (guestPhone) {
     msg += `📞 *Phone / WhatsApp:* ${guestPhone}\n`;
+  }
+  if (drivingLicenseNumber) {
+    msg += `🪪 *Driving License:* ${drivingLicenseNumber}\n`;
   }
   if (guestEmail) {
     msg += `✉️ *Email:* ${guestEmail}\n`;

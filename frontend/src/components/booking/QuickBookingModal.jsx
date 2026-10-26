@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Modal } from '../common/Modal';
 import { BHUBANESWAR_LOCATIONS, SERVICE_OPTIONS } from '../../config/bookingConfig';
 import { formatCurrency, getTodayDateString, ensureFutureDate } from '../../utils/formatters';
-import { resolveVehicleImageUrl } from '../../utils/documentUtils';
 import { getQuickBookingWhatsAppMessage, openWhatsAppChat } from '../../utils/whatsapp';
 import { paymentsAPI, invalidateClientCache } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -11,29 +10,12 @@ import { BookingStepServiceItem } from './BookingStepServiceItem';
 import { BookingStepGuestReview } from './BookingStepGuestReview';
 import { BookingStepConfirmation } from './BookingStepConfirmation';
 import { useQuickBookingFleet } from './useQuickBookingFleet';
-
-const normalizeServiceType = (rawService, item = null) => {
-  const s = String(rawService || '').toLowerCase().trim();
-  if (s === 'self-drive-bike' || s.includes('bike') || s.includes('two-wheeler')) return 'self-drive-bike';
-  if (s === 'car-with-driver' || s.includes('chauffeur') || s.includes('with-driver')) return 'car-with-driver';
-  if (s === 'driver-only' || s.includes('driver')) return 'driver-only';
-  if (s === 'tour-packages' || s.includes('tour') || s.includes('package')) return 'tour-packages';
-  if (s === 'self-drive-car' || s.includes('self-drive') || s.includes('car')) return 'self-drive-car';
-
-  // Check item characteristics if raw was an auto category like 'SUV Rental' or 'Hatchback'
-  if (item) {
-    if (item.bikeType || item.vehicleType === 'BIKE' || item.category === 'bike') return 'self-drive-bike';
-    if (item.durationDays || item.itinerary || item.startingPrice) return 'tour-packages';
-    if (item.dailyRate || item.experienceYears) return 'driver-only';
-  }
-  return 'self-drive-car';
-};
-
-const getTodayOffset = (daysAhead = 1) => {
-  const d = new Date();
-  d.setDate(d.getDate() + daysAhead);
-  return d.toISOString().split('T')[0];
-};
+import {
+  normalizeServiceType,
+  resolveBookingItemDetails,
+  getActiveVehicleId,
+  buildCheckoutPayload,
+} from './quickBookingHelpers';
 
 export const QuickBookingModal = ({
   isOpen,
@@ -72,10 +54,14 @@ export const QuickBookingModal = ({
   const [guestEmail, setGuestEmail] = useState(() => currentUser?.email || '');
   const [guestPhone, setGuestPhone] = useState(() => currentUser?.phone || '');
   const [guestNotes, setGuestNotes] = useState('');
+  const [drivingLicenseNumber, setDrivingLicenseNumber] = useState('');
+  const [drivingLicenseDoc, setDrivingLicenseDoc] = useState(null);
+  const [drivingLicenseDocName, setDrivingLicenseDocName] = useState('');
   const [bookingCode, setBookingCode] = useState('');
   const [paymentNumber, setPaymentNumber] = useState('');
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const [step1Error, setStep1Error] = useState(null);
 
   // Auto-sync guest fields if user logs in
   useEffect(() => {
@@ -86,63 +72,55 @@ export const QuickBookingModal = ({
     }
   }, [currentUser, isOpen]);
 
-  // 6. 3-Way Payment Section: 'full' | 'partial' | 'offline'
-  const [paymentMode, setPaymentMode] = useState('full');
+  // 5. Direct WhatsApp Booking by default (Online / Partial gateways temporarily paused)
+  const [paymentMode, setPaymentMode] = useState('offline');
   const [onlineMethod, setOnlineMethod] = useState('upi');
   const [upiApp, setUpiApp] = useState('gpay');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [transactionId, setTransactionId] = useState('');
 
-  // Auto-select initial item or fallback to DB fleet
+  // Auto-select initial item or fallback to DB fleet with guaranteed availability priority
   useEffect(() => {
     if (!isOpen) return;
 
-    if (dbCars.length > 0 && !selectedCar) setSelectedCar(dbCars[0]);
-    if (dbCars.length > 0 && !selectedChauffeurCar) setSelectedChauffeurCar(dbCars[0]);
-    if (dbBikes.length > 0 && !selectedBike) setSelectedBike(dbBikes[0]);
-    if (dbTours.length > 0 && !selectedTour) setSelectedTour(dbTours[0]);
-    if (dbDrivers.length > 0 && !selectedDriver) setSelectedDriver(dbDrivers[0]);
+    const firstAvailCar = dbCars.find((c) => c.isAvailable && (c.availableCount > 0 || c.quantity > 0)) || dbCars.find((c) => c.isAvailable) || dbCars[0];
+    const firstAvailBike = dbBikes.find((b) => b.isAvailable && (b.availableCount > 0 || b.quantity > 0)) || dbBikes.find((b) => b.isAvailable) || dbBikes[0];
+    const firstAvailTour = dbTours.find((t) => t.isAvailable) || dbTours[0];
+    const firstAvailDriver = dbDrivers.find((d) => d.isAvailable !== false) || dbDrivers[0];
+
+    if (firstAvailCar && (!selectedCar || !selectedCar.isAvailable)) setSelectedCar(firstAvailCar);
+    if (firstAvailCar && (!selectedChauffeurCar || !selectedChauffeurCar.isAvailable)) setSelectedChauffeurCar(firstAvailCar);
+    if (firstAvailBike && (!selectedBike || !selectedBike.isAvailable)) setSelectedBike(firstAvailBike);
+    if (firstAvailTour && !selectedTour) setSelectedTour(firstAvailTour);
+    if (firstAvailDriver && !selectedDriver) setSelectedDriver(firstAvailDriver);
 
     const targetItem = initialVehicle || initialData?.vehicle;
     const rawService = initialData?.serviceType || initialVehicle?.serviceType;
     const targetService = normalizeServiceType(rawService, targetItem);
 
     if (targetItem) {
+      const matchItem = (item) => {
+        if (!item) return false;
+        const targetId = targetItem._id || targetItem.rawId || targetItem.id;
+        const itemId = item._id || item.rawId || item.id;
+        return (targetId && itemId && String(targetId) === String(itemId)) || (item.name && targetItem.name && item.name.toLowerCase() === targetItem.name.toLowerCase());
+      };
+
       if (targetService === 'self-drive-bike') {
-        const found = dbBikes.find((b) =>
-          (targetItem._id && b._id === targetItem._id) ||
-          (targetItem.id && b.id === targetItem.id) ||
-          b.name === targetItem.name
-        );
+        const found = dbBikes.find(matchItem);
         setSelectedBike(found || targetItem);
       } else if (targetService === 'tour-packages') {
-        const found = dbTours.find((t) =>
-          (targetItem._id && t._id === targetItem._id) ||
-          (targetItem.id && t.id === targetItem.id) ||
-          t.name === targetItem.name
-        );
+        const found = dbTours.find(matchItem);
         setSelectedTour(found || targetItem);
       } else if (targetService === 'driver-only') {
-        const found = dbDrivers.find((d) =>
-          (targetItem._id && d._id === targetItem._id) ||
-          (targetItem.id && d.id === targetItem.id) ||
-          d.name === targetItem.name
-        );
+        const found = dbDrivers.find(matchItem);
         setSelectedDriver(found || targetItem);
       } else if (targetService === 'car-with-driver') {
-        const found = dbCars.find((c) =>
-          (targetItem._id && c._id === targetItem._id) ||
-          (targetItem.id && c.id === targetItem.id) ||
-          c.name === targetItem.name
-        );
+        const found = dbCars.find(matchItem);
         setSelectedChauffeurCar(found || targetItem);
       } else {
-        const found = dbCars.find((c) =>
-          (targetItem._id && c._id === targetItem._id) ||
-          (targetItem.id && c.id === targetItem.id) ||
-          c.name === targetItem.name
-        );
+        const found = dbCars.find(matchItem);
         setSelectedCar(found || targetItem);
       }
     }
@@ -184,78 +162,21 @@ export const QuickBookingModal = ({
   const effectivePickupLocation = pickupLocation;
   const effectiveDropoffLocation = dropoffLocation === 'Same as Pick-up Address' ? pickupLocation : dropoffLocation;
 
+  // Resolve item details cleanly using extracted helper
   const { currentItemName, currentItemImage, ratePerDay, deposit, isAvailable } = useMemo(() => {
-    switch (selectedService) {
-      case 'car-with-driver': {
-        const car = selectedChauffeurCar || dbCars[0];
-        const rawPricing = car?.rawVehicle?.pricing?.withDriver?.daily;
-        const fallbackPrice = car?.priceNumeric ? car.priceNumeric + 700 : 3499;
-        return {
-          currentItemName: car?.name ? `${car.name} (with Chauffeur)` : 'Executive Car (with Chauffeur)',
-          currentItemImage: resolveVehicleImageUrl(car?.image, '/images/vehicles/toyota-innova.jpg'),
-          ratePerDay: rawPricing || fallbackPrice,
-          deposit: '₹0 (Zero Deposit)',
-          isAvailable: car?.isAvailable !== false && (car?.availableCount ?? 1) > 0 && car?.availabilityStatus !== 'UNAVAILABLE',
-        };
-      }
-      case 'driver-only': {
-        const driver = selectedDriver || dbDrivers[0];
-        return {
-          currentItemName: driver?.name ? `${driver.name} (Verified Commercial Pilot)` : 'Verified Driver (Provided by Company)',
-          currentItemImage: driver?.image || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop',
-          ratePerDay: driver?.dailyRate || 799,
-          deposit: '₹0 (Zero Deposit)',
-          isAvailable: true,
-        };
-      }
-      case 'self-drive-bike': {
-        const bike = selectedBike || dbBikes[0];
-        const parsed = typeof bike?.pricePerDay === 'number'
-          ? bike.pricePerDay
-          : parseInt(String(bike?.pricePerDay || '1299').replace(/[^0-9]/g, ''), 10) || 1299;
-        return {
-          currentItemName: bike?.name || 'Self-Drive Two-Wheeler',
-          currentItemImage: resolveVehicleImageUrl(bike?.image, '/images/vehicles/royal-enfield.jpg'),
-          ratePerDay: parsed,
-          deposit: bike?.deposit || '₹2,000',
-          isAvailable: bike?.isAvailable !== false && (bike?.availableCount ?? 1) > 0 && bike?.availabilityStatus !== 'UNAVAILABLE',
-        };
-      }
-      case 'tour-packages': {
-        const tour = selectedTour || dbTours[0];
-        const parsed = typeof tour?.priceNumeric === 'number'
-          ? tour.priceNumeric
-          : parseInt(String(tour?.startingPrice || '5499').replace(/[^0-9]/g, ''), 10) || 5499;
-        return {
-          currentItemName: tour?.title || tour?.name || 'Bhubaneswar Heritage Escape',
-          currentItemImage: resolveVehicleImageUrl(tour?.image, 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'),
-          ratePerDay: parsed,
-          deposit: '₹0 (Zero Deposit)',
-          isAvailable: true,
-        };
-      }
-      case 'self-drive-car':
-      default: {
-        const car = selectedCar || dbCars[0];
-        let rate = 2999;
-        if (typeof car?.priceNumeric === 'number' && car.priceNumeric > 0) {
-          rate = car.priceNumeric;
-        } else if (typeof car?.pricePerDay === 'string') {
-          const parsed = parseInt(car.pricePerDay.replace(/[^0-9]/g, ''), 10);
-          if (!isNaN(parsed) && parsed > 0) rate = parsed;
-        } else if (typeof car?.pricePerDay === 'number' && car.pricePerDay > 0) {
-          rate = car.pricePerDay < 1000 ? car.pricePerDay * 80 : car.pricePerDay;
-        }
-        return {
-          currentItemName: car?.name || 'Swift 2026',
-          currentItemImage: resolveVehicleImageUrl(car?.image, '/images/vehicles/swift-2026-grey.jpg'),
-          ratePerDay: rate,
-          deposit: car?.depositNumeric ? `₹${car.depositNumeric}` : (car?.deposit || '₹5,000'),
-          isAvailable: car?.isAvailable !== false && (car?.availableCount ?? 1) > 0 && car?.availabilityStatus !== 'UNAVAILABLE',
-        };
-      }
-    }
-  }, [selectedService, selectedCar, selectedChauffeurCar, selectedDriver, selectedBike, selectedTour, dbCars]);
+    return resolveBookingItemDetails({
+      selectedService,
+      selectedCar,
+      selectedChauffeurCar,
+      selectedDriver,
+      selectedBike,
+      selectedTour,
+      dbCars,
+      dbDrivers,
+      dbBikes,
+      dbTours,
+    });
+  }, [selectedService, selectedCar, selectedChauffeurCar, selectedDriver, selectedBike, selectedTour, dbCars, dbDrivers, dbBikes, dbTours]);
 
   const subtotal = ratePerDay * (selectedService === 'tour-packages' ? 1 : days);
   const insurancePerDay = selectedService === 'driver-only' || selectedService === 'tour-packages' ? 0 : 499;
@@ -270,20 +191,49 @@ export const QuickBookingModal = ({
   const amountDueAtPickup = paymentMode === 'full' ? 0 : paymentMode === 'partial' ? remainingAmount : total;
 
   const handleProceedToDetails = (e) => {
-    e.preventDefault();
-    if (!isAvailable) return;
+    if (e && e.preventDefault) e.preventDefault();
+    setStep1Error(null);
 
-    // Strict validation: back-dated bookings forbidden
+    if (!isAvailable) {
+      setStep1Error('The selected vehicle is currently unavailable. Please pick an available vehicle.');
+      return;
+    }
+
     const today = getTodayDateString(0);
     if (!pickupDate || pickupDate < today) {
-      alert('Back-dated bookings are not allowed. Please select today or a future date for pick-up.');
+      setStep1Error('Back-dated bookings are not allowed. Please select today or a future date for pick-up.');
       setPickupDate(today);
       return;
     }
     if (selectedService !== 'tour-packages' && returnDate && returnDate < pickupDate) {
-      alert('Return date cannot be earlier than pick-up date.');
+      setStep1Error('Return date cannot be earlier than pick-up date.');
       setReturnDate(pickupDate);
       return;
+    }
+
+    if (!guestName || !guestName.trim()) {
+      setStep1Error('Please enter your full name as on your ID or driving license.');
+      return;
+    }
+    const cleanPhone = guestPhone.replace(/[^0-9]/g, '');
+    if (!cleanPhone || cleanPhone.length < 10) {
+      setStep1Error('Please enter a valid 10-digit WhatsApp/phone number.');
+      return;
+    }
+    if (!guestEmail || !guestEmail.trim() || !guestEmail.includes('@')) {
+      setStep1Error('Please enter a valid email address to receive your booking confirmation.');
+      return;
+    }
+
+    if (selectedService === 'self-drive-car' || selectedService === 'self-drive-bike') {
+      if (!drivingLicenseNumber || !drivingLicenseNumber.trim()) {
+        setStep1Error('Please enter your valid Government Driving License Number for self-drive booking.');
+        return;
+      }
+      if (!drivingLicenseDoc) {
+        setStep1Error('Please upload your Driving License photo or PDF document.');
+        return;
+      }
     }
 
     setStep(2);
@@ -310,7 +260,19 @@ export const QuickBookingModal = ({
       return;
     }
 
-    // Secondary back-date guard before processing payment
+    if (selectedService === 'self-drive-car' || selectedService === 'self-drive-bike') {
+      if (!drivingLicenseNumber || !drivingLicenseNumber.trim()) {
+        setPaymentError('Please enter your valid Government Driving License Number.');
+        setStep(1);
+        return;
+      }
+      if (!drivingLicenseDoc) {
+        setPaymentError('Please upload your Driving License document.');
+        setStep(1);
+        return;
+      }
+    }
+
     const today = getTodayDateString(0);
     if (!pickupDate || pickupDate < today) {
       setPaymentError('Pick-up date cannot be in the past. Please choose today or a future date.');
@@ -318,63 +280,47 @@ export const QuickBookingModal = ({
       return;
     }
 
-    const getActiveVehicleId = () => {
-      if (selectedService === 'self-drive-car') {
-        return selectedCar?._id || selectedCar?.id || initialVehicle?._id || initialVehicle?.id;
-      }
-      if (selectedService === 'car-with-driver') {
-        return selectedChauffeurCar?._id || selectedChauffeurCar?.id || selectedCar?._id || selectedCar?.id || initialVehicle?._id || initialVehicle?.id;
-      }
-      if (selectedService === 'self-drive-bike') {
-        return selectedBike?._id || selectedBike?.id || initialVehicle?._id || initialVehicle?.id;
-      }
-      if (selectedService === 'tour-packages') {
-        return selectedTour?._id || selectedTour?.id;
-      }
-      if (selectedService === 'driver-only') {
-        return selectedDriver?._id || selectedDriver?.id;
-      }
-      return selectedCar?._id || selectedCar?.id || initialVehicle?._id || initialVehicle?.id;
-    };
-
     setIsProcessingPayment(true);
     setPaymentError(null);
 
     try {
-      const activeVehicleId = getActiveVehicleId();
-      const isCar = selectedService === 'self-drive-car' || selectedService === 'car-with-driver';
-      const isBike = selectedService === 'self-drive-bike';
-      const isDriver = selectedService === 'driver-only';
-      const isTour = selectedService === 'tour-packages';
+      const activeVehicleId = getActiveVehicleId({
+        selectedService,
+        selectedCar,
+        selectedChauffeurCar,
+        selectedBike,
+        selectedTour,
+        selectedDriver,
+        initialVehicle,
+      });
 
-      const checkoutPayload = {
-        serviceType: selectedService,
-        guestName: guestName.trim(),
-        guestPhone: guestPhone.trim(),
-        guestEmail: guestEmail.trim() || `${guestPhone.replace(/[^0-9]/g, '')}@offline.carzodrive.com`,
-        guestNotes: guestNotes.trim(),
-        userCarModel: userCarModel?.trim() || undefined,
-        vehicleId: isCar ? activeVehicleId : undefined,
-        bikeId: isBike ? activeVehicleId : undefined,
-        driverId: isDriver ? activeVehicleId : undefined,
-        packageId: isTour ? (selectedTour?._id || selectedTour?.packageId || selectedTour?.id || activeVehicleId) : undefined,
-        tourDate: isTour ? pickupDate : undefined,
-        vehicleName: userCarModel ? `${currentItemName} (Client Car: ${userCarModel})` : currentItemName,
-        vehicleImage: currentItemImage,
-        pickupLocation: effectivePickupLocation,
-        dropoffLocation: effectiveDropoffLocation,
+      const checkoutPayload = buildCheckoutPayload({
+        selectedService,
+        guestName,
+        guestPhone,
+        guestEmail,
+        guestNotes,
+        drivingLicenseNumber,
+        drivingLicenseDoc,
+        userCarModel,
+        activeVehicleId,
+        selectedTour,
+        currentItemName,
+        currentItemImage,
+        effectivePickupLocation,
+        effectiveDropoffLocation,
         pickupDate,
         returnDate,
-        days: isTour ? 1 : days,
+        days,
         includeProtection,
         paymentMode,
-        onlineMethod: paymentMode === 'offline' ? 'whatsapp' : onlineMethod,
-        upiApp: onlineMethod === 'upi' ? upiApp : undefined,
-        totalAmount: total,
-        paidAmount: amountDueNow,
-        balanceAmount: amountDueAtPickup,
-        securityDeposit: deposit,
-      };
+        onlineMethod,
+        upiApp,
+        total,
+        amountDueNow,
+        amountDueAtPickup,
+        deposit,
+      });
 
       const res = await paymentsAPI.processCheckout(checkoutPayload);
       const resData = res?.data || res || {};
@@ -392,7 +338,6 @@ export const QuickBookingModal = ({
       setInvoiceNumber(finalInvoiceNumber);
       setConfirmedBooking(bookingData);
 
-      // Invalidate client cache to immediately reflect updated fleet inventory count
       invalidateClientCache();
 
       if (paymentMode === 'offline') {
@@ -415,6 +360,7 @@ export const QuickBookingModal = ({
           guestName,
           guestPhone,
           guestEmail,
+          drivingLicenseNumber,
           notes: guestNotes,
         });
         openWhatsAppChat(waMsg);
@@ -433,6 +379,7 @@ export const QuickBookingModal = ({
     setStep(1);
     setIsProcessingPayment(false);
     setPaymentError(null);
+    setStep1Error(null);
     setConfirmedBooking(null);
     setInvoiceNumber('');
     onClose();
@@ -444,13 +391,13 @@ export const QuickBookingModal = ({
       onClose={resetAndClose}
       title={step === 3 ? 'Reservation Confirmed' : 'Instant Booking & Reservation'}
       subtitle={
-        step === 1 ? 'Step 1 of 2: Service, Vehicle & Bhubaneswar Location' :
-          step === 2 ? 'Step 2 of 2: Guest Details & Handover Notes' :
+        step === 1 ? 'Step 1 of 2: Booking Details & Contact Information' :
+          step === 2 ? 'Step 2 of 2: Confirm WhatsApp Booking' :
             'Your white-glove booking reservation is locked and verified.'
       }
       maxWidth="max-w-2xl"
     >
-      {/* Step Indicator Header */}
+      {/* Step Indicator Header (Clean 2-Step Flow) */}
       {step < 3 && (
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 text-xs">
           <div className="flex items-center gap-2">
@@ -458,22 +405,22 @@ export const QuickBookingModal = ({
               1
             </span>
             <span className={step >= 1 ? 'text-slate-900 font-bold' : 'text-slate-500'}>
-              Service, Fleet & Location
+              Booking & User Details
             </span>
           </div>
           <div className="h-[1px] flex-1 mx-4 bg-slate-200" />
           <div className="flex items-center gap-2">
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${step >= 2 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
               2
             </span>
             <span className={step >= 2 ? 'text-slate-900 font-bold' : 'text-slate-500'}>
-              Guest Verification
+              Confirm on WhatsApp
             </span>
           </div>
         </div>
       )}
 
-      {/* STEP 1: Service, Item Selection & Bhubaneswar Locations */}
+      {/* STEP 1: Service, Fleet, Dates, Locations AND Customer Details */}
       {step === 1 && (
         <BookingStepServiceItem
           selectedService={selectedService}
@@ -515,15 +462,6 @@ export const QuickBookingModal = ({
           userCarModel={userCarModel}
           effectivePickupLocation={effectivePickupLocation}
           effectiveDropoffLocation={effectiveDropoffLocation}
-          onProceed={handleProceedToDetails}
-        />
-      )}
-
-      {/* STEP 2: Guest Details & 3-Way Payment Option */}
-      {step === 2 && (
-        <BookingStepGuestReview
-          currentItemName={currentItemName}
-          effectivePickupLocation={effectivePickupLocation}
           guestName={guestName}
           setGuestName={setGuestName}
           guestEmail={guestEmail}
@@ -532,6 +470,36 @@ export const QuickBookingModal = ({
           setGuestPhone={setGuestPhone}
           guestNotes={guestNotes}
           setGuestNotes={setGuestNotes}
+          drivingLicenseNumber={drivingLicenseNumber}
+          setDrivingLicenseNumber={setDrivingLicenseNumber}
+          drivingLicenseDoc={drivingLicenseDoc}
+          setDrivingLicenseDoc={setDrivingLicenseDoc}
+          drivingLicenseDocName={drivingLicenseDocName}
+          setDrivingLicenseDocName={setDrivingLicenseDocName}
+          step1Error={step1Error}
+          onProceed={handleProceedToDetails}
+        />
+      )}
+
+      {/* STEP 2: Dedicated Payment & Checkout Page */}
+      {step === 2 && (
+        <BookingStepGuestReview
+          currentItemName={currentItemName}
+          effectivePickupLocation={effectivePickupLocation}
+          effectiveDropoffLocation={effectiveDropoffLocation}
+          pickupDate={pickupDate}
+          returnDate={returnDate}
+          days={days}
+          includeProtection={includeProtection}
+          guestName={guestName}
+          setGuestName={setGuestName}
+          guestEmail={guestEmail}
+          setGuestEmail={setGuestEmail}
+          guestPhone={guestPhone}
+          setGuestPhone={setGuestPhone}
+          guestNotes={guestNotes}
+          setGuestNotes={setGuestNotes}
+          drivingLicenseNumber={drivingLicenseNumber}
           paymentMode={paymentMode}
           setPaymentMode={setPaymentMode}
           paymentError={paymentError}

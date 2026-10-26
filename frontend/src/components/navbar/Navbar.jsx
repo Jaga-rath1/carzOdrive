@@ -26,9 +26,14 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
 
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
 
-  // Re-sync user state from storage
-  const syncUserState = () => {
-    setCurrentUser(getCurrentUser());
+  // Re-sync user state from storage or dispatch events
+  const syncUserState = (event) => {
+    const explicitUser = event?.detail?.user;
+    if (explicitUser !== undefined) {
+      setCurrentUser(explicitUser);
+    } else {
+      setCurrentUser(getCurrentUser());
+    }
   };
 
   // Re-sync on route changes (e.g. returning from /login)
@@ -50,7 +55,7 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
           // Token invalid or network issue
         });
     }
-  }, []);
+  }, [currentUser]);
 
   // Listen for login/logout changes dynamically via custom event, storage event & window focus
   useEffect(() => {

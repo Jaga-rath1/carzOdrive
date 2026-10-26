@@ -66,7 +66,9 @@ async function createOrSyncPaymentForBooking(booking) {
       upiApp: booking.upiApp,
       transactionId: txnId,
       status: paymentStatus,
-      offlineMethod: booking.paymentMode === 'offline' ? (booking.onlineMethod === 'cash' ? 'CASH' : 'OFFLINE') : undefined,
+      offlineMethod: booking.paymentMode === 'offline'
+        ? (booking.onlineMethod === 'cash' ? 'CASH' : booking.onlineMethod === 'whatsapp' ? 'WHATSAPP' : 'OTHER')
+        : undefined,
     });
   } else {
     // Dynamic sync of existing payment

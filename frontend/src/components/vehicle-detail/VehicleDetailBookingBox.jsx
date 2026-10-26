@@ -21,7 +21,7 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
   const [pickupDate, setPickupDate] = useState(() => getTodayDateString(1));
   const [returnDate, setReturnDate] = useState(() => getTodayDateString(3));
   const [pickupLocation, setPickupLocation] = useState('SUM Hospital');
-  const [paymentMode, setPaymentMode] = useState('full'); // 'full' | 'partial' | 'offline'
+  const [paymentMode, setPaymentMode] = useState('offline'); // Default to offline (WhatsApp)
 
   // Calculate day difference
   const daysDiff = Math.max(
@@ -191,43 +191,32 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
           Payment Preference
         </label>
         <div className="grid grid-cols-3 gap-1.5">
-          <button
-            type="button"
-            onClick={() => setPaymentMode('full')}
-            className={`p-2 rounded-xl text-center border transition-all cursor-pointer ${
-              paymentMode === 'full'
-                ? 'border-blue-600 bg-blue-50/70 text-blue-700 font-bold ring-1 ring-blue-500/30'
-                : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300'
-            }`}
+          {/* Option 1: Full Pay (Disabled/Faded) */}
+          <div
+            className="p-2 rounded-xl text-center border border-slate-200 bg-slate-100/60 text-slate-400 opacity-40 cursor-not-allowed select-none"
+            title="Online payment temporarily disabled. Please book via WhatsApp."
           >
             <div className="text-[11px] font-bold leading-tight">Full Pay</div>
-            <div className="text-[10px] text-slate-500 mt-0.5">100% Online</div>
-          </button>
+            <div className="text-[9px] text-slate-400 mt-0.5">Disabled</div>
+          </div>
 
-          <button
-            type="button"
-            onClick={() => setPaymentMode('partial')}
-            className={`p-2 rounded-xl text-center border transition-all cursor-pointer ${
-              paymentMode === 'partial'
-                ? 'border-indigo-600 bg-indigo-50/70 text-indigo-700 font-bold ring-1 ring-indigo-500/30'
-                : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300'
-            }`}
+          {/* Option 2: 25% Token (Disabled/Faded) */}
+          <div
+            className="p-2 rounded-xl text-center border border-slate-200 bg-slate-100/60 text-slate-400 opacity-40 cursor-not-allowed select-none"
+            title="Partial payment temporarily disabled. Please book via WhatsApp."
           >
             <div className="text-[11px] font-bold leading-tight">25% Token</div>
-            <div className="text-[10px] text-slate-500 mt-0.5">Advance</div>
-          </button>
+            <div className="text-[9px] text-slate-400 mt-0.5">Disabled</div>
+          </div>
 
+          {/* Option 3: WhatsApp Booking (Active) */}
           <button
             type="button"
             onClick={() => setPaymentMode('offline')}
-            className={`p-2 rounded-xl text-center border transition-all cursor-pointer ${
-              paymentMode === 'offline'
-                ? 'border-emerald-600 bg-emerald-50/70 text-emerald-700 font-bold ring-1 ring-emerald-500/30'
-                : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300'
-            }`}
+            className="p-2 rounded-xl text-center border border-emerald-600 bg-emerald-50/80 text-emerald-700 font-bold ring-1 ring-emerald-500/30 cursor-pointer shadow-xs"
           >
-            <div className="text-[11px] font-bold leading-tight">Offline</div>
-            <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">WhatsApp</div>
+            <div className="text-[11px] font-bold leading-tight">WhatsApp</div>
+            <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">Pay on Pickup</div>
           </button>
         </div>
       </div>
@@ -248,35 +237,19 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
 
         <div className="flex items-center justify-between font-semibold pt-0.5">
           <span className="text-slate-600 text-[11px]">
-            {paymentMode === 'full'
-              ? 'Pay Online Now (100%):'
-              : paymentMode === 'partial'
-              ? 'Pay Online Now (25% Token):'
-              : 'Pay Online Now:'}
+            Pay Online Now:
           </span>
-          <span
-            className={`text-sm font-black ${
-              paymentMode === 'offline' ? 'text-emerald-600' : 'text-blue-600'
-            }`}
-          >
-            {paymentMode === 'full'
-              ? `₹${estimatedTotal.toLocaleString('en-IN')}`
-              : paymentMode === 'partial'
-              ? `₹${partialAmount.toLocaleString('en-IN')}`
-              : '₹0 (Zero Advance)'}
+          <span className="text-sm font-black text-emerald-600">
+            ₹0 (Zero Advance)
           </span>
         </div>
 
-        {paymentMode !== 'full' && (
-          <div className="flex items-center justify-between text-[11px] text-slate-500">
-            <span>Pay on Vehicle Handover:</span>
-            <span className="font-bold text-slate-800">
-              {paymentMode === 'partial'
-                ? `₹${remainingAmount.toLocaleString('en-IN')} (Cash / UPI)`
-                : `₹${estimatedTotal.toLocaleString('en-IN')} (Cash / UPI)`}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center justify-between text-[11px] text-slate-500">
+          <span>Pay on Vehicle Handover:</span>
+          <span className="font-bold text-slate-800">
+            ₹{estimatedTotal.toLocaleString('en-IN')} (Cash / UPI)
+          </span>
+        </div>
       </div>
 
       {/* Primary Actions: Book Now + Chat on WhatsApp */}
@@ -285,32 +258,10 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
           <button
             type="button"
             onClick={handleBookNow}
-            className={`w-full py-4 px-6 rounded-2xl font-black text-sm text-white transition-all shadow-[0_6px_20px_rgba(0,0,0,0.15)] cursor-pointer flex items-center justify-center gap-2 group ${
-              paymentMode === 'offline'
-                ? 'bg-emerald-600 hover:bg-emerald-700'
-                : paymentMode === 'partial'
-                ? 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700'
-                : 'bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800'
-            }`}
+            className="w-full py-4 px-6 rounded-2xl font-black text-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-[0_6px_20px_rgba(16,185,129,0.3)] cursor-pointer flex items-center justify-center gap-2 group active:scale-98"
           >
-            {paymentMode === 'offline' ? (
-              <>
-                <MessageCircle className="w-4 h-4" />
-                <span>Book via WhatsApp (Pay at Pickup)</span>
-              </>
-            ) : paymentMode === 'partial' ? (
-              <>
-                <Coins className="w-4 h-4" />
-                <span>Lock with 25% (₹{partialAmount.toLocaleString('en-IN')})</span>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </>
-            ) : (
-              <>
-                <CreditCard className="w-4 h-4" />
-                <span>Book Now (Pay ₹{estimatedTotal.toLocaleString('en-IN')})</span>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </>
-            )}
+            <MessageCircle className="w-4 h-4 fill-white" />
+            <span>Book on WhatsApp</span>
           </button>
         ) : (
           <div className="space-y-1.5">

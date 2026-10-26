@@ -117,39 +117,42 @@ export const MyBookingsPage = () => {
   };
 
   return (
-    <div className="pt-28 pb-20 bg-slate-950 text-white min-h-screen">
-      <Container className="max-w-4xl space-y-8">
+    <div className="pt-24 sm:pt-28 pb-20 bg-slate-50 text-slate-900 min-h-screen relative overflow-hidden">
+      {/* Light Ambient Glows */}
+      <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[300px] bg-gradient-to-r from-blue-100/50 via-sky-100/40 to-indigo-100/50 rounded-full blur-[110px] pointer-events-none" />
+
+      <Container className="max-w-4xl space-y-8 relative z-10">
         {/* Page Hero */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold">
-            <CalendarCheck className="w-4 h-4" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shadow-xs">
+            <CalendarCheck className="w-4 h-4 text-blue-600" />
             <span>Official Booking & Voucher Portal</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight">
             My Bookings & Payment History
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
+          <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
             View your active vehicle reservations, download confirmed booking receipts, or track payment status in real-time.
           </p>
         </div>
 
         {/* Lookup Box */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.05)]">
           <form onSubmit={handleLookup} className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Enter Booking Code (e.g. CZ-...) or 10-digit Phone Number"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-950/80 border border-slate-700/80 text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-950 placeholder-slate-400 outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600 transition-all font-medium"
               />
             </div>
             <button
               type="submit"
               disabled={isLoading || !searchQuery.trim()}
-              className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-600/30 border border-blue-500 cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -166,8 +169,8 @@ export const MyBookingsPage = () => {
           </form>
 
           {errorMessage && (
-            <div className="mt-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="mt-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -176,17 +179,17 @@ export const MyBookingsPage = () => {
         {/* Results List */}
         {isLoading ? (
           <div className="py-16 text-center">
-            <Loader2 className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-2" />
-            <p className="text-xs text-slate-400">Retrieving your reservation records...</p>
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-2" />
+            <p className="text-xs text-slate-500 font-medium">Retrieving your reservation records...</p>
           </div>
         ) : bookings.length > 0 ? (
           <div className="space-y-6">
-            <div className="flex items-center justify-between text-xs text-slate-400 font-semibold px-1">
+            <div className="flex items-center justify-between text-xs text-slate-600 font-semibold px-1">
               <span>Found {bookings.length} reservation{bookings.length > 1 ? 's' : ''}</span>
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 font-bold"
+                className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-bold cursor-pointer"
               >
                 <Printer className="w-3.5 h-3.5" />
                 <span>Print Vouchers</span>
@@ -201,29 +204,29 @@ export const MyBookingsPage = () => {
               return (
                 <div
                   key={b._id}
-                  className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 space-y-5 hover:border-slate-700 transition-all"
+                  className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 space-y-5 shadow-[0_6px_25px_rgba(0,0,0,0.06)] hover:border-blue-500 hover:shadow-lg transition-all"
                 >
                   {/* Top Bar: Code & Badges */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
                     <div className="flex items-center gap-3">
-                      <span className="font-mono text-sm font-black px-3.5 py-1 rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30">
+                      <span className="font-mono text-sm font-black px-3.5 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
                         {b.bookingNumber || b._id}
                       </span>
-                      <span className="text-xs font-black uppercase px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      <span className="text-xs font-black uppercase px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
                         {b.status || 'CONFIRMED'}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-400">
-                        Payment Mode: <strong className="text-white capitalize">{b.paymentMode || 'Online'}</strong>
+                      <span className="text-xs font-semibold text-slate-600">
+                        Payment Mode: <strong className="text-slate-950 capitalize">{b.paymentMode || 'Online'}</strong>
                       </span>
-                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                      <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-lg border ${
                         b.paymentStatus === 'PAID'
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           : b.paymentStatus === 'PARTIALLY_PAID'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                          : 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : 'bg-sky-50 text-sky-700 border-sky-200'
                       }`}>
                         {b.paymentStatus?.replace('_', ' ') || 'CONFIRMED'}
                       </span>
@@ -237,56 +240,56 @@ export const MyBookingsPage = () => {
                         <img
                           src={b.vehicleImage}
                           alt={b.vehicleName || 'Vehicle'}
-                          className="w-20 h-16 object-cover rounded-2xl border border-slate-800 shrink-0"
+                          className="w-20 h-16 object-cover rounded-2xl border border-slate-200 shrink-0 shadow-xs"
                           onError={(e) => {
                             e.target.src = '/images/vehicles/mahindra-thar.jpg';
                           }}
                         />
                       ) : (
-                        <div className="w-20 h-16 rounded-2xl bg-slate-800 flex items-center justify-center shrink-0">
-                          <Car className="w-8 h-8 text-slate-500" />
+                        <div className="w-20 h-16 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                          <Car className="w-8 h-8 text-slate-400" />
                         </div>
                       )}
                       <div>
-                        <h3 className="text-base font-black text-white">{b.vehicleName || 'Self-Drive Vehicle'}</h3>
-                        <p className="text-xs text-slate-400 capitalize">{b.serviceType?.replace(/-/g, ' ')}</p>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-1">
-                          <Calendar className="w-3.5 h-3.5 text-blue-400" />
+                        <h3 className="text-base font-black text-slate-950">{b.vehicleName || 'Self-Drive Vehicle'}</h3>
+                        <p className="text-xs text-slate-500 capitalize">{b.serviceType?.replace(/-/g, ' ')}</p>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600 mt-1">
+                          <Calendar className="w-3.5 h-3.5 text-blue-600" />
                           <span>{b.pickupDate} → {b.returnDate} ({b.days || 1} Days)</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="md:col-span-4 text-xs space-y-1">
-                      <div className="text-slate-300 font-semibold">
-                        Guest: <span className="text-white font-bold">{b.guestName || b.customerId?.name}</span>
+                      <div className="text-slate-600 font-semibold">
+                        Guest: <span className="text-slate-950 font-bold">{b.guestName || b.customerId?.name}</span>
                       </div>
-                      <div className="text-slate-400 flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                      <div className="text-slate-600 flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-blue-600" />
                         <span>Pickup Hub: {b.pickupLocation || 'SUM Hospital Bhubaneswar'}</span>
                       </div>
                       {(b.paymentId?.paymentNumber || b.transactionId) && (
-                        <div className="text-[11px] font-mono text-blue-400/90 pt-1">
-                          Payment Receipt: {b.paymentId?.paymentNumber || b.transactionId}
+                        <div className="text-[11px] font-mono text-blue-700 pt-1 font-bold">
+                          Receipt: {b.paymentId?.paymentNumber || b.transactionId}
                         </div>
                       )}
                       {b.transactionId && (
-                        <div className="text-[10px] font-mono text-slate-500">
+                        <div className="text-[10px] font-mono text-slate-400">
                           TXN: {b.transactionId} ({b.onlineMethod?.toUpperCase() || b.paymentMode?.toUpperCase() || 'UPI'})
                         </div>
                       )}
                     </div>
 
-                    <div className="md:col-span-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800 text-xs space-y-1">
-                      <div className="flex justify-between text-slate-400">
+                    <div className="md:col-span-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs space-y-1">
+                      <div className="flex justify-between text-slate-600">
                         <span>Total Rate:</span>
-                        <span className="font-bold text-white">₹{formattedTotal}</span>
+                        <span className="font-bold text-slate-950">₹{formattedTotal}</span>
                       </div>
-                      <div className="flex justify-between text-emerald-400 font-semibold">
+                      <div className="flex justify-between text-emerald-700 font-semibold">
                         <span>Advance Paid:</span>
                         <span>₹{formattedPaid}</span>
                       </div>
-                      <div className="flex justify-between text-amber-400 font-bold border-t border-slate-800 pt-1 mt-1">
+                      <div className="flex justify-between text-amber-700 font-bold border-t border-slate-200 pt-1 mt-1">
                         <span>Due at Pickup:</span>
                         <span>₹{formattedBalance}</span>
                       </div>
@@ -294,8 +297,8 @@ export const MyBookingsPage = () => {
                   </div>
 
                   {/* Actions & WhatsApp Support Callout */}
-                  <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-                    <span className="text-slate-400 text-[11px]">
+                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <span className="text-slate-500 text-[11px]">
                       Official GST Tax Invoice & Confirmed Travel Voucher available for this reservation.
                     </span>
 
@@ -303,9 +306,9 @@ export const MyBookingsPage = () => {
                       <button
                         type="button"
                         onClick={() => setSelectedInvoiceBooking(b)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600/20 text-blue-300 hover:bg-blue-600/30 border border-blue-500/30 font-bold transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 font-bold transition-colors cursor-pointer"
                       >
-                        <FileText className="w-3.5 h-3.5" />
+                        <FileText className="w-3.5 h-3.5 text-blue-600" />
                         <span>Tax Invoice / Voucher</span>
                       </button>
 
@@ -313,9 +316,9 @@ export const MyBookingsPage = () => {
                         href={`https://wa.me/917978000000?text=${encodeURIComponent(`Hello CARZODRIVE! I need support regarding my booking: ${b.bookingNumber || b._id}`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 font-bold transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-bold transition-colors"
                       >
-                        <MessageCircle className="w-3.5 h-3.5" />
+                        <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
                         <span>WhatsApp Support</span>
                       </a>
                     </div>
@@ -325,16 +328,16 @@ export const MyBookingsPage = () => {
             })}
           </div>
         ) : searched ? (
-          <div className="py-16 text-center bg-slate-900/50 rounded-3xl border border-slate-800 p-8">
-            <CalendarCheck className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-white">No Bookings Found</h3>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+          <div className="py-16 text-center bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+            <CalendarCheck className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-slate-950">No Bookings Found</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
               We couldn't find any reservation for this code or phone number. If you just placed an order, please allow 1 minute for database sync.
             </p>
             <div className="mt-5">
               <Link
                 to="/car-self-ride"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-sm"
               >
                 <span>Browse Available Cars</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -342,10 +345,10 @@ export const MyBookingsPage = () => {
             </div>
           </div>
         ) : (
-          <div className="py-16 text-center bg-slate-900/40 rounded-3xl border border-slate-800/80 p-8">
-            <Sparkles className="w-10 h-10 text-blue-400 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-white">Track Your Active Trip or Rental</h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
+          <div className="py-16 text-center bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+            <Sparkles className="w-10 h-10 text-blue-600 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-slate-950">Track Your Active Trip or Rental</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
               Enter your booking code from your SMS or WhatsApp confirmation message above to view your car/bike pickup voucher.
             </p>
           </div>

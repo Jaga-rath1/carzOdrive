@@ -5,6 +5,7 @@ import { Footer } from '../components/footer/Footer';
 import { QuickBookingModal } from '../components/booking/QuickBookingModal';
 import { VehicleSpecsModal } from '../components/vehicle/VehicleSpecsModal';
 import { AuthModal } from '../components/auth/AuthModal';
+import { getCurrentUser, getAccessToken } from '../services/api';
 
 export const MainLayout = () => {
   const [quickBookOpen, setQuickBookOpen] = useState(false);
@@ -35,6 +36,12 @@ export const MainLayout = () => {
   }, []);
 
   const handleOpenQuickBook = (vehicleOrPrefill = null) => {
+    const isAuth = Boolean(getCurrentUser() && getAccessToken());
+    if (!isAuth) {
+      handleOpenAuth('login');
+      return;
+    }
+
     if (vehicleOrPrefill?.vehicle) {
       setSelectedVehicleForBook(vehicleOrPrefill.vehicle);
       setBookingPrefill(vehicleOrPrefill);
@@ -73,9 +80,10 @@ export const MainLayout = () => {
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         initialMode={authMode}
-        onSuccess={() => {
+        onSuccess={(data) => {
+          const user = data?.user || data;
           if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('carzodrive-auth-change'));
+            window.dispatchEvent(new CustomEvent('carzodrive-auth-change', { detail: { user } }));
           }
           setAuthModalOpen(false);
         }}
