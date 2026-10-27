@@ -567,7 +567,7 @@ export const AdminDiscountsPage = () => {
                   <span>Base: ₹</span>
                   <input
                     type="number"
-                    step="500"
+                    step="1"
                     value={previewSamplePrice}
                     onChange={(e) => setPreviewSamplePrice(Math.max(500, Number(e.target.value) || 0))}
                     className="w-16 px-1.5 py-0.5 rounded bg-zinc-100 border border-zinc-200 font-bold outline-none text-right"

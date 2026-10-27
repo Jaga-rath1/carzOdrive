@@ -54,10 +54,10 @@ export const AdminDriversPage = () => {
   useEffect(() => {
     if (driverSettings) {
       setPricingForm({
-        dailyRate: driverSettings.dailyRate || 799,
-        registrationFee: driverSettings.registrationFee || 799,
+        dailyRate: driverSettings.dailyRate !== undefined ? driverSettings.dailyRate : 799,
+        registrationFee: driverSettings.registrationFee !== undefined ? driverSettings.registrationFee : 799,
         isRegistrationActive: driverSettings.isRegistrationActive ?? true,
-        badgeText: driverSettings.badgeText || `₹${driverSettings.dailyRate || 799}/Day`,
+        badgeText: driverSettings.badgeText || `₹${driverSettings.dailyRate ?? 799}/Day`,
       });
     }
   }, [driverSettings]);
@@ -123,15 +123,22 @@ export const AdminDriversPage = () => {
     if (e && e.preventDefault) e.preventDefault();
     setIsSavingPricing(true);
     try {
+      const cleanDaily = pricingForm.dailyRate !== '' && !isNaN(Number(pricingForm.dailyRate))
+        ? Math.max(0, Number(pricingForm.dailyRate))
+        : 799;
+      const cleanReg = pricingForm.registrationFee !== '' && !isNaN(Number(pricingForm.registrationFee))
+        ? Math.max(0, Number(pricingForm.registrationFee))
+        : 799;
+
       await settingsAPI.updateDriverSettings({
-        dailyRate: Number(pricingForm.dailyRate) || 799,
-        registrationFee: Number(pricingForm.registrationFee) || 799,
+        dailyRate: cleanDaily,
+        registrationFee: cleanReg,
         isRegistrationActive: Boolean(pricingForm.isRegistrationActive),
-        badgeText: pricingForm.badgeText || `₹${pricingForm.dailyRate || 799}/Day`,
+        badgeText: pricingForm.badgeText || `₹${cleanDaily}/Day`,
       });
       setFeedback({
         type: 'success',
-        text: `Driver pricing updated: Daily Hire ₹${pricingForm.dailyRate}/day & Registration Fee ₹${pricingForm.registrationFee}. Updated live on customer portal!`,
+        text: `Driver pricing updated: Daily Hire ₹${cleanDaily}/day & Registration Fee ₹${cleanReg}. Updated live on customer portal!`,
       });
       setIsPricingExpanded(false);
       refetchDriverSettings();
@@ -238,22 +245,24 @@ export const AdminDriversPage = () => {
                   <input
                     type="number"
                     min="0"
-                    step="50"
+                    step="1"
                     value={pricingForm.dailyRate}
                     onChange={(e) => {
-                      const val = Number(e.target.value) || 0;
+                      const raw = e.target.value;
+                      const val = raw === '' ? '' : Number(raw);
                       setPricingForm((p) => ({
                         ...p,
                         dailyRate: val,
-                        badgeText: `₹${val}/Day`,
+                        badgeText: val !== '' ? `₹${val}/Day` : '',
                       }));
                     }}
+                    placeholder="e.g. 799"
                     className="w-full px-3 py-2 rounded-xl bg-white border border-zinc-300 font-mono font-black text-base text-zinc-950 outline-none focus:border-black"
                   />
                 </div>
                 {/* Presets */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {[599, 799, 899, 999, 1199].map((amt) => (
+                  {[599, 799, 850, 899, 900, 999, 1199].map((amt) => (
                     <button
                       key={amt}
                       type="button"
@@ -280,9 +289,13 @@ export const AdminDriversPage = () => {
                   <input
                     type="number"
                     min="0"
-                    step="50"
+                    step="1"
                     value={pricingForm.registrationFee}
-                    onChange={(e) => setPricingForm((p) => ({ ...p, registrationFee: Number(e.target.value) || 0 }))}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setPricingForm((p) => ({ ...p, registrationFee: raw === '' ? '' : Number(raw) }));
+                    }}
+                    placeholder="e.g. 799"
                     className="w-full px-3 py-2 rounded-xl bg-white border border-zinc-300 font-mono font-black text-base text-zinc-950 outline-none focus:border-black"
                   />
                 </div>
