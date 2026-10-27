@@ -188,17 +188,16 @@ export const AuthCard = ({
             ? `Security OTP dispatched! (Verification Code: ${devOtp}) Please check inbox/spam or proceed below.`
             : `Security OTP dispatched to ${email}. Please check your inbox and spam folder.`,
         });
-        if (onOtpSent) onOtpSent(email, devOtp);
 
-        if (!isModal) {
-          setTimeout(() => {
-            navigate(`/reset-password?email=${encodeURIComponent(email)}${devOtp ? `&otp=${devOtp}` : ''}`, {
-              state: { email, otpSent: true, devOtp, token: devOtp },
-            });
-          }, 800);
+        if (onOtpSent) {
+          onOtpSent(email, devOtp);
+        } else if (!isModal) {
+          navigate(`/reset-password?email=${encodeURIComponent(email)}${devOtp ? `&otp=${devOtp}` : ''}`, {
+            state: { email, otpSent: true, devOtp, token: devOtp },
+          });
         } else {
           setResendTimer(30);
-          setTimeout(() => setMode('reset-password'), 800);
+          setMode('reset-password');
         }
 
       } else if (mode === 'reset-password') {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, KeyRound, Lock, Eye, EyeOff, ArrowRight, RefreshCw } from 'lucide-react';
+import { Mail, KeyRound, Lock, Eye, EyeOff, ArrowRight, RefreshCw, ExternalLink } from 'lucide-react';
 
 export const ResetPasswordForm = ({
   email,
@@ -21,13 +21,25 @@ export const ResetPasswordForm = ({
   return (
     <>
       {/* Security Dispatch Notice */}
-      <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-200/90 space-y-1">
-        <div className="flex items-center gap-1.5 font-bold text-cyan-300">
-          <Mail className="w-4 h-4 text-cyan-400 shrink-0" />
-          <span>OTP code dispatched to {email || 'your email'}</span>
+      <div className="p-3.5 rounded-2xl bg-cyan-950/60 border border-cyan-500/40 text-xs text-cyan-200/95 space-y-1.5 shadow-sm">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 font-bold text-cyan-300 truncate">
+            <Mail className="w-4 h-4 text-cyan-400 shrink-0" />
+            <span className="truncate">Code dispatched to {email || 'your email'}</span>
+          </div>
+          <a
+            href="https://mail.google.com/mail/u/0/#search/CARZODRIVE"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-bold text-cyan-300 hover:text-white bg-cyan-500/20 hover:bg-cyan-500/30 px-2.5 py-1 rounded-lg border border-cyan-400/30 flex items-center gap-1 transition-all shrink-0 cursor-pointer"
+            title="Open Gmail search for CARZODRIVE"
+          >
+            <span>Open Gmail</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
         </div>
         <p className="text-[11px] text-slate-300 pl-5.5 leading-relaxed">
-          Please check your <strong className="text-white">Inbox</strong> and <strong className="text-amber-300">Spam / Junk folder</strong>.
+          Please check your <strong className="text-white">Primary Inbox</strong> or <strong className="text-amber-300">Spam / Junk folder</strong>.
         </p>
       </div>
 
@@ -76,13 +88,16 @@ export const ResetPasswordForm = ({
         </div>
 
         {resetToken && resetToken.length === 6 && (
-          <div className="px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-between text-[11px] text-emerald-300">
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-              Code Auto-detected: <strong className="font-mono text-emerald-200 tracking-wider">{resetToken}</strong>
+          <div className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-950/90 via-slate-900 to-cyan-950/90 border border-emerald-500/40 flex items-center justify-between text-xs text-emerald-300 shadow-sm">
+            <span className="flex items-center gap-2 font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Verification OTP:</span>
+              <strong className="font-mono text-sm tracking-widest text-emerald-200 bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-500/30">
+                {resetToken}
+              </strong>
             </span>
-            <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-900/60 px-1.5 py-0.2 rounded">
-              Ready
+            <span className="text-[10px] text-emerald-400 font-extrabold bg-emerald-900/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+              Auto-Filled ✓
             </span>
           </div>
         )}

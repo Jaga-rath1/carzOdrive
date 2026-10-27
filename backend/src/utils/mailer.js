@@ -21,31 +21,21 @@ function getTransporter() {
 
   if (user && pass) {
     const isGmail = service === 'gmail' || host === 'smtp.gmail.com';
-    const transportConfig = isGmail
-      ? {
-          service: 'gmail',
-          pool: true,
-          maxConnections: 3,
-          auth: { user, pass },
-          tls: {
-            rejectUnauthorized: false,
-          },
-        }
-      : {
-          host,
-          port,
-          secure: isSecure,
-          auth: { user, pass },
-          tls: {
-            rejectUnauthorized: false,
-          },
-          connectionTimeout: 10000,
-          greetingTimeout: 10000,
-          socketTimeout: 15000,
-        };
+    const transportConfig = {
+      host: isGmail ? 'smtp.gmail.com' : host,
+      port: isGmail ? 465 : port,
+      secure: isGmail ? true : isSecure,
+      auth: { user, pass },
+      tls: {
+        rejectUnauthorized: false,
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+    };
 
     transporter = nodemailer.createTransport(transportConfig);
-    logger.success(`✓ Nodemailer configured with ${isGmail ? 'Gmail Service (Pooled)' : `${host}:${port}`} [User: ${user}]`);
+    logger.success(`✓ Nodemailer configured with ${isGmail ? 'Direct Gmail SSL (465)' : `${host}:${port}`} [User: ${user}]`);
   } else {
     // Development / fallback transporter using JSON transport or logging
     transporter = nodemailer.createTransport({
@@ -140,10 +130,6 @@ async function sendPasswordResetOtp({ email, name = 'Customer', otp }) {
       replyTo: user || 'support@carzodrive.com',
       to: email,
       subject,
-      headers: {
-        'X-Priority': '1',
-        'Importance': 'high',
-      },
       text: textContent,
       html: htmlContent,
     });
