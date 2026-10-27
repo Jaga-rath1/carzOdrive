@@ -7,7 +7,7 @@
 const rawPhone = import.meta.env?.VITE_CONTACT_PHONE || '7377733391';
 const rawWhatsapp = import.meta.env?.VITE_WHATSAPP_NUMBER || '917377733391';
 const rawEmail = import.meta.env?.VITE_CONTACT_EMAIL || 'support@carzodrive.com';
-const rawGmail = import.meta.env?.VITE_CONTACT_GMAIL || 'jagankumarrath72@gmail.com';
+const rawGmail = import.meta.env?.VITE_CONTACT_GMAIL || 'carzodrive1@gmail.com';
 
 const cleanPhone = String(rawPhone).replace(/[^0-9]/g, '');
 const cleanWhatsapp = String(rawWhatsapp).replace(/[^0-9]/g, '');

@@ -37,7 +37,7 @@ export const Footer = () => {
 
             {/* Official Support Gmail */}
             <a
-              href={CONTACT_CONFIG.gmailMailto || `mailto:${CONTACT_CONFIG.gmail || 'jagankumarrath72@gmail.com'}`}
+              href={CONTACT_CONFIG.gmailMailto || `mailto:${CONTACT_CONFIG.gmail || 'carzodrive1@gmail.com'}`}
               className="flex items-center gap-2.5 text-xs text-slate-300 hover:text-white max-w-sm bg-slate-900/60 hover:bg-slate-900/90 p-3 rounded-xl border border-slate-800/80 hover:border-cyan-500/40 transition-all group shadow-sm"
               title="Send an email to CARZODRIVE"
             >
@@ -49,7 +49,7 @@ export const Footer = () => {
                   Official Support Gmail
                 </span>
                 <span className="font-bold text-slate-200 group-hover:text-cyan-300 truncate text-[12.5px]">
-                  {CONTACT_CONFIG.gmail || 'jagankumarrath72@gmail.com'}
+                  {CONTACT_CONFIG.gmail || 'carzodrive1@gmail.com'}
                 </span>
               </div>
             </a>
@@ -225,12 +225,12 @@ export const Footer = () => {
               </li>
               <li>
                 <a
-                  href={CONTACT_CONFIG.gmailMailto || `mailto:${CONTACT_CONFIG.gmail || 'jagankumarrath72@gmail.com'}`}
+                  href={CONTACT_CONFIG.gmailMailto || `mailto:${CONTACT_CONFIG.gmail || 'carzodrive1@gmail.com'}`}
                   className="inline-flex items-center gap-1.5 text-slate-400 hover:text-cyan-300 transition-colors group pt-1"
                   title="Direct Gmail Concierge"
                 >
                   <Mail className="w-3.5 h-3.5 text-red-400 group-hover:scale-110 transition-transform shrink-0" />
-                  <span className="truncate">{CONTACT_CONFIG.gmail || 'jagankumarrath72@gmail.com'}</span>
+                  <span className="truncate">{CONTACT_CONFIG.gmail || 'carzodrive1@gmail.com'}</span>
                 </a>
               </li>
             </ul>
