@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Clock, Sparkles, MapPin, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Clock, Sparkles, MapPin, ArrowRight, Mail } from 'lucide-react';
 import { Container } from '../common/Container';
 import { DrivoraLogo } from '../navbar/DrivoraLogo';
+import { CONTACT_CONFIG } from '../../config/contact';
 
 export const Footer = () => {
   return (
@@ -32,6 +33,25 @@ export const Footer = () => {
               <span className="leading-relaxed">
                 Plot no -1774. Ananda Bana Main Road. Kalinga Nagar, Ghatikia, Bhubaneswar, Pin- 751029
               </span>
+            </a>
+
+            {/* Official Support Gmail */}
+            <a
+              href={CONTACT_CONFIG.gmailMailto || `mailto:${CONTACT_CONFIG.gmail || 'jagankumarrath72@gmail.com'}`}
+              className="flex items-center gap-2.5 text-xs text-slate-300 hover:text-white max-w-sm bg-slate-900/60 hover:bg-slate-900/90 p-3 rounded-xl border border-slate-800/80 hover:border-cyan-500/40 transition-all group shadow-sm"
+              title="Send an email to CARZODRIVE"
+            >
+              <div className="w-8 h-8 rounded-lg bg-red-500/15 border border-red-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                <Mail className="w-4 h-4 text-red-400" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                  Official Support Gmail
+                </span>
+                <span className="font-bold text-slate-200 group-hover:text-cyan-300 truncate text-[12.5px]">
+                  {CONTACT_CONFIG.gmail || 'jagankumarrath72@gmail.com'}
+                </span>
+              </div>
             </a>
 
             {/* Social Icons */}
@@ -202,6 +222,16 @@ export const Footer = () => {
                 <Link to="/about" className="text-slate-400 hover:text-blue-400 transition-colors">
                   Privacy Policy
                 </Link>
+              </li>
+              <li>
+                <a
+                  href={CONTACT_CONFIG.gmailMailto || `mailto:${CONTACT_CONFIG.gmail || 'jagankumarrath72@gmail.com'}`}
+                  className="inline-flex items-center gap-1.5 text-slate-400 hover:text-cyan-300 transition-colors group pt-1"
+                  title="Direct Gmail Concierge"
+                >
+                  <Mail className="w-3.5 h-3.5 text-red-400 group-hover:scale-110 transition-transform shrink-0" />
+                  <span className="truncate">{CONTACT_CONFIG.gmail || 'jagankumarrath72@gmail.com'}</span>
+                </a>
               </li>
             </ul>
           </div>

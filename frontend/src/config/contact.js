@@ -7,6 +7,7 @@
 const rawPhone = import.meta.env?.VITE_CONTACT_PHONE || '7377733391';
 const rawWhatsapp = import.meta.env?.VITE_WHATSAPP_NUMBER || '917377733391';
 const rawEmail = import.meta.env?.VITE_CONTACT_EMAIL || 'support@carzodrive.com';
+const rawGmail = import.meta.env?.VITE_CONTACT_GMAIL || 'jagankumarrath72@gmail.com';
 
 const cleanPhone = String(rawPhone).replace(/[^0-9]/g, '');
 const cleanWhatsapp = String(rawWhatsapp).replace(/[^0-9]/g, '');
@@ -24,6 +25,10 @@ export const CONTACT_CONFIG = {
   email: rawEmail,
   // Clickable mailto: URI
   emailMailto: `mailto:${rawEmail}`,
+  // Official Gmail
+  gmail: rawGmail,
+  // Clickable Gmail mailto: URI
+  gmailMailto: `mailto:${rawGmail}`,
   // Office info
   officeLocation: 'Plot no -1774. Ananda Bana Main Road. Kalinga Nagar, Ghatikia, Bhubaneswar, Pin- 751029',
 };
@@ -32,5 +37,6 @@ export const CONTACT_CONFIG = {
 export const CARZODRIVE_WHATSAPP_NUMBER = CONTACT_CONFIG.whatsappNumber;
 export const CARZODRIVE_PHONE_NUMBER = CONTACT_CONFIG.phoneDisplay;
 export const CARZODRIVE_EMAIL = CONTACT_CONFIG.email;
+export const CARZODRIVE_GMAIL = CONTACT_CONFIG.gmail;
 
 export default CONTACT_CONFIG;
