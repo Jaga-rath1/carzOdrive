@@ -32,6 +32,7 @@ export const SelfDriveCarIcon = ({ className = 'w-6 h-6' }) => (
   </svg>
 );
 
+export const WithDriverIcon = ShieldCheck;
 export const ChauffeurIcon = ShieldCheck;
 export const DriverPilotIcon = UserCheck;
 export const BikeFleetIcon = Bike;

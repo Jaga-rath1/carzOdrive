@@ -30,6 +30,13 @@ export const BookingStepGuestReview = ({
   guestPhone,
   guestNotes,
   drivingLicenseNumber,
+  drivingLicenseDoc,
+  drivingLicenseDocName,
+  idProofDoc,
+  idProofDocName,
+  subtotal = 0,
+  discountAmount = 0,
+  discountPercent = 0,
   paymentMode,
   setPaymentMode,
   paymentError,
@@ -110,6 +117,16 @@ export const BookingStepGuestReview = ({
                 <span className="font-mono text-slate-950 uppercase">{drivingLicenseNumber}</span>
               </div>
             )}
+            {drivingLicenseDoc && (
+              <div className="text-emerald-700 font-bold text-[11px] flex items-center gap-1">
+                <span>✓ DL Document Attached for Admin</span>
+              </div>
+            )}
+            {idProofDoc && (
+              <div className="text-blue-700 font-bold text-[11px] flex items-center gap-1">
+                <span>✓ ID Proof Document Attached</span>
+              </div>
+            )}
             {guestNotes && (
               <div className="text-slate-500 text-[11px] italic truncate">
                 📝 "{guestNotes}"
@@ -118,10 +135,31 @@ export const BookingStepGuestReview = ({
           </div>
         </div>
 
-        {/* Amount Banner */}
-        <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-600">Total Booking Value:</span>
-          <span className="text-base font-black text-slate-950">{formatCurrency(total)}</span>
+        {/* Amount Banner with Discount Line */}
+        <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
+          {discountAmount > 0 && (
+            <div className="flex items-center justify-between text-xs text-emerald-700 bg-emerald-50/80 px-2 py-1 rounded-lg border border-emerald-200">
+              <span className="font-semibold flex items-center gap-1.5">
+                <span className="bg-emerald-600 text-white text-[9px] px-1.5 py-0.2 rounded font-black">
+                  {discountPercent}% OFF
+                </span>
+                <span>Promotional Discount:</span>
+              </span>
+              <span className="font-bold">-{formatCurrency(discountAmount)}</span>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-600">Net Booking Value:</span>
+            <div className="flex items-baseline gap-2">
+              {discountAmount > 0 && (
+                <span className="text-xs text-slate-400 line-through">
+                  {formatCurrency((subtotal || 0) + (includeProtection ? (days * 499) : 0))}
+                </span>
+              )}
+              <span className="text-base font-black text-slate-950">{formatCurrency(total)}</span>
+            </div>
+          </div>
         </div>
       </div>
 

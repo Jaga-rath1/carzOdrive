@@ -28,7 +28,7 @@ export const DriverOnlyProfiles = ({ onBookDriver }) => {
 
             const rate = d.pricing?.dailyRate || d.dailyRate || 1199;
             const exp = d.experienceYears || d.experience || 10;
-            const spec = d.speciality || (Array.isArray(d.specialties) ? d.specialties[0] : null) || 'Executive Chauffeur';
+            const spec = d.speciality || (Array.isArray(d.specialties) ? d.specialties[0] : null) || 'Executive Driver';
             const loc = Array.isArray(d.serviceLocations)
               ? d.serviceLocations.join(' & ')
               : Array.isArray(d.serviceArea)
@@ -77,7 +77,7 @@ export const DriverOnlyProfiles = ({ onBookDriver }) => {
             <span>100% POLICE & BACKGROUND VERIFIED</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight">
-            Verified Chauffeurs for Your Car
+            Verified Professional Drivers for Your Car
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-medium">
             Experienced drivers trained in automatic, manual, and luxury vehicles. No car rental required—hire solely the driver.
@@ -86,7 +86,7 @@ export const DriverOnlyProfiles = ({ onBookDriver }) => {
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-            <p className="text-sm font-bold text-slate-500">Loading verified chauffeurs from database...</p>
+            <p className="text-sm font-bold text-slate-500">Loading verified drivers from database...</p>
           </div>
         ) : drivers.length === 0 ? (
           <div className="py-16 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-8">

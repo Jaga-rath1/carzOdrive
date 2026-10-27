@@ -31,7 +31,7 @@ export const AboutStory = () => {
               CARZODRIVE was founded with one clear observation: hiring a vehicle was burdened by outdated paperwork, untrustworthy vehicle conditions, and opaque pricing.
             </p>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
-              We set out to build a modern mobility ecosystem where booking a sports car, an all-terrain SUV, a superbike, or a private chauffeur is as effortless as pressing a button on your phone.
+              We set out to build a modern mobility ecosystem where booking a sports car, an all-terrain SUV, a superbike, or a private driver is as effortless as pressing a button on your phone.
             </p>
           </div>
         </div>

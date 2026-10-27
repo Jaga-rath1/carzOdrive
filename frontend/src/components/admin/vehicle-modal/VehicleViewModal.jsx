@@ -172,7 +172,7 @@ export const VehicleViewModal = ({ isOpen, vehicle, onClose, onEdit }) => {
               {/* Tagline */}
               <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/80">
                 <p className="text-xs text-zinc-600 leading-relaxed font-medium">
-                  {vehicle.tagline || `Top-rated ${vehicle.brand} ${vehicle.name} available for self-drive and chauffeur rentals across Odisha.`}
+                  {vehicle.tagline || `Top-rated ${vehicle.brand} ${vehicle.name} available for self-drive and with-driver rentals across Odisha.`}
                 </p>
               </div>
             </div>

@@ -548,14 +548,14 @@ async function createDriverDirectly(data, adminId) {
     experienceYears = 5,
     drivingExperience = 5,
     hourlyRate = 120,
-    dailyRate = 899,
+    dailyRate = 799,
     photo,
     avatar,
     drivingLicenseDoc,
     idProofDoc,
     languages = ['Odia', 'Hindi', 'English'],
     serviceArea = ['Bhubaneswar', 'Cuttack', 'Puri'],
-    title = 'Executive Chauffeur & Verified Pilot',
+    title = 'Executive Driver & Verified Pilot',
   } = data;
 
   const driverName = (fullName || name || '').trim();

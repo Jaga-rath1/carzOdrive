@@ -281,7 +281,7 @@ export const AdminCreateBookingModal = ({ isOpen, onClose, onSuccess }) => {
         vehicleName = p?.title || p?.name || '';
         vehicleImage = p?.images?.[0] || '';
       } else if (serviceType === 'DRIVER_ONLY') {
-        vehicleName = userCarModel ? `Chauffeur for ${userCarModel}` : 'Professional Chauffeur';
+        vehicleName = userCarModel ? `Driver for ${userCarModel}` : 'Professional Driver';
       }
 
       const payload = {

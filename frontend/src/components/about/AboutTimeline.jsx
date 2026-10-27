@@ -12,7 +12,7 @@ export const AboutTimeline = () => {
     },
     {
       year: '2023',
-      title: 'Chauffeur & Bike Expansion',
+      title: 'Driver & Bike Expansion',
       desc: 'Introduced verified corporate drivers and high-performance superbikes with 100% digital keyless unlock.',
     },
     {

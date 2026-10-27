@@ -584,7 +584,7 @@ export const InvoiceModal = ({ isOpen, onClose, booking, bookingIdOrCode }) => {
                       </p>
                       <p className="text-[11px] text-zinc-500">
                         {isTour
-                          ? 'Sightseeing, sanitized transport, chauffeur & toll/parking allowances'
+                          ? 'Sightseeing, sanitized transport, dedicated driver & toll/parking allowances'
                           : `Rental fare for ${b.days || 1} day(s) from ${b.pickupDate || ''} to ${b.returnDate || ''}`}
                       </p>
                     </td>

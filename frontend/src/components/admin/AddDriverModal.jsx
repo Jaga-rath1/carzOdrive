@@ -149,7 +149,7 @@ export const AddDriverModal = ({ isOpen, onClose, onDriverAdded }) => {
                   Pre-Approved
                 </span>
               </h3>
-              <p className="text-xs text-zinc-400">Directly enroll a verified chauffeur into the live rental catalog</p>
+              <p className="text-xs text-zinc-400">Directly enroll a verified driver into the live rental catalog</p>
             </div>
           </div>
 
@@ -308,7 +308,7 @@ export const AddDriverModal = ({ isOpen, onClose, onDriverAdded }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-700 mb-1">Daily Chauffeur Fee (₹)</label>
+                <label className="block text-xs font-bold text-zinc-700 mb-1">Daily Driver Rate (₹)</label>
                 <div className="relative">
                   <IndianRupee className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-3" />
                   <input

@@ -14,7 +14,7 @@ const vehicleSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     brand: { type: String, trim: true },
     category: { type: String, trim: true, lowercase: true }, // 'hatchback', 'suv', 'sedan', 'luxury', 'muv'
-    type: { type: String, trim: true }, // 'Sporty Hatchback', 'Executive Chauffeur Sedan', etc.
+    type: { type: String, trim: true }, // 'Sporty Hatchback', 'Executive Driver Sedan', etc.
     vehicleType: { type: String, default: 'car' },
     year: { type: Number, default: 2024 },
     buyingYear: { type: Number, default: 2024 },

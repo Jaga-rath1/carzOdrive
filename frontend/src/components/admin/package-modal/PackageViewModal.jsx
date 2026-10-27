@@ -143,7 +143,7 @@ export const PackageViewModal = ({ isOpen, pkg, onClose, onEdit }) => {
               {/* Tagline */}
               <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/80">
                 <p className="text-xs text-zinc-700 leading-relaxed font-medium">
-                  {pkg.tagline || `Exclusive curated tour of ${pkg.destination} celebrating ${pkg.odishaTheme || pkg.category} with premium chauffeur mobility.`}
+                  {pkg.tagline || `Exclusive curated tour of ${pkg.destination} celebrating ${pkg.odishaTheme || pkg.category} with premium driver mobility.`}
                 </p>
               </div>
             </div>

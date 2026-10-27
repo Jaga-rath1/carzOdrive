@@ -32,7 +32,7 @@ const tourPackageSchema = new mongoose.Schema(
     odishaTheme: { type: String, trim: true, default: 'Spiritual & Temples' },
     badge: { type: String, trim: true, default: 'Odisha Special' },
     tagline: { type: String, trim: true },
-    featuredVehicle: { type: String, trim: true, default: 'Toyota Innova Crysta / Luxury Chauffeur' },
+    featuredVehicle: { type: String, trim: true, default: 'Toyota Innova Crysta / Luxury Car with Driver' },
     pickupLocation: { type: String, trim: true, default: 'Bhubaneswar Airport / Railway Station' },
     dropLocation: { type: String, trim: true, default: 'Bhubaneswar Hub' },
     image: { type: String, trim: true },

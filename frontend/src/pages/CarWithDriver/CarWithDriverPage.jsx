@@ -19,13 +19,13 @@ export const CarWithDriverPage = () => {
       {/* 1. HERO */}
       <CarDriverHero />
 
-      {/* 2. CHAUFFEUR PERKS */}
+      {/* 2. DRIVER PERKS */}
       <CarDriverPerks />
 
-      {/* 3. FLEET GRID WITH CHAUFFEURS */}
+      {/* 3. FLEET GRID WITH DRIVERS */}
       <CarDriverFleetGrid onSelectCar={handleSelectCar} />
 
-      {/* 4. CHAUFFEUR BOOKING BAR */}
+      {/* 4. DRIVER BOOKING BAR */}
       <CarDriverBookingBar
         selectedCar={selectedCar}
         onQuickBook={handleOpenQuickBook}

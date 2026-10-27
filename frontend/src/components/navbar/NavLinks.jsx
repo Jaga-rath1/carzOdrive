@@ -28,10 +28,10 @@ export const SERVICES_MENU = [
   },
   {
     title: 'Car With Driver',
-    desc: 'Sit back and enjoy executive chauffeur journeys',
+    desc: 'Sit back and enjoy executive driver journeys',
     to: '/car-with-driver',
     icon: Shield,
-    badge: 'Chauffeur',
+    badge: 'With Driver',
   },
   {
     title: 'Driver Only',

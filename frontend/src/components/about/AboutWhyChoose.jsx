@@ -18,7 +18,7 @@ export const AboutWhyChoose = () => {
     },
     {
       title: 'Verified Professionals',
-      desc: 'Background-checked chauffeurs trained in executive etiquette and defensive driving.',
+      desc: 'Background-checked drivers trained in executive etiquette and defensive driving.',
     },
   ];
 

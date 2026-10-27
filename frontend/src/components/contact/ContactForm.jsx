@@ -175,7 +175,7 @@ export const ContactForm = () => {
             >
               <option value="" disabled>-- Select Which Service You Want --</option>
               <option value="Self-Drive Car">🚗 Self-Drive Car (Drive Yourself)</option>
-              <option value="Car with Driver (Chauffeur Service)">👔 Car with Driver (Executive Chauffeur)</option>
+              <option value="Car with Driver">👔 Car with Driver (Executive Driver)</option>
               <option value="Driver Only (Hire Driver for Your Car)">🧑‍✈️ Driver Only (Hire Driver for Your Own Car)</option>
               <option value="Self-Drive Bike (Bike & Scooter Rental)">🏍️ Self-Drive Bike (Bike & Scooter Rental)</option>
               <option value="Tour Packages (Odisha Sightseeing)">🌴 Tour Packages (Puri, Konark, Chilika)</option>

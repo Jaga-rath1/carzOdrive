@@ -118,7 +118,7 @@ export const BookingFleetItemSelector = ({
                 </div>
               </div>
               <span className="text-xs font-black text-blue-800 bg-blue-100 px-2 py-0.5 rounded-md shrink-0">
-                ₹799 / day
+                ₹{selectedItem?.dailyRate || selectedItem?.pricePerDay || 799} / day
               </span>
             </div>
           </div>

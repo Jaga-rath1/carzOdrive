@@ -135,6 +135,16 @@ const downloadBookingInvoicePdf = asyncHandler(async (req, res) => {
   return res.send(buffer);
 });
 
+const verifyBookingDocuments = asyncHandler(async (req, res) => {
+  const booking = await svc.verifyBookingDocuments(req.params.id, req.user?.id, req.body);
+  success(res, booking, 'KYC document verification status updated');
+});
+
+const attachBookingDocument = asyncHandler(async (req, res) => {
+  const booking = await svc.attachBookingDocument(req.params.id, req.user?.id, req.body);
+  created(res, booking, 'KYC document attached to booking successfully');
+});
+
 module.exports = {
   getBookingInvoice,
   downloadBookingInvoicePdf,
@@ -155,4 +165,7 @@ module.exports = {
   assignDriver,
   pickupInspection,
   returnInspection,
+  verifyBookingDocuments,
+  attachBookingDocument,
 };
+

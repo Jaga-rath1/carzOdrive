@@ -28,8 +28,8 @@ export const ContactFAQ = () => {
       a: 'Our self-drive rentals follow a transparent "Same-to-Same" fuel policy. You receive the vehicle with a specific fuel level and return it with the same level. No hidden fuel markup fees.',
     },
     {
-      q: 'How does the Chauffeur / Driver-Only service work?',
-      a: 'You can hire a verified, protocol-trained driver for your own car or book a luxury car with a driver. Our chauffeurs arrive 15 minutes before the requested time in formal attire.',
+      q: 'How does the Driver / Driver-Only service work?',
+      a: 'You can hire a verified, protocol-trained driver for your own car or book a car with a driver. Our drivers arrive 15 minutes before the requested time in formal attire.',
     },
   ];
 

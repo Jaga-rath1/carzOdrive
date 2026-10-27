@@ -18,7 +18,7 @@ export const CarDriverHero = () => {
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black tracking-widest uppercase mb-4"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>EXECUTIVE CHAUFFEUR SERVICE</span>
+          <span>EXECUTIVE CAR WITH DRIVER SERVICE</span>
         </motion.div>
 
         <motion.h1
@@ -39,7 +39,7 @@ export const CarDriverHero = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-base sm:text-xl text-slate-600 font-normal max-w-2xl mx-auto mt-5 leading-relaxed"
         >
-          Impeccably tailored luxury chauffeur transport for corporate executives, wedding arrivals, VIP delegations, and seamless airport transit.
+          Impeccably tailored luxury car with verified driver transport for corporate executives, wedding arrivals, VIP delegations, and seamless airport transit.
         </motion.p>
       </Container>
     </section>

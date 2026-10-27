@@ -15,7 +15,8 @@ import {
   ExternalLink,
   Users,
   CalendarCheck,
-  Compass
+  Compass,
+  Percent
 } from 'lucide-react';
 import { DrivoraLogo } from '../navbar/DrivoraLogo';
 import { clearAuthSession, getCurrentUser } from '../../services/api';
@@ -33,6 +34,13 @@ const NAV_ITEMS = [
     to: '/admin/bookings',
     icon: CalendarCheck,
     badge: 'Live',
+    permission: null,
+  },
+  {
+    name: 'Discounts & Offers',
+    to: '/admin/discounts',
+    icon: Percent,
+    badge: '5% Live',
     permission: null,
   },
   {

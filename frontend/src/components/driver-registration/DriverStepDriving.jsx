@@ -42,8 +42,8 @@ export const DriverStepDriving = ({
             >
               <option value="3-5 Years">3 - 5 Years</option>
               <option value="5-8 Years">5 - 8 Years (Preferred)</option>
-              <option value="8-12 Years">8 - 12 Years (Senior Chauffeur)</option>
-              <option value="12+ Years">12+ Years (Master Chauffeur)</option>
+              <option value="8-12 Years">8 - 12 Years (Senior Driver)</option>
+              <option value="12+ Years">12+ Years (Master Driver)</option>
             </select>
           </div>
 

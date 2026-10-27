@@ -12,7 +12,10 @@ import {
   Mail,
   MapPin,
   CheckCircle2,
-  FileText
+  FileText,
+  FileCheck,
+  ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import { STATUS_COLORS, PAYMENT_STATUS_COLORS } from './bookingConstants';
 
@@ -22,6 +25,7 @@ export const BookingCardItem = ({
   handleCopyCode,
   handleOpenEdit,
   handleOpenInvoice,
+  handleOpenDocuments,
   setDeletingBooking,
   updatingId,
   handleQuickStatusUpdate,
@@ -96,6 +100,25 @@ export const BookingCardItem = ({
           </span>
 
           <div className="flex items-center gap-1 pl-2 border-l border-zinc-100">
+            {handleOpenDocuments && (
+              <button
+                type="button"
+                onClick={() => handleOpenDocuments(b)}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                  b.documentsVerified
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                    : (b.drivingLicenseDoc || b.idProofDoc || (b.documents && b.documents.length > 0) || b.drivingLicenseNumber)
+                    ? 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
+                    : 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200'
+                }`}
+                title="View & Inspect Customer KYC Documents"
+              >
+                <FileCheck className="w-3.5 h-3.5" />
+                <span>KYC Docs</span>
+                {b.documentsVerified && <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />}
+              </button>
+            )}
+
             {handleOpenInvoice && (
               <button
                 type="button"

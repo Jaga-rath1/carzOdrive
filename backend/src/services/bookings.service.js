@@ -455,6 +455,63 @@ async function createUniversalBooking(customerId, data) {
     }
   }
 
+  // Aggregate all KYC documents into the documents array for Admin Portal viewing
+  if (!Array.isArray(payload.documents)) {
+    payload.documents = [];
+  }
+  if (payload.drivingLicenseDoc) {
+    const hasDl = payload.documents.some((d) => d.url === payload.drivingLicenseDoc || d.type === 'DRIVING_LICENSE');
+    if (!hasDl) {
+      payload.documents.unshift({
+        name: payload.drivingLicenseDocName || 'Driving License (Front & Back)',
+        type: 'DRIVING_LICENSE',
+        url: payload.drivingLicenseDoc,
+        uploadedAt: new Date(),
+      });
+    }
+  }
+  if (payload.idProofDoc) {
+    const hasId = payload.documents.some((d) => d.url === payload.idProofDoc || d.type === 'ID_PROOF');
+    if (!hasId) {
+      payload.documents.push({
+        name: payload.idProofDocName || 'Government ID Proof',
+        type: 'ID_PROOF',
+        url: payload.idProofDoc,
+        uploadedAt: new Date(),
+      });
+    }
+  }
+
+  // Calculate and store verified Admin Discount
+  try {
+    const settingsSvc = require('./settings.service');
+    const discountSetting = await settingsSvc.getDiscountSettings();
+    if (discountSetting && discountSetting.isActive && discountSetting.percentage > 0) {
+      const isEligibleService =
+        !discountSetting.applicableServices ||
+        discountSetting.applicableServices.length === 0 ||
+        discountSetting.applicableServices.includes(payload.serviceType);
+
+      if (isEligibleService) {
+        const discountPct = Number(discountSetting.percentage) || 0;
+        payload.discountPercentage = discountPct;
+        payload.discountCode = discountSetting.badgeText || `${discountPct}% OFF`;
+
+        if (!payload.discountAmount) {
+          const base = payload.priceBreakdown?.baseAmount || payload.totalAmount || 0;
+          payload.discountAmount = Math.round((base * discountPct) / 100);
+        }
+
+        if (payload.priceBreakdown) {
+          payload.priceBreakdown.discount = payload.discountAmount;
+          payload.priceBreakdown.discountPercentage = discountPct;
+        }
+      }
+    }
+  } catch (discErr) {
+    console.warn('Discount calculation notice:', discErr.message);
+  }
+
   const booking = await Booking.create(payload);
 
   // Decrement vehicle inventory count upon booking & invalidate cache
@@ -669,8 +726,8 @@ async function createAdminBooking(adminUser, data) {
     resolvedVehicleName =
       serviceType === 'DRIVER_ONLY'
         ? userCarModel
-          ? `Chauffeur for ${userCarModel}`
-          : 'Professional Chauffeur'
+          ? `Driver for ${userCarModel}`
+          : 'Professional Driver'
         : serviceType === 'SELF_DRIVE_BIKE'
         ? 'Self-Drive Bike'
         : 'Self-Drive Vehicle';
@@ -1245,6 +1302,73 @@ async function getBookingInvoice(identifier) {
   };
 }
 
+// ─── KYC Document Verification & Management ────────────────────────────────
+
+async function verifyBookingDocuments(bookingId, adminUserId, data = {}) {
+  const booking = await Booking.findById(bookingId);
+  if (!booking) {
+    const err = new Error('Booking not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const verified = data.verified !== false;
+  booking.documentsVerified = verified;
+  booking.documentsVerifiedAt = new Date();
+  booking.documentsVerifiedBy = adminUserId || null;
+  if (data.notes !== undefined) {
+    booking.documentsVerificationNotes = data.notes;
+  }
+
+  addStatusHistory(
+    booking,
+    booking.status,
+    adminUserId,
+    verified ? 'KYC documents verified and approved by admin' : 'KYC documents flagged / unverified by admin'
+  );
+
+  await booking.save();
+  return booking;
+}
+
+async function attachBookingDocument(bookingId, adminUserId, data = {}) {
+  const booking = await Booking.findById(bookingId);
+  if (!booking) {
+    const err = new Error('Booking not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (!data.url) {
+    const err = new Error('Document URL is required');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const newDoc = {
+    name: data.name || 'Verification Document',
+    type: data.type || 'ID_PROOF',
+    url: data.url,
+    uploadedAt: new Date(),
+  };
+
+  if (!Array.isArray(booking.documents)) {
+    booking.documents = [];
+  }
+  booking.documents.push(newDoc);
+
+  if (data.type === 'DRIVING_LICENSE' && !booking.drivingLicenseDoc) {
+    booking.drivingLicenseDoc = data.url;
+  }
+  if (data.type === 'ID_PROOF' && !booking.idProofDoc) {
+    booking.idProofDoc = data.url;
+  }
+
+  addStatusHistory(booking, booking.status, adminUserId, `Document "${newDoc.name}" attached by admin`);
+  await booking.save();
+  return booking;
+}
+
 module.exports = {
   COMPANY_INVOICE_DETAILS,
   getBookingInvoice,
@@ -1263,4 +1387,7 @@ module.exports = {
   lookupBookings,
   updateBooking,
   deleteBooking,
+  verifyBookingDocuments,
+  attachBookingDocument,
 };
+

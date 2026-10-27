@@ -18,7 +18,7 @@ export const DriverOnlyHero = () => {
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black tracking-widest uppercase mb-4"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>ON-DEMAND PERSONAL CHAUFFEUR</span>
+          <span>ON-DEMAND PROFESSIONAL DRIVER</span>
         </motion.div>
 
         <motion.h1

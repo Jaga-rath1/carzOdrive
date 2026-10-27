@@ -100,7 +100,7 @@ export const AdminVehiclesPage = () => {
         <div>
           <h2 className="text-2xl font-black text-zinc-950 tracking-tight">Cars Fleet Management</h2>
           <p className="text-xs text-zinc-500">
-            Total {vehicles.length} active self-drive & chauffeur cars available in Odisha (Live from Database)
+            Total {vehicles.length} active self-drive & with-driver cars available in Odisha (Live from Database)
           </p>
         </div>
 

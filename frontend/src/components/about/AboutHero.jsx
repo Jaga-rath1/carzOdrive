@@ -39,7 +39,7 @@ export const AboutHero = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-base sm:text-xl text-slate-600 font-normal max-w-2xl mx-auto mt-5 leading-relaxed"
         >
-          We are redefining vehicle rentals with luxury self-drive cars, superbikes, elite chauffeurs, and hand-crafted travel experiences.
+          We are redefining vehicle rentals with luxury self-drive cars, superbikes, elite drivers, and hand-crafted travel experiences.
         </motion.p>
       </Container>
     </section>

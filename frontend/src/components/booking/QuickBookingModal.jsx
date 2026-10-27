@@ -10,6 +10,7 @@ import { BookingStepServiceItem } from './BookingStepServiceItem';
 import { BookingStepGuestReview } from './BookingStepGuestReview';
 import { BookingStepConfirmation } from './BookingStepConfirmation';
 import { useQuickBookingFleet } from './useQuickBookingFleet';
+import { useDiscount } from '../../hooks/useDiscount';
 import {
   normalizeServiceType,
   resolveBookingItemDetails,
@@ -25,6 +26,7 @@ export const QuickBookingModal = ({
 }) => {
   const navigate = useNavigate();
   const { currentUser, isAuthenticated, openAuthModal } = useAuth();
+  const { calculateDiscount, discount } = useDiscount();
   const [step, setStep] = useState(1);
 
   // Live Database Fleet via Hook
@@ -57,6 +59,8 @@ export const QuickBookingModal = ({
   const [drivingLicenseNumber, setDrivingLicenseNumber] = useState('');
   const [drivingLicenseDoc, setDrivingLicenseDoc] = useState(null);
   const [drivingLicenseDocName, setDrivingLicenseDocName] = useState('');
+  const [idProofDoc, setIdProofDoc] = useState(null);
+  const [idProofDocName, setIdProofDocName] = useState('');
   const [bookingCode, setBookingCode] = useState('');
   const [paymentNumber, setPaymentNumber] = useState('');
   const [invoiceNumber, setInvoiceNumber] = useState('');
@@ -179,9 +183,17 @@ export const QuickBookingModal = ({
   }, [selectedService, selectedCar, selectedChauffeurCar, selectedDriver, selectedBike, selectedTour, dbCars, dbDrivers, dbBikes, dbTours]);
 
   const subtotal = ratePerDay * (selectedService === 'tour-packages' ? 1 : days);
+  const discountCalculation = useMemo(() => {
+    return calculateDiscount(subtotal, selectedService);
+  }, [calculateDiscount, subtotal, selectedService]);
+
+  const discountAmount = discountCalculation.discountAmount || 0;
+  const discountPercent = discountCalculation.discountPercent || 0;
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+
   const insurancePerDay = selectedService === 'driver-only' || selectedService === 'tour-packages' ? 0 : 499;
   const insuranceCost = includeProtection ? insurancePerDay * days : 0;
-  const total = subtotal + insuranceCost;
+  const total = discountedSubtotal + insuranceCost;
 
   const partialPercentage = 0.25;
   const partialAmount = Math.max(499, Math.round(total * partialPercentage));
@@ -302,6 +314,14 @@ export const QuickBookingModal = ({
         guestNotes,
         drivingLicenseNumber,
         drivingLicenseDoc,
+        drivingLicenseDocName,
+        idProofDoc,
+        idProofDocName,
+        discountPercentage: discountPercent,
+        discountAmount,
+        discountCode: discountCalculation?.badgeText || (discountPercent > 0 ? `${discountPercent}% OFF` : undefined),
+        subtotal,
+        insuranceCost,
         userCarModel,
         activeVehicleId,
         selectedTour,
@@ -352,6 +372,7 @@ export const QuickBookingModal = ({
           dropLocation: effectiveDropoffLocation,
           protection: includeProtection ? 'Zero-Excess Damage Waiver' : 'Standard / None',
           deposit,
+          discount: discountAmount > 0 ? `${discountPercent}% OFF (-${formatCurrency(discountAmount)})` : undefined,
           total: formatCurrency(total),
           paymentMode: 'Offline Payment (Pay on Pickup via Cash / UPI)',
           paidNow: '₹0 (Zero Advance Online)',
@@ -458,6 +479,10 @@ export const QuickBookingModal = ({
           insurancePerDay={insurancePerDay}
           insuranceCost={insuranceCost}
           days={days}
+          subtotal={subtotal}
+          discountAmount={discountAmount}
+          discountPercent={discountPercent}
+          discountResult={discountCalculation}
           total={total}
           userCarModel={userCarModel}
           effectivePickupLocation={effectivePickupLocation}
@@ -476,6 +501,10 @@ export const QuickBookingModal = ({
           setDrivingLicenseDoc={setDrivingLicenseDoc}
           drivingLicenseDocName={drivingLicenseDocName}
           setDrivingLicenseDocName={setDrivingLicenseDocName}
+          idProofDoc={idProofDoc}
+          setIdProofDoc={setIdProofDoc}
+          idProofDocName={idProofDocName}
+          setIdProofDocName={setIdProofDocName}
           step1Error={step1Error}
           onProceed={handleProceedToDetails}
         />
@@ -500,6 +529,13 @@ export const QuickBookingModal = ({
           guestNotes={guestNotes}
           setGuestNotes={setGuestNotes}
           drivingLicenseNumber={drivingLicenseNumber}
+          drivingLicenseDoc={drivingLicenseDoc}
+          drivingLicenseDocName={drivingLicenseDocName}
+          idProofDoc={idProofDoc}
+          idProofDocName={idProofDocName}
+          subtotal={subtotal}
+          discountAmount={discountAmount}
+          discountPercent={discountPercent}
           paymentMode={paymentMode}
           setPaymentMode={setPaymentMode}
           paymentError={paymentError}

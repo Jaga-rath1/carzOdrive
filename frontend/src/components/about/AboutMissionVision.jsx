@@ -14,7 +14,7 @@ export const AboutMissionVision = () => {
             </div>
             <h3 className="text-2xl font-black text-slate-950">Our Mission</h3>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
-              To deliver uncompromising freedom and luxury on the road through verified vehicles, professional chauffeurs, and transparent digital booking for every journey.
+              To deliver uncompromising freedom and luxury on the road through verified vehicles, professional drivers, and transparent digital booking for every journey.
             </p>
           </div>
 

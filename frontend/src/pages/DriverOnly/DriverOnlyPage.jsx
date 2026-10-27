@@ -23,7 +23,7 @@ export const DriverOnlyPage = () => {
       {/* 2. HOW IT WORKS (ZERO CAR RENTAL, ONLY DRIVER HIRE) */}
       <DriverOnlyHowItWorks />
 
-      {/* 3. CHAUFFEUR SERVICE CATEGORIES */}
+      {/* 3. DRIVER SERVICE CATEGORIES */}
       <DriverOnlyServices
         selectedService={selectedService}
         onSelectService={setSelectedService}

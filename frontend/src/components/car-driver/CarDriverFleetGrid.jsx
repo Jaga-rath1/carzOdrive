@@ -3,19 +3,23 @@ import { Award, Star, Globe, ArrowRight, Loader2 } from 'lucide-react';
 import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { vehiclesAPI } from '../../services/api';
+import { useDriverSettings } from '../../hooks/useDriverSettings';
+
 export const CarDriverFleetGrid = ({ onSelectCar }) => {
-  const [chauffeurCars, setChauffeurCars] = useState([]);
+  const { driverSettings } = useDriverSettings();
+  const [withDriverCars, setWithDriverCars] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
+    const driverFee = driverSettings?.dailyRate || 799;
     vehiclesAPI
       .getAll()
       .then((res) => {
         if (isMounted && res?.data && res.data.length > 0) {
           const mapped = res.data.map((v) => {
             const baseRate = v.pricing?.dailyRate || v.pricePerDay || 1499;
-            const chauffeurRate = v.pricing?.dailyRateWithFuel || (baseRate + 800);
+            const withDriverRate = v.pricing?.dailyRateWithFuel || (baseRate + driverFee);
             const image = (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg';
 
             const stockCount = v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? (v.isAvailable !== false ? 1 : 0));
@@ -27,17 +31,17 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
               name: v.name,
               type: v.type || v.model || `${v.category || 'Executive'} Sedan`,
               seats: `${v.seats || 5} Seats`,
-              price: `₹${chauffeurRate.toLocaleString('en-IN')} / day`,
-              priceNumeric: chauffeurRate,
+              price: `₹${withDriverRate.toLocaleString('en-IN')} / day`,
+              priceNumeric: withDriverRate,
               image: image,
               color: v.color || 'Executive Finish',
-              badge: v.badge || (isAvail ? 'Verified Chauffeur' : 'Reserved'),
+              badge: v.badge || (isAvail ? 'Verified Driver' : 'Reserved'),
               quantity: stockCount,
               availableCount: stockCount,
               isAvailable: isAvail,
               availabilityStatus: isAvail ? 'Available' : 'Currently Unavailable',
               driver: {
-                name: 'Professional Odisha Chauffeur',
+                name: 'Professional Odisha Driver',
                 experience: '8+ Years Experience',
                 rating: 4.98,
                 languages: 'Odia, Hindi, English',
@@ -50,7 +54,7 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
             if (a.isAvailable === b.isAvailable) return 0;
             return a.isAvailable ? -1 : 1;
           });
-          setChauffeurCars(sorted);
+          setWithDriverCars(sorted);
           setLoading(false);
         } else {
           setLoading(false);
@@ -70,7 +74,7 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
       <Container>
         <div className="max-w-3xl mx-auto text-center space-y-3 mb-14">
           <h2 className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight">
-            Prestige Cars & Master Chauffeurs
+            Prestige Cars & Professional Drivers
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-medium">
             Hand-picked executive vehicles paired with experienced, vetted drivers directly from our database.
@@ -80,15 +84,15 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-            <p className="text-sm font-bold text-slate-500">Loading chauffeur vehicles from database...</p>
+            <p className="text-sm font-bold text-slate-500">Loading cars with driver from database...</p>
           </div>
-        ) : chauffeurCars.length === 0 ? (
+        ) : withDriverCars.length === 0 ? (
           <div className="py-16 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-8">
-            <p className="text-slate-600 font-bold text-sm">No vehicles currently available for chauffeur service.</p>
+            <p className="text-slate-600 font-bold text-sm">No vehicles currently available for car with driver service.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {chauffeurCars.map((item) => {
+          {withDriverCars.map((item) => {
             const isUnavailable = item.isAvailable === false;
 
             return (
@@ -196,7 +200,7 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
                         onClick={() => onSelectCar(item.name)}
                         className="flex-1 py-3.5 px-3 rounded-xl font-black text-xs text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 group"
                       >
-                        <span>Reserve Chauffeur</span>
+                        <span>Reserve with Driver</span>
                         <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </button>
                     )}
@@ -204,8 +208,8 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
                     <WhatsAppButton
                       message={
                         isUnavailable
-                          ? `Hello CARZODRIVE! I am inquiring about future availability of ${item.name} (${item.type}) with chauffeur service.`
-                          : `Hello CARZODRIVE! I want to book a chauffeur-driven car: ${item.name} (${item.type}) with driver ${item.driver.name}.`
+                          ? `Hello CARZODRIVE! I am inquiring about future availability of ${item.name} (${item.type}) with driver service.`
+                          : `Hello CARZODRIVE! I want to book a car with driver: ${item.name} (${item.type}) with driver ${item.driver.name}.`
                       }
                       variant="icon-only"
                       size="md"

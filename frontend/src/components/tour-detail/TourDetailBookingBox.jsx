@@ -123,7 +123,7 @@ export const TourDetailBookingBox = ({ tour, onOpenQuickBook }) => {
         </div>
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-          <span>Verified 5-star verified chauffeur accompaniment.</span>
+          <span>Verified 5-star professional driver accompaniment.</span>
         </div>
       </div>
     </div>

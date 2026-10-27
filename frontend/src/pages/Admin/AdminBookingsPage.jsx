@@ -21,6 +21,7 @@ import { BookingCardItem } from '../../components/admin/bookings/BookingCardItem
 import { BookingEditModal } from '../../components/admin/bookings/BookingEditModal';
 import { BookingDeleteModal } from '../../components/admin/bookings/BookingDeleteModal';
 import { AdminCreateBookingModal } from '../../components/admin/bookings/AdminCreateBookingModal';
+import { BookingDocumentsModal } from '../../components/admin/bookings/BookingDocumentsModal';
 import { InvoiceModal } from '../../components/common/InvoiceModal';
 
 export const AdminBookingsPage = () => {
@@ -32,6 +33,9 @@ export const AdminBookingsPage = () => {
   const [updatingId, setUpdatingId] = useState(null);
   const [statusMessage, setStatusMessage] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
+
+  // KYC Documents Modal State
+  const [documentsBooking, setDocumentsBooking] = useState(null);
 
   // Edit Modal State
   const [editingBooking, setEditingBooking] = useState(null);
@@ -123,6 +127,8 @@ export const AdminBookingsPage = () => {
       balanceAmount: booking.balanceAmount || 0,
       securityDeposit: booking.securityDeposit || 0,
       transactionId: booking.transactionId || '',
+      drivingLicenseNumber: booking.drivingLicenseNumber || '',
+      idProofNumber: booking.idProofNumber || '',
     });
   };
 
@@ -421,6 +427,7 @@ export const AdminBookingsPage = () => {
           handleCopyCode={handleCopyCode}
           handleOpenEdit={handleOpenEdit}
           handleOpenInvoice={(b) => setInvoiceBooking(b)}
+          handleOpenDocuments={(b) => setDocumentsBooking(b)}
           setDeletingBooking={setDeletingBooking}
         />
       ) : (
@@ -433,6 +440,7 @@ export const AdminBookingsPage = () => {
               handleCopyCode={handleCopyCode}
               handleOpenEdit={handleOpenEdit}
               handleOpenInvoice={(b) => setInvoiceBooking(b)}
+              handleOpenDocuments={(b) => setDocumentsBooking(b)}
               setDeletingBooking={setDeletingBooking}
               updatingId={updatingId}
               handleQuickStatusUpdate={handleQuickStatusUpdate}
@@ -440,6 +448,26 @@ export const AdminBookingsPage = () => {
           ))}
         </div>
       )}
+
+      {/* Customer KYC Documents Inspection & Verification Modal */}
+      <BookingDocumentsModal
+        isOpen={Boolean(documentsBooking)}
+        onClose={() => setDocumentsBooking(null)}
+        booking={documentsBooking}
+        onBookingUpdated={(updated) => {
+          if (updated) {
+            setBookings((prev) =>
+              prev.map((item) =>
+                (item._id === updated._id || item.id === updated.id) ? { ...item, ...updated } : item
+              )
+            );
+            if (documentsBooking && (documentsBooking._id === updated._id || documentsBooking.id === updated.id)) {
+              setDocumentsBooking((prev) => ({ ...prev, ...updated }));
+            }
+          }
+          fetchBookings();
+        }}
+      />
 
       {/* Edit Booking Modal */}
       <BookingEditModal

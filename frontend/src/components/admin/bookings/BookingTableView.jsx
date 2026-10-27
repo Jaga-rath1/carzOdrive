@@ -1,5 +1,5 @@
 import React from 'react';
-import { Copy, Check, Edit3, Trash2, FileText } from 'lucide-react';
+import { Copy, Check, Edit3, Trash2, FileText, ShieldCheck, FileCheck } from 'lucide-react';
 import { STATUS_COLORS, PAYMENT_STATUS_COLORS } from './bookingConstants';
 
 export const BookingTableView = ({
@@ -8,6 +8,7 @@ export const BookingTableView = ({
   handleCopyCode,
   handleOpenEdit,
   handleOpenInvoice,
+  handleOpenDocuments,
   setDeletingBooking,
 }) => {
   return (
@@ -58,6 +59,23 @@ export const BookingTableView = ({
                     {customerPhone && (
                       <div className="text-[11px] text-zinc-500 font-mono">{customerPhone}</div>
                     )}
+                    {Boolean(b.drivingLicenseDoc || b.idProofDoc || (b.documents && b.documents.length > 0) || b.drivingLicenseNumber) && (
+                      <div className="mt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDocuments && handleOpenDocuments(b)}
+                          className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
+                            b.documentsVerified
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                              : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
+                          }`}
+                          title="Click to inspect KYC documents"
+                        >
+                          <ShieldCheck className="w-2.5 h-2.5" />
+                          <span>{b.documentsVerified ? 'KYC Verified' : 'KYC Docs'}</span>
+                        </button>
+                      </div>
+                    )}
                   </td>
                   <td className="py-3 px-4 whitespace-nowrap">
                     <div className="font-bold text-zinc-900">{b.vehicleName || 'Vehicle'}</div>
@@ -103,6 +121,22 @@ export const BookingTableView = ({
                   </td>
                   <td className="py-3 px-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-1.5">
+                      {handleOpenDocuments && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDocuments(b)}
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                            b.documentsVerified
+                              ? 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50'
+                              : Boolean(b.drivingLicenseDoc || b.idProofDoc || (b.documents && b.documents.length > 0))
+                              ? 'text-blue-600 hover:text-blue-800 hover:bg-blue-50 ring-1 ring-blue-300'
+                              : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100'
+                          }`}
+                          title="Inspect Customer KYC Documents"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                       {handleOpenInvoice && (
                         <button
                           type="button"

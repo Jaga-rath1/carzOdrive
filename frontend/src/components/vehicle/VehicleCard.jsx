@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ArrowRight, Info } from 'lucide-react';
+import { Star, ArrowRight, Info, Sparkles } from 'lucide-react';
 import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
 import { formatCurrency, formatRating } from '../../utils/formatters';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
+import { useDiscount } from '../../hooks/useDiscount';
 
 export const VehicleCard = ({
   vehicle,
@@ -17,6 +18,10 @@ export const VehicleCard = ({
   const isBike = mode === 'bike';
   const specs = vehicle.specs || {};
   const detailUrl = `/vehicle/${vehicle.id}`;
+
+  const { calculateDiscount } = useDiscount();
+  const serviceType = isBike ? 'self-drive-bike' : 'self-drive-car';
+  const priceCalc = calculateDiscount(vehicle.pricePerDay, serviceType);
 
   return (
     <Card variant="glass" className="group flex flex-col h-full bg-white border border-slate-200/90 hover:border-blue-500/40 shadow-card hover:shadow-card-hover transition-all duration-300">
@@ -32,9 +37,17 @@ export const VehicleCard = ({
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none">
-          <Badge variant="blue" size="sm" dot>
-            {vehicle.badge || vehicle.type}
-          </Badge>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="blue" size="sm" dot>
+              {vehicle.badge || vehicle.type}
+            </Badge>
+            {priceCalc.isDiscountActive && priceCalc.discountAmount > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black shadow-sm uppercase tracking-wider animate-in fade-in">
+                <Sparkles className="w-2.5 h-2.5" />
+                <span>{priceCalc.badgeText}</span>
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-md border border-slate-200/80 text-xs font-bold text-slate-900 shadow-sm">
             <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
@@ -104,15 +117,36 @@ export const VehicleCard = ({
         {/* Pricing & Actions */}
         <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
           <div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl sm:text-2xl font-black text-slate-950">
-                {formatCurrency(vehicle.pricePerDay)}
-              </span>
-              <span className="text-xs text-slate-500 font-medium">/day</span>
-            </div>
-            <div className="text-[11px] text-slate-500">
-              or {formatCurrency(vehicle.pricePerHour)}/hr
-            </div>
+            {priceCalc.isDiscountActive && priceCalc.discountAmount > 0 ? (
+              <div>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-xs text-slate-400 line-through font-semibold">
+                    {formatCurrency(vehicle.pricePerDay)}
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black tracking-wide">
+                    {priceCalc.badgeText}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl sm:text-2xl font-black text-emerald-700">
+                    {formatCurrency(priceCalc.finalAmount)}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">/day</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl sm:text-2xl font-black text-slate-950">
+                    {formatCurrency(vehicle.pricePerDay)}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">/day</span>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  or {formatCurrency(vehicle.pricePerHour)}/hr
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5">

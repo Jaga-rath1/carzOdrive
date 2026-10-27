@@ -34,8 +34,8 @@ async function start() {
       logger.warn(`⚠️ Nodemailer verification handshake error: ${err.message}`);
     });
 
-  server = app.listen(env.port, () => {
-    logger.success(`CarzoDrive Production Server listening on http://localhost:${env.port} [Environment: ${env.nodeEnv}]`);
+  server = app.listen(env.port, '0.0.0.0', () => {
+    logger.success(`CarzoDrive Production Server listening on http://127.0.0.1:${env.port} [Environment: ${env.nodeEnv}]`);
   });
 }
 

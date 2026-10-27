@@ -17,7 +17,7 @@ const ROLES = Object.freeze({
 const PERMISSIONS = Object.freeze([
   { id: 'manage_cars', label: 'Manage Cars Fleet', description: 'Add, update, publish and deactivate rental cars' },
   { id: 'manage_bikes', label: 'Manage Bikes Fleet', description: 'Add, update and oversee scooty & bike inventory' },
-  { id: 'manage_drivers', label: 'Manage Drivers & Chauffeurs', description: 'Approve, verify, audit and assign driver pilots' },
+  { id: 'manage_drivers', label: 'Manage Drivers & Pilots', description: 'Approve, verify, audit and assign verified drivers' },
   { id: 'manage_packages', label: 'Manage Tour Packages', description: 'Create and update Odisha tour itineraries and pricing' },
   { id: 'manage_bookings', label: 'Manage Bookings & Vouchers', description: 'Review, modify and dispatch customer reservations' },
   { id: 'manage_staff', label: 'Manage Staff & Roles', description: 'Grant admin panel access and configure granular permissions' },

@@ -32,6 +32,7 @@ import { AdminVendorFleetPage } from '../pages/Admin/AdminVendorFleetPage';
 import { AdminBookingsPage } from '../pages/Admin/AdminBookingsPage';
 import { AdminPackagesPage } from '../pages/Admin/AdminPackagesPage';
 import { AdminLoginPage } from '../pages/Admin/AdminLoginPage';
+import { AdminDiscountsPage } from '../pages/Admin/AdminDiscountsPage';
 
 // Scroll to top helper when route changes
 export const ScrollToTop = () => {
@@ -109,6 +110,8 @@ export const AppRoutes = () => {
           <Route path="tours" element={<Navigate to="/admin/packages" replace />} />
           <Route path="drivers" element={<AdminDriversPage />} />
           <Route path="users" element={<AdminUsersPage />} />
+          <Route path="discounts" element={<AdminDiscountsPage />} />
+          <Route path="offers" element={<Navigate to="/admin/discounts" replace />} />
           <Route path="vendor-fleet" element={<AdminVendorFleetPage />} />
           <Route path="staff" element={<Navigate to="/admin/users" replace />} />
         </Route>

@@ -11,10 +11,13 @@ import {
   Loader2,
   Eye,
   Lock,
+  ShieldCheck,
+  IndianRupee,
 } from 'lucide-react';
 import { DocumentViewerModal } from '../common/DocumentViewerModal';
 import { getDocumentPreviewUrl } from '../../utils/documentUtils';
 import { AuthRequiredNotice } from '../common/AuthRequiredNotice';
+import { useDriverSettings } from '../../hooks/useDriverSettings';
 
 export const DriverStepReview = ({
   formData,
@@ -27,6 +30,9 @@ export const DriverStepReview = ({
   onBack,
   onSubmit,
 }) => {
+  const { driverSettings } = useDriverSettings();
+  const regFee = driverSettings?.registrationFee ?? 799;
+  const isRegActive = driverSettings?.isRegistrationActive !== false;
   const [activeReviewDoc, setActiveReviewDoc] = useState(null);
   return (
     <motion.div
@@ -312,6 +318,40 @@ export const DriverStepReview = ({
           </div>
         </div>
 
+        {/* Registration Pricing & Verification Plan (Managed by Admin) */}
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs font-black uppercase tracking-wider text-blue-900 block">
+                Official Pilot Verification Tier
+              </span>
+              <p className="text-[11px] text-blue-700">
+                100% Police verification, badge issuance, protocol uniform, and client dispatch access.
+              </p>
+            </div>
+          </div>
+          <div className="text-right sm:border-l sm:border-blue-200/80 sm:pl-4 shrink-0">
+            <span className="text-[10px] uppercase font-bold text-slate-500 block">Registration Fee</span>
+            <span className="text-lg font-black text-slate-950 font-mono">
+              {regFee === 0 ? (
+                <span className="text-emerald-600 font-bold">₹0 (Free Onboarding)</span>
+              ) : (
+                `₹${regFee.toLocaleString('en-IN')}`
+              )}
+            </span>
+          </div>
+        </div>
+
+        {!isRegActive && (
+          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>Driver partner intake is temporarily paused by administration. You can still save details, or contact support.</span>
+          </div>
+        )}
+
         {/* Terms declaration */}
         <div className="pt-2">
           <label className="flex items-start gap-3 cursor-pointer">
@@ -323,7 +363,7 @@ export const DriverStepReview = ({
               className="mt-1 w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500"
             />
             <span className="text-xs text-slate-600 leading-relaxed font-medium">
-              I certify that all details and submitted documents are authentic and valid. I agree to CARZODRIVE's Chauffeur Code of Conduct and authorize background verification.
+              I certify that all details and submitted documents are authentic and valid. I agree to CARZODRIVE's Driver Code of Conduct and authorize background verification.
             </span>
           </label>
         </div>

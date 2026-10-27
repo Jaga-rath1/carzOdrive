@@ -31,7 +31,7 @@ export const HomePage = () => {
       {/* 8. TOURS & PACKAGES PREVIEW (3 PREMIUM PACKAGES + VIEW ALL CTA) */}
       <ToursPreviewSection />
 
-      {/* 9. DRIVER REGISTRATION CTA (PROFESSIONAL SECTION FOR CHAUFFEURS) */}
+      {/* 9. DRIVER REGISTRATION CTA (PROFESSIONAL SECTION FOR DRIVERS) */}
       <DriverRegistrationCTA />
 
       {/* 10. FINAL HERO-STYLE CTA AT THE END OF HOME PAGE */}

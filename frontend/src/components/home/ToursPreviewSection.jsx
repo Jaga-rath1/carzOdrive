@@ -23,7 +23,7 @@ export const ToursPreviewSection = () => {
             title: p.name,
             duration: `${p.duration?.days || 2} Days / ${p.duration?.nights || 1} Nights`,
             startingPrice: `₹${(p.pricing?.adultPrice || 5499).toLocaleString('en-IN')}`,
-            description: p.description || 'Experience Odisha with a dedicated chauffeur, luxury accommodation, and private sightseeing.',
+            description: p.description || 'Experience Odisha with a dedicated driver, luxury accommodation, and private sightseeing.',
             image:
               (p.images && p.images[0]) ||
               'https://plus.unsplash.com/premium_photo-1697729536647-4e23a32dd324?q=80&w=1170&auto=format&fit=crop',

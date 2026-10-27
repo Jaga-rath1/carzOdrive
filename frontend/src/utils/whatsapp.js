@@ -88,6 +88,7 @@ export const getQuickBookingWhatsAppMessage = ({
   dropLocation = '',
   protection = '',
   deposit = '',
+  discount = '',
   total = '',
   paymentMode = '',
   paidNow = '',
@@ -123,6 +124,9 @@ export const getQuickBookingWhatsAppMessage = ({
   }
   if (deposit) {
     msg += `💳 *Security Deposit:* ${deposit}\n`;
+  }
+  if (discount) {
+    msg += `🎉 *Promotional Discount Applied:* ${discount}\n`;
   }
   if (total) {
     msg += `💰 *Estimated Total:* ${total}\n`;

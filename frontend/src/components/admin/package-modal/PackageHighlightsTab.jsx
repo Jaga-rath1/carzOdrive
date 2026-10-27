@@ -3,7 +3,7 @@ import { Sparkles, Plus, X, CheckCircle2, ShieldCheck, FileText } from 'lucide-r
 
 const COMMON_HIGHLIGHTS = [
   'Zero-Stress Doorstep Pickup & Drop across Bhubaneswar & Odisha',
-  'Exclusive Chauffeur-Driven AC Executive Vehicle throughout the tour',
+  'Exclusive AC Executive Vehicle with Driver throughout the tour',
   'Priority Darshan assistance at Shree Jagannath Temple, Puri',
   'Guided exploration of 13th Century Konark Sun Temple Architecture',
   'Private Motorboat Safari at Chilika Lake with Irrawaddy Dolphin Spotting',
@@ -59,7 +59,7 @@ export const PackageHighlightsTab = ({ formData, handleChange, setFormData }) =>
           name="description"
           value={formData.description}
           onChange={handleChange}
-          placeholder="Provide an enticing and comprehensive description of the journey, ancient heritage, temple traditions, coastal landscapes, and chauffeur hospitality..."
+          placeholder="Provide an enticing and comprehensive description of the journey, ancient heritage, temple traditions, coastal landscapes, and driver hospitality..."
           className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 outline-none focus:bg-white focus:border-blue-600 resize-none"
         />
       </div>
@@ -151,7 +151,7 @@ export const PackageHighlightsTab = ({ formData, handleChange, setFormData }) =>
           <span>Odisha Tourism Traveler Assurance</span>
         </span>
         <p className="text-[11px] text-zinc-600 leading-relaxed">
-          All packages are conducted in sanitized, commercial vehicles with verified Odia-speaking chauffeurs. Temple guidelines (modest attire, non-leather items in Puri Srimandir) are assisted by your assigned route manager.
+          All packages are conducted in sanitized, commercial vehicles with verified Odia-speaking drivers. Temple guidelines (modest attire, non-leather items in Puri Srimandir) are assisted by your assigned route manager.
         </p>
       </div>
     </div>

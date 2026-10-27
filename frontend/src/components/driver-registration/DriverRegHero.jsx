@@ -18,7 +18,7 @@ export const DriverRegHero = () => {
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black tracking-widest uppercase mb-4"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>CHAUFFEUR PARTNERSHIP</span>
+          <span>DRIVER PARTNERSHIP</span>
         </motion.div>
 
         <motion.h1
@@ -39,7 +39,7 @@ export const DriverRegHero = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-base sm:text-xl text-slate-600 font-normal max-w-2xl mx-auto mt-5 leading-relaxed"
         >
-          Join India's premier chauffeur protocol network. Drive luxury vehicles, earn competitive daily remuneration, and experience world-class hospitality training.
+          Join India's premier driver network. Drive premium executive vehicles, earn competitive daily remuneration, and experience world-class hospitality training.
         </motion.p>
       </Container>
     </section>

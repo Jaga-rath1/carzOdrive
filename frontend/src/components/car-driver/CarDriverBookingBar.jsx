@@ -39,7 +39,7 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
           }
         }
       } catch (err) {
-        console.error('Failed to load chauffeur fleet for booking bar:', err);
+        console.error('Failed to load with-driver fleet for booking bar:', err);
       }
     }
     loadFleet();
@@ -76,7 +76,7 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
     }
   };
 
-  const whatsappMessage = `Hello CARZODRIVE! 👋\n\nI want to book a Car with Driver (Executive Chauffeur):\n🚗 Vehicle: ${carType}\n📍 Pickup: ${pickup || 'SUM Hospital, Bhubaneswar'}\n🏁 Destination: ${destination || 'Hotel / Office'}\n📅 Date: ${date}\n⏰ Time: ${time}\n\nPlease confirm availability and rate quote!`;
+  const whatsappMessage = `Hello CARZODRIVE! 👋\n\nI want to book a Car with Driver:\n🚗 Vehicle: ${carType}\n📍 Pickup: ${pickup || 'SUM Hospital, Bhubaneswar'}\n🏁 Destination: ${destination || 'Hotel / Office'}\n📅 Date: ${date}\n⏰ Time: ${time}\n\nPlease confirm availability and rate quote!`;
 
   return (
     <section id="booking-form-section" className="py-16 sm:py-20 bg-slate-900 text-white relative">
@@ -90,7 +90,7 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
               Book With Driver
             </h3>
             <p className="text-xs sm:text-sm text-slate-400">
-              Confirm your pickup details for instant chauffeur assignment.
+              Confirm your pickup details for instant driver assignment.
             </p>
           </div>
 
@@ -99,9 +99,9 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
               <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h4 className="text-xl font-bold text-white">Chauffeur Request Queued!</h4>
+              <h4 className="text-xl font-bold text-white">Driver Request Queued!</h4>
               <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto">
-                Your luxury ride in the <strong>{carType}</strong> has been received. Our concierge officer will call you to confirm flight/pickup coordinates.
+                Your comfortable ride in the <strong>{carType}</strong> has been received. Our concierge officer will call you to confirm pickup coordinates.
               </p>
               
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -223,8 +223,8 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
 
               {!isAuthenticated && (
                 <AuthRequiredNotice
-                  title="Login Required to Book Chauffeur"
-                  message="Please sign in or create an account to book your executive car with verified chauffeur."
+                  title="Login Required to Book Car with Driver"
+                  message="Please sign in or create an account to book your car with verified driver."
                   className="my-1 bg-amber-950/40 border-amber-500/30 text-amber-200"
                 />
               )}
@@ -238,7 +238,7 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                       className="flex-1 py-4 px-6 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95 text-center"
                     >
                       <Lock className="w-4 h-4" />
-                      <span>Login to Confirm Chauffeur Ride</span>
+                      <span>Login to Confirm Driver Ride</span>
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                     <button
@@ -254,7 +254,7 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                     type="submit"
                     className="flex-1 py-4 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm transition-all shadow-lg shadow-blue-500/25 cursor-pointer flex items-center justify-center gap-2"
                   >
-                    <span>Confirm Chauffeur Ride</span>
+                    <span>Confirm Driver Ride</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 )}

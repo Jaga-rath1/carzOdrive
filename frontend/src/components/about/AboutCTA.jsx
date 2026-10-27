@@ -12,7 +12,7 @@ export const AboutCTA = () => {
             Ready to Experience CARZODRIVE?
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-medium max-w-xl mx-auto">
-            Reserve your dream car, superbike, or verified chauffeur today with instant digital confirmation.
+            Reserve your dream car, superbike, or verified driver today with instant digital confirmation.
           </p>
           <div className="pt-2">
             <Link

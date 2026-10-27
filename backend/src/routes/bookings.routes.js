@@ -99,6 +99,21 @@ router.put(
   controller.updateBooking
 );
 
+// Verify booking KYC documents (Admin)
+router.patch(
+  '/:id/verify-documents',
+  authenticate,
+  authorize(...ADMINS, 'manage_bookings'),
+  controller.verifyBookingDocuments
+);
+
+// Attach extra KYC document to booking (Admin / Customer)
+router.post(
+  '/:id/documents',
+  authenticate,
+  controller.attachBookingDocument
+);
+
 // Delete booking record permanently (Admin)
 router.delete(
   '/:id',

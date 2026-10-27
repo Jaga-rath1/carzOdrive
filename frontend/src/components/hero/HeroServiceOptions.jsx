@@ -23,10 +23,10 @@ export const HERO_SERVICE_OPTIONS = [
   {
     id: 'car-with-driver',
     title: 'Car Rental',
-    subtitle: 'Chauffeur Driven • Executive VIP',
+    subtitle: 'Car with Driver • Executive VIP',
     iconComponent: CarRentalKeyIcon,
     route: '/car-with-driver',
-    badgeText: 'VIP Chauffeur',
+    badgeText: 'With Driver',
     isAvailable: true,
   },
   {

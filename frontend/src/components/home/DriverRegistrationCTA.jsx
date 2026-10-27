@@ -18,7 +18,7 @@ export const DriverRegistrationCTA = () => {
               <div className="relative rounded-3xl overflow-hidden border border-white/15 shadow-2xl bg-slate-950">
                 <img
                   src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=1000&auto=format&fit=crop"
-                  alt="Professional CARZODRIVE Chauffeur with executive vehicle"
+                  alt="Professional CARZODRIVE Driver with executive vehicle"
                   className="w-full h-80 sm:h-96 object-cover"
                   loading="lazy"
                 />
@@ -32,7 +32,7 @@ export const DriverRegistrationCTA = () => {
                     </div>
                     <div>
                       <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                        Verified Chauffeur Network
+                        Verified Driver Network
                       </span>
                       <span className="text-sm font-black text-white">
                         ₹38,000+ Avg Earnings / Mo
@@ -50,7 +50,7 @@ export const DriverRegistrationCTA = () => {
             <div className="lg:col-span-7 order-1 lg:order-2 space-y-6">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-400 text-xs font-black tracking-widest uppercase">
                 <UserPlus className="w-3.5 h-3.5" />
-                <span>CHAUFFEUR PARTNERSHIP</span>
+                <span>DRIVER PARTNERSHIP</span>
               </div>
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.15] text-white">

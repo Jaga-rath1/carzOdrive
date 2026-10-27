@@ -43,8 +43,8 @@ const DEFAULT_PERMISSIONS = [
   {
     id: 'manage_drivers',
     name: 'Driver Verification & Approvals',
-    description: 'Review chauffeur KYC, verify licenses, and approve or reject driver applicants',
-    category: 'Chauffeur Operations',
+    description: 'Review driver KYC, verify licenses, and approve or reject driver applicants',
+    category: 'Driver Operations',
     icon: UserCheck,
   },
   {
@@ -81,7 +81,7 @@ const ROLE_OPTIONS = [
   {
     id: 'OPERATIONS_ADMIN',
     label: 'Operations Manager',
-    desc: 'Oversees car/bike fleet inventory, chauffeur onboarding, and trip dispatches',
+    desc: 'Oversees car/bike fleet inventory, driver onboarding, and trip dispatches',
     defaultPerms: ['manage_cars', 'manage_bikes', 'manage_drivers', 'manage_bookings'],
   },
   {

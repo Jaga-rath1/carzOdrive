@@ -42,6 +42,25 @@ const bookingSchema = new mongoose.Schema(
     guestNotes: { type: String, trim: true },
     drivingLicenseNumber: { type: String, trim: true },
     drivingLicenseDoc: { type: String, trim: true },
+    drivingLicenseDocName: { type: String, trim: true },
+    idProofNumber: { type: String, trim: true },
+    idProofDoc: { type: String, trim: true },
+    idProofDocName: { type: String, trim: true },
+
+    // All attached KYC verification documents for Admin review
+    documents: [
+      {
+        name: { type: String, trim: true },
+        type: { type: String, trim: true, default: 'DRIVING_LICENSE' }, // 'DRIVING_LICENSE' | 'ID_PROOF' | 'AADHAAR' | 'PASSPORT' | 'OTHER'
+        url: { type: String, trim: true },
+        previewUrl: { type: String, trim: true },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+    ],
+    documentsVerified: { type: Boolean, default: false },
+    documentsVerifiedAt: { type: Date },
+    documentsVerifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    documentsVerificationNotes: { type: String, trim: true },
     userCarModel: { type: String, trim: true }, // For driver-only service
 
     // Selected vehicle / bike / driver / tour snapshot
@@ -82,9 +101,16 @@ const bookingSchema = new mongoose.Schema(
     balanceAmount: { type: Number, default: 0 },
     securityDeposit: { type: mongoose.Schema.Types.Mixed, default: 0 },
 
+    // Discount Information
+    discountPercentage: { type: Number, default: 0 },
+    discountAmount: { type: Number, default: 0 },
+    discountCode: { type: String, trim: true },
+
     // Financial breakdown
     priceBreakdown: {
       baseAmount: { type: Number, default: 0 },
+      discount: { type: Number, default: 0 },
+      discountPercentage: { type: Number, default: 0 },
       securityDeposit: { type: Number, default: 0 },
       taxes: { type: Number, default: 0 },
       extraCharges: { type: Number, default: 0 },

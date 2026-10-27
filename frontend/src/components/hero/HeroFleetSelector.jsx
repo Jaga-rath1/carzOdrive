@@ -10,18 +10,24 @@ export const HeroFleetSelector = ({
   selectedCarId,
   setSelectedCarId,
   selectedChauffeurId,
+  selectedWithDriverCarId,
   setSelectedChauffeurId,
+  setSelectedWithDriverCarId,
   selectedBikeId,
   setSelectedBikeId,
   selectedTourId,
   setSelectedTourId,
+  driverDailyRate = 799,
 }) => {
+  const withDriverId = selectedWithDriverCarId || selectedChauffeurId;
+  const setWithDriverId = setSelectedWithDriverCarId || setSelectedChauffeurId;
+
   // Determine selected object for current active tab
   const selectedCarObj =
     activeTab === 'self-drive-car'
       ? dbCars.find((c) => c.id === selectedCarId)
       : activeTab === 'car-with-driver'
-      ? dbCars.find((c) => c.id === selectedChauffeurId)
+      ? dbCars.find((c) => c.id === withDriverId)
       : activeTab === 'self-drive-bike'
       ? dbBikes.find((b) => (b.id || b.name) === selectedBikeId)
       : null;
@@ -97,8 +103,8 @@ export const HeroFleetSelector = ({
 
       {activeTab === 'car-with-driver' && (
         <select
-          value={selectedChauffeurId}
-          onChange={(e) => setSelectedChauffeurId(e.target.value)}
+          value={withDriverId}
+          onChange={(e) => setWithDriverId(e.target.value)}
           className={`w-full bg-slate-900 text-xs sm:text-sm font-bold focus:outline-none cursor-pointer truncate py-0.5 ${
             isSelectedUnavailable ? 'text-rose-300 opacity-60' : 'text-white'
           }`}
@@ -118,8 +124,8 @@ export const HeroFleetSelector = ({
                 }
               >
                 {isAvail
-                  ? `🟢 ${c.name} — ${count} Available • ${c.priceDisplay}/day with Chauffeur`
-                  : `🔴 ${c.name} — Not Available (0 left) • ${c.priceDisplay}/day with Chauffeur`}
+                  ? `🟢 ${c.name} — ${count} Available • ${c.priceDisplay}/day with Driver`
+                  : `🔴 ${c.name} — Not Available (0 left) • ${c.priceDisplay}/day with Driver`}
               </option>
             );
           })}
@@ -133,7 +139,7 @@ export const HeroFleetSelector = ({
           className="w-full bg-slate-900 text-xs sm:text-sm font-bold text-white focus:outline-none cursor-default truncate py-0.5"
         >
           <option value="provided-by-company">
-            🟢 Verified Commercial Driver (₹799/day) • Available
+            🟢 Verified Commercial Driver (₹{driverDailyRate}/day) • Available
           </option>
         </select>
       )}

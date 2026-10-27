@@ -12,7 +12,7 @@ const driverSchema = new mongoose.Schema(
     title: {
       type: String,
       trim: true,
-      default: 'Executive Chauffeur & Verified Pilot',
+      default: 'Executive Driver & Verified Pilot',
     },
     experienceYears: {
       type: Number,
@@ -59,7 +59,7 @@ const driverSchema = new mongoose.Schema(
     },
     dailyRate: {
       type: Number,
-      default: 899,
+      default: 799,
     },
     outstationRatePerKm: {
       type: Number,

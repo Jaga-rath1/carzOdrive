@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   User,
   Mail,
@@ -9,7 +9,10 @@ import {
   CheckCircle2,
   UploadCloud,
   FileText,
+  Loader2,
+  IdCard,
 } from 'lucide-react';
+import { uploadsAPI } from '../../services/api';
 
 export const BookingCustomerForm = ({
   guestName,
@@ -27,17 +30,24 @@ export const BookingCustomerForm = ({
   setDrivingLicenseDoc,
   drivingLicenseDocName,
   setDrivingLicenseDocName,
+  idProofDoc,
+  setIdProofDoc,
+  idProofDocName,
+  setIdProofDocName,
   step1Error,
 }) => {
   const isSelfDrive =
     selectedService === 'self-drive-car' || selectedService === 'self-drive-bike';
 
-  const handleLicenseFileUpload = (e) => {
+  const [isUploadingDl, setIsUploadingDl] = useState(false);
+  const [isUploadingId, setIsUploadingId] = useState(false);
+
+  const handleLicenseFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Driving License file must be smaller than 5MB');
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Driving License file must be smaller than 10MB');
       return;
     }
 
@@ -45,6 +55,7 @@ export const BookingCustomerForm = ({
       setDrivingLicenseDocName(file.name);
     }
 
+    // Set immediate local data preview
     const reader = new FileReader();
     reader.onload = () => {
       if (setDrivingLicenseDoc) {
@@ -52,7 +63,57 @@ export const BookingCustomerForm = ({
       }
     };
     reader.readAsDataURL(file);
+
+    // Concurrently upload to server for permanent clean URL
+    try {
+      setIsUploadingDl(true);
+      const res = await uploadsAPI.uploadImage(file, { folder: 'carzodrive/bookings/documents', prefix: 'dl' });
+      const uploadedUrl = res?.data?.url || res?.url;
+      if (uploadedUrl && setDrivingLicenseDoc) {
+        setDrivingLicenseDoc(uploadedUrl);
+      }
+    } catch (uploadErr) {
+      console.warn('Document server upload notice (using local attachment):', uploadErr.message);
+    } finally {
+      setIsUploadingDl(false);
+    }
   };
+
+  const handleIdFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('ID Proof file must be smaller than 10MB');
+      return;
+    }
+
+    if (setIdProofDocName) {
+      setIdProofDocName(file.name);
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (setIdProofDoc) {
+        setIdProofDoc(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+
+    try {
+      setIsUploadingId(true);
+      const res = await uploadsAPI.uploadImage(file, { folder: 'carzodrive/bookings/documents', prefix: 'id' });
+      const uploadedUrl = res?.data?.url || res?.url;
+      if (uploadedUrl && setIdProofDoc) {
+        setIdProofDoc(uploadedUrl);
+      }
+    } catch (uploadErr) {
+      console.warn('ID Proof server upload notice:', uploadErr.message);
+    } finally {
+      setIsUploadingId(false);
+    }
+  };
+
 
   return (
     <div className="space-y-3">
@@ -192,7 +253,12 @@ export const BookingCustomerForm = ({
               Upload Driving License (Photo / PDF) <span className="text-rose-600">*</span>
             </label>
 
-            {drivingLicenseDoc ? (
+            {isUploadingDl ? (
+              <div className="p-4 rounded-xl bg-amber-100/60 border border-amber-300 flex items-center justify-center gap-2 text-xs text-amber-900 font-bold">
+                <Loader2 className="w-4 h-4 animate-spin text-amber-700" />
+                <span>Uploading Driving License to secure server...</span>
+              </div>
+            ) : drivingLicenseDoc ? (
               <div className="p-3 rounded-xl bg-white border border-emerald-300 flex items-center justify-between gap-3 shadow-xs">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center font-bold text-xs shrink-0">
@@ -203,7 +269,7 @@ export const BookingCustomerForm = ({
                       {drivingLicenseDocName || 'Driving License Attached'}
                     </span>
                     <span className="text-[10px] text-emerald-700 font-semibold block">
-                      ✓ Document Attached & Ready
+                      ✓ Document Attached & Ready for Admin Verification
                     </span>
                   </div>
                 </div>
@@ -225,13 +291,66 @@ export const BookingCustomerForm = ({
                   Click to select Driving License (Front Photo or PDF)
                 </span>
                 <span className="text-[10px] text-slate-500">
-                  PNG, JPG, JPEG, or PDF up to 5MB
+                  PNG, JPG, JPEG, or PDF up to 10MB
                 </span>
                 <input
                   type="file"
                   accept="image/png,image/jpeg,image/jpg,application/pdf"
                   className="hidden"
                   onChange={handleLicenseFileUpload}
+                />
+              </label>
+            )}
+          </div>
+
+          {/* OPTIONAL ADDITIONAL ID PROOF (AADHAAR / VOTER ID / PASSPORT) */}
+          <div className="pt-2 border-t border-amber-200/60">
+            <label className="text-xs font-bold text-slate-800 block mb-1">
+              Government ID Proof / Aadhaar Card (Optional for Faster Verification)
+            </label>
+
+            {isUploadingId ? (
+              <div className="p-3 rounded-xl bg-amber-100/60 border border-amber-300 flex items-center justify-center gap-2 text-xs text-amber-900 font-bold">
+                <Loader2 className="w-4 h-4 animate-spin text-amber-700" />
+                <span>Uploading ID Proof...</span>
+              </div>
+            ) : idProofDoc ? (
+              <div className="p-3 rounded-xl bg-white border border-emerald-300 flex items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center font-bold text-xs shrink-0">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold text-slate-900 block truncate">
+                      {idProofDocName || 'ID Proof Document Attached'}
+                    </span>
+                    <span className="text-[10px] text-emerald-700 font-semibold block">
+                      ✓ ID Proof Attached
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (setIdProofDoc) setIdProofDoc(null);
+                    if (setIdProofDocName) setIdProofDocName('');
+                  }}
+                  className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline shrink-0 cursor-pointer"
+                >
+                  Remove / Change
+                </button>
+              </div>
+            ) : (
+              <label className="border border-dashed border-amber-300 hover:border-amber-400 bg-white/70 hover:bg-white rounded-xl p-2.5 flex items-center justify-center gap-2 cursor-pointer transition-colors text-center group">
+                <UploadCloud className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-semibold text-slate-700">
+                  Attach Aadhaar / Voter ID / Passport (Optional)
+                </span>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,application/pdf"
+                  className="hidden"
+                  onChange={handleIdFileUpload}
                 />
               </label>
             )}

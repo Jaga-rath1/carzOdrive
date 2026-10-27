@@ -6,7 +6,7 @@ const ctrl = require('../controllers/drivers.controller');
 const ADMIN_ROLES = ['SUPER_ADMIN', 'OPERATIONS_ADMIN', 'FINANCE_ADMIN', 'SUPPORT_ADMIN'];
 const SENIOR_ADMIN_ROLES = ['SUPER_ADMIN', 'OPERATIONS_ADMIN', 'manage_drivers'];
 
-// Driver catalog list & availability routes (public for frontend booking & chauffeur selection)
+// Driver catalog list & availability routes (public for frontend booking & driver selection)
 router.get('/', ctrl.listDrivers);
 router.get('/available', ctrl.getAvailableDrivers);
 

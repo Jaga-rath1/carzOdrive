@@ -8,8 +8,11 @@ import {
   IndianRupee,
   ShieldCheck,
   Check,
-  Loader2
+  Loader2,
+  FileText,
+  ExternalLink
 } from 'lucide-react';
+import { resolveDocumentUrl } from '../../../utils/documentUtils';
 
 export const BookingEditModal = ({
   editingBooking,
@@ -85,6 +88,89 @@ export const BookingEditModal = ({
                   className="w-full px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 outline-none focus:border-black"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Section 1.5: KYC Documents & Identity */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-1 border-b border-zinc-100">
+              <h4 className="font-black text-zinc-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                <span>Customer KYC & Identity Documents</span>
+              </h4>
+              <span
+                className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
+                  editingBooking.documentsVerified
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : 'bg-amber-50 text-amber-800 border-amber-200'
+                }`}
+              >
+                {editingBooking.documentsVerified ? 'KYC Verified' : 'KYC Pending Verification'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-600 mb-1">
+                  Driving License Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. OD02 20180012345"
+                  value={editFormData.drivingLicenseNumber || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, drivingLicenseNumber: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 font-mono uppercase outline-none focus:border-black"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-600 mb-1">
+                  Aadhaar / Passport / ID Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 5421 8976 1234"
+                  value={editFormData.idProofNumber || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, idProofNumber: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 font-mono uppercase outline-none focus:border-black"
+                />
+              </div>
+            </div>
+
+            {/* Document Links / Previews */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {editingBooking.drivingLicenseDoc && (
+                <a
+                  href={resolveDocumentUrl(editingBooking.drivingLicenseDoc)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 font-bold text-xs transition-colors"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>View DL Document</span>
+                  <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
+                </a>
+              )}
+              {editingBooking.idProofDoc && (
+                <a
+                  href={resolveDocumentUrl(editingBooking.idProofDoc)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 font-bold text-xs transition-colors"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>View ID Proof</span>
+                  <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
+                </a>
+              )}
+              {editingBooking.documents && editingBooking.documents.length > 0 && (
+                <span className="text-xs text-zinc-500 font-semibold">
+                  + {editingBooking.documents.length} additional document{editingBooking.documents.length > 1 ? 's' : ''} in record
+                </span>
+              )}
+              {!editingBooking.drivingLicenseDoc && !editingBooking.idProofDoc && (!editingBooking.documents || editingBooking.documents.length === 0) && (
+                <span className="text-[11px] text-zinc-400 italic">No document files attached yet</span>
+              )}
             </div>
           </div>
 

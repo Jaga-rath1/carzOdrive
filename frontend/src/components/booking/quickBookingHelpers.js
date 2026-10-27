@@ -39,7 +39,7 @@ export const resolveBookingItemDetails = ({
       const rawPricing = car?.rawVehicle?.pricing?.withDriver?.daily;
       const fallbackPrice = car?.priceNumeric ? car.priceNumeric + 700 : 3499;
       return {
-        currentItemName: car?.name ? `${car.name} (with Chauffeur)` : 'Executive Car (with Chauffeur)',
+        currentItemName: car?.name ? `${car.name} (with Driver)` : 'Executive Car (with Driver)',
         currentItemImage: resolveVehicleImageUrl(car?.image, '/images/vehicles/toyota-innova.jpg'),
         ratePerDay: rawPricing || fallbackPrice,
         deposit: '₹0 (Zero Deposit)',
@@ -158,11 +158,37 @@ export const buildCheckoutPayload = ({
   deposit,
   drivingLicenseNumber,
   drivingLicenseDoc,
+  drivingLicenseDocName,
+  idProofDoc,
+  idProofDocName,
+  discountPercentage = 0,
+  discountAmount = 0,
+  discountCode = '',
+  subtotal = 0,
+  insuranceCost = 0,
 }) => {
   const isCar = selectedService === 'self-drive-car' || selectedService === 'car-with-driver';
   const isBike = selectedService === 'self-drive-bike';
   const isDriver = selectedService === 'driver-only';
   const isTour = selectedService === 'tour-packages';
+
+  const documents = [];
+  if (drivingLicenseDoc) {
+    documents.push({
+      name: drivingLicenseDocName || 'Driving License (Front & Back)',
+      type: 'DRIVING_LICENSE',
+      url: drivingLicenseDoc,
+      uploadedAt: new Date().toISOString(),
+    });
+  }
+  if (idProofDoc) {
+    documents.push({
+      name: idProofDocName || 'Government ID Proof',
+      type: 'ID_PROOF',
+      url: idProofDoc,
+      uploadedAt: new Date().toISOString(),
+    });
+  }
 
   return {
     serviceType: selectedService,
@@ -172,6 +198,10 @@ export const buildCheckoutPayload = ({
     guestNotes: guestNotes.trim(),
     drivingLicenseNumber: drivingLicenseNumber?.trim() || undefined,
     drivingLicenseDoc: drivingLicenseDoc || undefined,
+    drivingLicenseDocName: drivingLicenseDocName || undefined,
+    idProofDoc: idProofDoc || undefined,
+    idProofDocName: idProofDocName || undefined,
+    documents,
     userCarModel: userCarModel?.trim() || undefined,
     vehicleId: isCar ? activeVehicleId : undefined,
     bikeId: isBike ? activeVehicleId : undefined,
@@ -189,9 +219,20 @@ export const buildCheckoutPayload = ({
     paymentMode,
     onlineMethod: paymentMode === 'offline' ? 'whatsapp' : onlineMethod,
     upiApp: onlineMethod === 'upi' ? upiApp : undefined,
+    discountPercentage,
+    discountAmount,
+    discountCode: discountCode || (discountPercentage > 0 ? `${discountPercentage}% OFF` : undefined),
+    priceBreakdown: {
+      baseAmount: subtotal || total,
+      discount: discountAmount,
+      discountPercentage,
+      protectionFee: insuranceCost,
+      totalAmount: total,
+    },
     totalAmount: total,
     paidAmount: amountDueNow,
     balanceAmount: amountDueAtPickup,
     securityDeposit: deposit,
   };
 };
+

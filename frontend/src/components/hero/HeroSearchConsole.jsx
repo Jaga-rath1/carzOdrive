@@ -24,6 +24,7 @@ export const HeroSearchConsole = ({
   setSelectedCarId,
   selectedChauffeurId,
   setSelectedChauffeurId,
+  driverDailyRate = 799,
   selectedBikeId,
   setSelectedBikeId,
   selectedTourId,
@@ -141,6 +142,7 @@ export const HeroSearchConsole = ({
             setSelectedCarId={setSelectedCarId}
             selectedChauffeurId={selectedChauffeurId}
             setSelectedChauffeurId={setSelectedChauffeurId}
+            driverDailyRate={driverDailyRate}
             selectedBikeId={selectedBikeId}
             setSelectedBikeId={setSelectedBikeId}
             selectedTourId={selectedTourId}

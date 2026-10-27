@@ -15,17 +15,23 @@ import {
   AlertCircle,
   UserPlus,
   Trash2,
-  Eye,
   FileCheck,
-  ExternalLink
+  ExternalLink,
+  IndianRupee,
+  Sliders,
+  Save,
+  Check,
+  Tag
 } from 'lucide-react';
 import { DriverVerifyModal } from '../../components/admin/DriverVerifyModal';
 import { AddDriverModal } from '../../components/admin/AddDriverModal';
 import { DocumentViewerModal } from '../../components/common/DocumentViewerModal';
-import { driversAPI } from '../../services/api';
+import { driversAPI, settingsAPI } from '../../services/api';
 import { resolveDocumentUrl, getDocumentPreviewUrl } from '../../utils/documentUtils';
+import { useDriverSettings } from '../../hooks/useDriverSettings';
 
 export const AdminDriversPage = () => {
+  const { driverSettings, refetch: refetchDriverSettings } = useDriverSettings();
   const [drivers, setDrivers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('PENDING'); // 'PENDING' | 'APPROVED' | 'ALL'
@@ -34,6 +40,27 @@ export const AdminDriversPage = () => {
   const [activeDocViewer, setActiveDocViewer] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [feedback, setFeedback] = useState(null);
+
+  // Driver Pricing & Registration Fee State
+  const [isPricingExpanded, setIsPricingExpanded] = useState(false);
+  const [isSavingPricing, setIsSavingPricing] = useState(false);
+  const [pricingForm, setPricingForm] = useState({
+    dailyRate: 799,
+    registrationFee: 799,
+    isRegistrationActive: true,
+    badgeText: '₹799/Day',
+  });
+
+  useEffect(() => {
+    if (driverSettings) {
+      setPricingForm({
+        dailyRate: driverSettings.dailyRate || 799,
+        registrationFee: driverSettings.registrationFee || 799,
+        isRegistrationActive: driverSettings.isRegistrationActive ?? true,
+        badgeText: driverSettings.badgeText || `₹${driverSettings.dailyRate || 799}/Day`,
+      });
+    }
+  }, [driverSettings]);
 
   const fetchDrivers = async () => {
     setIsLoading(true);
@@ -92,6 +119,30 @@ export const AdminDriversPage = () => {
     setTimeout(() => setFeedback(null), 4000);
   };
 
+  const handleSavePricing = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setIsSavingPricing(true);
+    try {
+      await settingsAPI.updateDriverSettings({
+        dailyRate: Number(pricingForm.dailyRate) || 799,
+        registrationFee: Number(pricingForm.registrationFee) || 799,
+        isRegistrationActive: Boolean(pricingForm.isRegistrationActive),
+        badgeText: pricingForm.badgeText || `₹${pricingForm.dailyRate || 799}/Day`,
+      });
+      setFeedback({
+        type: 'success',
+        text: `Driver pricing updated: Daily Hire ₹${pricingForm.dailyRate}/day & Registration Fee ₹${pricingForm.registrationFee}. Updated live on customer portal!`,
+      });
+      setIsPricingExpanded(false);
+      refetchDriverSettings();
+      setTimeout(() => setFeedback(null), 4000);
+    } catch (err) {
+      setFeedback({ type: 'error', text: err.message || 'Failed to update driver settings.' });
+    } finally {
+      setIsSavingPricing(false);
+    }
+  };
+
   const pendingCount = drivers.filter((d) => d.status === 'PENDING').length;
   const approvedCount = drivers.filter((d) => d.status === 'APPROVED').length;
 
@@ -115,11 +166,20 @@ export const AdminDriversPage = () => {
         <div>
           <h2 className="text-2xl font-black text-zinc-950 tracking-tight">Driver Verification & Fleet Portal</h2>
           <p className="text-xs text-zinc-500">
-            Manual KYC authentication and direct chauffeur enrollment for CarzoDrive fleet
+            Manual KYC authentication, dynamic registration fees, and driver enrollment for CarzoDrive fleet
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsPricingExpanded((prev) => !prev)}
+            className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs font-black flex items-center gap-2 cursor-pointer shadow-sm transition-all active:scale-95"
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            <span>Manage Daily Rate & Registration Fee (₹{pricingForm.dailyRate})</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
@@ -134,6 +194,167 @@ export const AdminDriversPage = () => {
             <span>{pendingCount} Pending</span>
           </span>
         </div>
+      </div>
+
+      {/* Driver Pricing & Registration Fee Management Widget */}
+      <div className="rounded-3xl bg-white border border-zinc-200/90 p-5 sm:p-6 shadow-2xs space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center font-black">
+              <IndianRupee className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-black text-zinc-950">Driver Daily Hire Rate & Registration Fee</h3>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase">
+                  Admin Controlled
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500">
+                Current customer hire price: <strong className="text-zinc-900 font-mono">₹{driverSettings?.dailyRate || 799}/day</strong> • Driver registration fee: <strong className="text-zinc-900 font-mono">₹{driverSettings?.registrationFee || 799}</strong>
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsPricingExpanded((p) => !p)}
+            className="text-xs font-bold px-3 py-1.5 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-700 cursor-pointer"
+          >
+            {isPricingExpanded ? 'Close Settings' : 'Edit Rate & Fee'}
+          </button>
+        </div>
+
+        {isPricingExpanded && (
+          <form onSubmit={handleSavePricing} className="pt-2 space-y-5 animate-in fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Daily Rate Input */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50 border border-zinc-200">
+                <label className="block text-xs font-bold text-zinc-700">
+                  Customer Daily Hire Rate (₹/day)
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-bold text-zinc-500 font-mono">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="50"
+                    value={pricingForm.dailyRate}
+                    onChange={(e) => {
+                      const val = Number(e.target.value) || 0;
+                      setPricingForm((p) => ({
+                        ...p,
+                        dailyRate: val,
+                        badgeText: `₹${val}/Day`,
+                      }));
+                    }}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-zinc-300 font-mono font-black text-base text-zinc-950 outline-none focus:border-black"
+                  />
+                </div>
+                {/* Presets */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {[599, 799, 899, 999, 1199].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setPricingForm((p) => ({ ...p, dailyRate: amt, badgeText: `₹${amt}/Day` }))}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer border ${
+                        pricingForm.dailyRate === amt
+                          ? 'bg-black text-white border-black'
+                          : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+                      }`}
+                    >
+                      ₹{amt} {amt === 799 ? '(Default)' : ''}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Registration Fee Input */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50 border border-zinc-200">
+                <label className="block text-xs font-bold text-zinc-700">
+                  Driver Onboarding / Registration Fee (₹)
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-bold text-zinc-500 font-mono">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="50"
+                    value={pricingForm.registrationFee}
+                    onChange={(e) => setPricingForm((p) => ({ ...p, registrationFee: Number(e.target.value) || 0 }))}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-zinc-300 font-mono font-black text-base text-zinc-950 outline-none focus:border-black"
+                  />
+                </div>
+                {/* Presets */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {[0, 499, 799, 999].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setPricingForm((p) => ({ ...p, registrationFee: amt }))}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer border ${
+                        pricingForm.registrationFee === amt
+                          ? 'bg-black text-white border-black'
+                          : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+                      }`}
+                    >
+                      {amt === 0 ? '₹0 (Free)' : `₹${amt}`} {amt === 799 ? '(Default)' : ''}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Badge & Toggle */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50 border border-zinc-200 flex flex-col justify-between">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 mb-1">
+                    Display Badge Label
+                  </label>
+                  <input
+                    type="text"
+                    value={pricingForm.badgeText}
+                    onChange={(e) => setPricingForm((p) => ({ ...p, badgeText: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-zinc-300 font-bold text-xs text-zinc-950 outline-none focus:border-black"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-200">
+                  <span className="text-xs font-bold text-zinc-700">Driver Registration Open</span>
+                  <button
+                    type="button"
+                    onClick={() => setPricingForm((p) => ({ ...p, isRegistrationActive: !p.isRegistrationActive }))}
+                    className={`px-3 py-1 rounded-lg text-xs font-black cursor-pointer ${
+                      pricingForm.isRegistrationActive
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-zinc-200 text-zinc-600'
+                    }`}
+                  >
+                    {pricingForm.isRegistrationActive ? 'ENABLED' : 'PAUSED'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsPricingExpanded(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-black bg-zinc-100 hover:bg-zinc-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSavingPricing}
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-black text-white bg-black hover:bg-zinc-800 shadow-md transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+              >
+                <Save className="w-3.5 h-3.5 text-amber-400" />
+                <span>{isSavingPricing ? 'Updating System...' : 'Save & Publish Driver Rates'}</span>
+              </button>
+            </div>
+          </form>
+        )}
       </div>
 
       {/* Alert */}

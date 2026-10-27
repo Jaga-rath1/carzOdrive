@@ -14,8 +14,8 @@ export const WHY_CHOOSE_ITEMS = [
   {
     num: '02',
     title: 'Trusted Drivers',
-    tagline: 'Background-Checked Chauffeurs',
-    desc: 'Government verified chauffeurs trained in executive etiquette and defensive highway navigation with flawless zero-incident safety records.',
+    tagline: 'Background-Checked Drivers',
+    desc: 'Government verified drivers trained in executive etiquette and defensive highway navigation with flawless zero-incident safety records.',
     icon: UserCheck,
   },
   {

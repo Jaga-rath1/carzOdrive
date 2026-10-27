@@ -17,7 +17,8 @@ import {
   UserPlus,
   FileText,
   Eye,
-  ExternalLink
+  ExternalLink,
+  Percent
 } from 'lucide-react';
 import { AdminStatsCard } from '../../components/admin/AdminStatsCard';
 import { AddVehicleModal } from '../../components/admin/AddVehicleModal';
@@ -26,8 +27,10 @@ import { DriverVerifyModal } from '../../components/admin/DriverVerifyModal';
 import { DocumentViewerModal } from '../../components/common/DocumentViewerModal';
 import { vehiclesAPI, bikesAPI, driversAPI, bookingsAPI } from '../../services/api';
 import { resolveDocumentUrl, getDocumentPreviewUrl } from '../../utils/documentUtils';
+import { useDiscount } from '../../hooks/useDiscount';
 
 export const AdminDashboardPage = () => {
+  const { discount } = useDiscount();
   const [vehicles, setVehicles] = useState([]);
   const [bikes, setBikes] = useState([]);
   const [drivers, setDrivers] = useState([]);
@@ -98,7 +101,7 @@ export const AdminDashboardPage = () => {
               Executive Management Center
             </h1>
             <p className="text-xs sm:text-sm text-zinc-500 max-w-xl">
-              Add and manage fleet cars and bikes, inspect incoming chauffeur registrations, and monitor vehicle availability across Odisha hubs.
+              Add and manage fleet cars and bikes, inspect incoming driver registrations, and monitor vehicle availability across Odisha hubs.
             </p>
           </div>
 
@@ -157,6 +160,42 @@ export const AdminDashboardPage = () => {
         </Link>
       </div>
 
+      {/* Storewide Discount Status Widget */}
+      <div className="rounded-3xl bg-amber-500/10 border border-amber-500/30 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-amber-400 text-zinc-950 flex items-center justify-center font-black shrink-0 shadow-md">
+            <Percent className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-black text-zinc-950">
+                {discount?.isActive ? `${discount.percentage}% Storewide Customer Discount Active` : 'Promotional Discount Inactive'}
+              </span>
+              <span
+                className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                  discount?.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-200 text-zinc-600'
+                }`}
+              >
+                {discount?.isActive ? 'Live on Site' : 'Paused'}
+              </span>
+            </div>
+            <p className="text-xs text-zinc-600 mt-0.5">
+              {discount?.isActive
+                ? `Customers receive flat ${discount.percentage}% discount on vehicle checkout. Badge: "${discount.badgeText || `${discount.percentage}% OFF`}".`
+                : 'Default 5% discount can be enabled anytime from the offers control center.'}
+            </p>
+          </div>
+        </div>
+
+        <Link
+          to="/admin/discounts"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-amber-400 font-bold text-xs shadow-md transition-all active:scale-95 shrink-0"
+        >
+          <span>Configure Discount & Presets</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <AdminStatsCard
@@ -187,7 +226,7 @@ export const AdminDashboardPage = () => {
         />
 
         <AdminStatsCard
-          title="Verified Chauffeurs"
+          title="Verified Drivers"
           value={approvedDrivers.length}
           subtitle="Background verified"
           icon={UserCheck}
@@ -198,7 +237,7 @@ export const AdminDashboardPage = () => {
 
       {/* Two Column Layout: Pending Drivers + Recent Cars */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Chauffeur Registrations & Document Verification Hub */}
+        {/* Driver Registrations & Document Verification Hub */}
         <div className="rounded-3xl bg-white border border-zinc-200/90 p-5 sm:p-6 space-y-4 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-zinc-100 gap-3">
             <div className="flex items-center gap-2.5">
@@ -206,7 +245,7 @@ export const AdminDashboardPage = () => {
                 <UserCheck className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-zinc-950">Chauffeur Credentials & KYC Documents</h3>
+                <h3 className="text-sm font-black text-zinc-950">Driver Credentials & KYC Documents</h3>
                 <p className="text-[11px] text-zinc-500">Live inspection of driver licenses & identity proofs</p>
               </div>
             </div>
@@ -409,7 +448,7 @@ export const AdminDashboardPage = () => {
             {drivers.length === 0 && (
               <div className="py-8 text-center text-xs text-zinc-500">
                 <CheckCircle2 className="w-6 h-6 text-zinc-400 mx-auto mb-2" />
-                <span>No chauffeur registration applications yet.</span>
+                <span>No driver registration applications yet.</span>
               </div>
             )}
           </div>

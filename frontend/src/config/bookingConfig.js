@@ -23,7 +23,7 @@ export const SERVICE_OPTIONS = [
   {
     id: 'car-with-driver',
     label: 'Car with Driver',
-    tagline: 'Executive luxury car with vetted chauffeur',
+    tagline: 'Executive luxury car with vetted driver',
     type: 'chauffeur',
   },
   {

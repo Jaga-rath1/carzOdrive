@@ -108,7 +108,7 @@ export const PackageGeneralTab = ({ formData, handleChange, setFormData }) => {
         <div>
           <label className="block text-xs font-bold text-zinc-700 mb-1.5 flex items-center gap-1.5">
             <Car className="w-3.5 h-3.5 text-blue-600" />
-            <span>Featured Chauffeur Vehicle</span>
+            <span>Featured Vehicle with Driver</span>
           </label>
           <input
             type="text"

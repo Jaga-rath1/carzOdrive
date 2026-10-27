@@ -35,5 +35,6 @@ router.use('/bookings', require('./bookings.routes'));
 router.use('/payments', require('./payments.routes'));
 router.use('/vendors', require('./vendors.routes'));
 router.use('/uploads', require('./uploads.routes'));
+router.use('/settings', require('./settings.routes'));
 
 module.exports = router;

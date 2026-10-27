@@ -24,6 +24,7 @@ import { bookingsAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthRequiredNotice } from '../common/AuthRequiredNotice';
 import { getTodayDateString } from '../../utils/formatters';
+import { useDriverSettings } from '../../hooks/useDriverSettings';
 
 export const DriverBookingModal = ({
   isOpen,
@@ -31,6 +32,8 @@ export const DriverBookingModal = ({
   driver = null,
 }) => {
   const { currentUser, isAuthenticated, openAuthModal } = useAuth();
+  const { driverSettings } = useDriverSettings();
+  const activeRate = driver?.dailyRate || driverSettings?.dailyRate || 799;
   const [step, setStep] = useState(1);
   const [dutyType, setDutyType] = useState('Full Day City (8 Hours)');
   const [carType, setCarType] = useState('Sedan (Automatic)');
@@ -59,7 +62,7 @@ export const DriverBookingModal = ({
     photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop',
     experience: '10+ Years',
     rating: 4.98,
-    ratePerDay: '₹799 / day',
+    ratePerDay: `₹${activeRate} / day`,
     languages: 'English, Hindi, Odia',
   };
 
@@ -69,7 +72,7 @@ export const DriverBookingModal = ({
       openAuthModal('login');
       return;
     }
-    let code = 'CHAUFFEUR-' + Math.floor(1000 + Math.random() * 9000);
+    let code = 'DRIVER-' + Math.floor(1000 + Math.random() * 9000);
 
     try {
       const res = await bookingsAPI.create({
@@ -86,7 +89,7 @@ export const DriverBookingModal = ({
         paymentMode: 'offline',
         onlineMethod: 'whatsapp',
         transactionId: 'PAY_DRIVER_ON_DUTY',
-        totalAmount: 799,
+        totalAmount: activeRate,
         status: 'PENDING',
         paymentStatus: 'OFFLINE_PENDING',
         customerNotes: `Duty: ${dutyType}, Time: ${reportingTime}`,
@@ -157,7 +160,7 @@ Please confirm driver dispatch!`;
                 <span>DRIVER HIRE FOR YOUR OWN CAR</span>
               </div>
               <h3 className="text-2xl font-black text-slate-950">
-                Hire Chauffeur: {currentDriver.name}
+                Hire Driver: {currentDriver.name}
               </h3>
               <p className="text-xs text-slate-500 mt-1">
                 Background-verified driver will report directly at your doorstep to drive your personal car.
@@ -341,7 +344,7 @@ Please confirm driver dispatch!`;
             {!isAuthenticated && (
               <AuthRequiredNotice
                 title="Login Required to Hire Driver"
-                message="Please sign in or create an account before dispatching a verified chauffeur. Your reservation will be tracked in your account."
+                message="Please sign in or create an account before dispatching a verified driver. Your reservation will be tracked in your account."
                 className="my-1"
               />
             )}
@@ -405,7 +408,7 @@ Please confirm driver dispatch!`;
                   Driver Booking ID: {bookingCode}
                 </div>
                 <h3 className="text-lg font-bold text-slate-950 mt-0.5">
-                  Chauffeur Assigned: {currentDriver.name}
+                  Driver Assigned: {currentDriver.name}
                 </h3>
                 <p className="text-xs text-slate-600 mt-1">
                   Confirmation dispatch sent to {clientPhone || 'your mobile'}. Driver will report on time.
@@ -416,7 +419,7 @@ Please confirm driver dispatch!`;
             {/* Summary */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs">
               <div className="flex justify-between pb-2 border-b border-slate-200">
-                <span className="text-slate-500">Chauffeur Name:</span>
+                <span className="text-slate-500">Driver Name:</span>
                 <span className="font-bold text-slate-950">{currentDriver.name} ({currentDriver.experience})</span>
               </div>
               <div className="flex justify-between pb-2 border-b border-slate-200">

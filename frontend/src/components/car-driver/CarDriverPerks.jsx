@@ -6,7 +6,7 @@ export const CarDriverPerks = () => {
   const perks = [
     {
       title: 'Background-Verified Drivers',
-      desc: '100% police & identity vetted chauffeurs with minimum 8+ years commercial VIP driving experience.',
+      desc: '100% police & identity vetted drivers with minimum 8+ years commercial VIP driving experience.',
       icon: ShieldCheck,
     },
     {

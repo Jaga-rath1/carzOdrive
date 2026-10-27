@@ -172,7 +172,7 @@ export const AddPackageModal = ({ isOpen, packageToEdit, onClose, onPackageSaved
         odishaTheme: formData.category || 'Spiritual & Temples',
         badge: formData.badge || 'Odisha Special',
         tagline: formData.tagline || '',
-        featuredVehicle: formData.featuredVehicle || 'Toyota Innova Crysta / Luxury Chauffeur',
+        featuredVehicle: formData.featuredVehicle || 'Toyota Innova Crysta / Luxury Car with Driver',
         pickupLocation: formData.pickupLocation || 'Bhubaneswar Airport / Railway Station',
         dropLocation: formData.dropLocation || 'Bhubaneswar Hub / Airport',
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plane, Navigation, Building2, Compass, PartyPopper, ArrowRight } from 'lucide-react';
 import { Container } from '../common/Container';
+import { useDriverSettings } from '../../hooks/useDriverSettings';
 
 export const SERVICE_TYPES = [
   {
@@ -20,7 +21,7 @@ export const SERVICE_TYPES = [
   {
     id: 'corporate-travel',
     title: 'Corporate Travel',
-    desc: 'Polished protocol-trained chauffeurs for executive summits and VIP delegations.',
+    desc: 'Polished protocol-trained drivers for executive summits and VIP delegations.',
     rate: 'From ₹1,299 / day',
     icon: Building2,
   },
@@ -41,12 +42,14 @@ export const SERVICE_TYPES = [
 ];
 
 export const DriverOnlyServices = ({ selectedService, onSelectService }) => {
+  const { driverSettings } = useDriverSettings();
+  const currentDailyRate = driverSettings?.dailyRate || 799;
   return (
     <section className="py-16 sm:py-20 bg-slate-50/80 border-b border-slate-200/80">
       <Container>
         <div className="max-w-3xl mx-auto text-center space-y-3 mb-14">
           <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
-            Chauffeur Service Categories
+            Driver Service Categories
           </h2>
           <p className="text-sm text-slate-600 font-medium">
             Select a tailored driving service according to your trip needs.
@@ -79,7 +82,7 @@ export const DriverOnlyServices = ({ selectedService, onSelectService }) => {
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-black text-blue-600">
-                  <span>{service.rate}</span>
+                  <span>{service.id === 'city-travel' ? `From ₹${currentDailyRate} / 4 hrs` : service.rate}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </div>

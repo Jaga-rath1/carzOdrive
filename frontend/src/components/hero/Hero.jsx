@@ -11,11 +11,13 @@ import { HeroServiceTabs } from './HeroServiceTabs';
 import { HeroSearchConsole } from './HeroSearchConsole';
 import {
   SelfDriveCarIcon,
-  ChauffeurIcon,
+  WithDriverIcon,
   DriverPilotIcon,
   BikeFleetIcon,
   TourPackageIcon,
 } from './HeroServiceIcons';
+
+import { useDriverSettings } from '../../hooks/useDriverSettings';
 
 const SERVICE_META = {
   'self-drive-car': {
@@ -25,9 +27,9 @@ const SERVICE_META = {
     badge: 'Live Fleet',
   },
   'car-with-driver': {
-    icon: ChauffeurIcon,
+    icon: WithDriverIcon,
     route: '/car-with-driver',
-    ctaText: 'Search Chauffeur Fleet',
+    ctaText: 'Search With-Driver Fleet',
     badge: 'Executive',
   },
   'driver-only': {
@@ -62,6 +64,7 @@ const FALLBACK_CARS = [
 export const Hero = ({ onOpenQuickBook }) => {
   const navigate = useNavigate();
   const { isAuthenticated, openAuthModal } = useAuth();
+  const { driverSettings } = useDriverSettings();
 
   // 1. Service Selection
   const [activeTab, setActiveTab] = useState('self-drive-car');
@@ -190,17 +193,19 @@ export const Hero = ({ onOpenQuickBook }) => {
           },
         };
       }
-      case 'driver-only':
+      case 'driver-only': {
+        const rate = driverSettings?.dailyRate || 799;
         return {
           id: 'driver-company',
           name: 'Verified Driver (Provided by Company)',
           brand: 'Carzodrive Verified',
-          dailyRate: 799,
-          priceDisplay: '₹799',
+          dailyRate: rate,
+          priceDisplay: `₹${rate}`,
           badge: 'Commercial Pilot',
           status: 'Provided by Company',
           experienceYears: 10,
         };
+      }
       case 'self-drive-bike':
         return dbBikes.find((b) => b.id === selectedBikeId) || dbBikes[0];
       case 'tour-packages':
@@ -209,7 +214,7 @@ export const Hero = ({ onOpenQuickBook }) => {
       default:
         return dbCars.find((c) => c.id === selectedCarId) || dbCars[0];
     }
-  }, [activeTab, dbCars, dbBikes, dbTours, selectedCarId, selectedChauffeurId, selectedBikeId, selectedTourId]);
+  }, [activeTab, dbCars, dbBikes, dbTours, selectedCarId, selectedChauffeurId, selectedBikeId, selectedTourId, driverSettings?.dailyRate]);
 
   const effectivePickup = pickupLocation;
   const effectiveDrop = dropLocation === 'Same as Pick-up Location' ? pickupLocation : dropLocation;
@@ -291,6 +296,7 @@ export const Hero = ({ onOpenQuickBook }) => {
                 setSelectedCarId={setSelectedCarId}
                 selectedChauffeurId={selectedChauffeurId}
                 setSelectedChauffeurId={setSelectedChauffeurId}
+                driverDailyRate={driverSettings?.dailyRate || 799}
                 selectedBikeId={selectedBikeId}
                 setSelectedBikeId={setSelectedBikeId}
                 selectedTourId={selectedTourId}

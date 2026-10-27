@@ -641,6 +641,55 @@ export const bookingsAPI = {
   async getInvoice(idOrCode) {
     return apiRequest(`/bookings/${idOrCode}/invoice`);
   },
+
+  async verifyDocuments(id, { verified = true, notes = '' } = {}) {
+    return apiRequest(`/bookings/${id}/verify-documents`, {
+      method: 'PATCH',
+      body: { verified, notes },
+    });
+  },
+
+  async attachDocument(id, { name, type, url }) {
+    return apiRequest(`/bookings/${id}/documents`, {
+      method: 'POST',
+      body: { name, type, url },
+    });
+  },
+};
+
+/**
+ * Settings & Promotional Discounts API Endpoints
+ */
+export const settingsAPI = {
+  async getDiscount() {
+    return apiRequest('/settings/discount');
+  },
+
+  async updateDiscount(discountData) {
+    const res = await apiRequest('/settings/discount', {
+      method: 'PUT',
+      body: discountData,
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('carzodrive-discount-change', { detail: res?.data || res }));
+    }
+    return res;
+  },
+
+  async getDriverSettings() {
+    return apiRequest('/settings/driver');
+  },
+
+  async updateDriverSettings(driverData) {
+    const res = await apiRequest('/settings/driver', {
+      method: 'PUT',
+      body: driverData,
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('carzodrive-driver-settings-change', { detail: res?.data || res }));
+    }
+    return res;
+  },
 };
 
 /**

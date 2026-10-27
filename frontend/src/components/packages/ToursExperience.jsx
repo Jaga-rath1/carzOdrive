@@ -17,7 +17,7 @@ export const ToursExperience = () => {
     {
       icon: Sparkles,
       title: 'Zero Hidden Costs',
-      desc: 'Fuel, highway toll passes, chauffeur allowances, and entry permits are bundled upfront transparently.',
+      desc: 'Fuel, highway toll passes, driver allowances, and entry permits are bundled upfront transparently.',
     },
     {
       icon: Headphones,

@@ -13,7 +13,7 @@ export const DriverOnlyHowItWorks = () => {
     {
       step: '02',
       icon: UserCheck,
-      title: 'Chauffeur Reports to You',
+      title: 'Driver Reports to You',
       desc: 'A police-verified, uniform-clad professional driver arrives at your exact doorstep on time.',
     },
     {

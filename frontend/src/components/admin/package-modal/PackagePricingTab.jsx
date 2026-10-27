@@ -3,7 +3,7 @@ import { IndianRupee, Plus, X, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 const COMMON_INCLUSIONS = [
   'Dedicated AC Executive Vehicle for the entire tour',
-  'Professional Chauffeur in livery with verified route experience',
+  'Professional Driver in livery with verified route experience',
   'All Fuel, Toll Charges, Parking Fees & Inter-District State Permits',
   'Handpicked Deluxe Hotel Accommodation on Twin Sharing',
   'Complimentary Daily Morning Breakfast',

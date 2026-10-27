@@ -44,14 +44,14 @@ export const TourDetailPage = () => {
             category: raw.odishaTheme || raw.category || 'Spiritual & Temples',
             odishaTheme: raw.odishaTheme || raw.category || 'Spiritual & Temples',
             badge: raw.badge || 'Odisha Special',
-            featuredVehicle: raw.featuredVehicle || 'Toyota Innova Crysta / Luxury Chauffeur',
+            featuredVehicle: raw.featuredVehicle || 'Toyota Innova Crysta / Luxury With-Driver Car',
             image: coverImage,
             images: raw.images?.length ? raw.images : [coverImage],
             description: raw.description,
             highlights: raw.highlights?.length
               ? raw.highlights
               : [
-                  'Dedicated AC Executive Sedan & verified Odisha route chauffeur',
+                  'Dedicated AC Executive Sedan & verified Odisha route driver',
                   'Flexible pickup from Bhubaneswar Airport or Railway Station',
                   'Pre-arranged monument entry passes & priority temple assistance',
                   'Authentic regional cuisine lunch and refreshment stops',
@@ -69,7 +69,7 @@ export const TourDetailPage = () => {
                   {
                     day: 'Day 1',
                     title: 'Scenic Arrival & Local Heritage Circuit',
-                    desc: 'Meet your private chauffeur at the airport or station. Check-in to accommodation and begin guided tour.',
+                    desc: 'Meet your private driver at the airport or station. Check-in to accommodation and begin guided tour.',
                   },
                   {
                     day: 'Day 2',

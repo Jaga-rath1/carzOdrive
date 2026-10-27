@@ -7,11 +7,13 @@ import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { vehiclesAPI, bikesAPI } from '../../services/api';
 import { resolveVehicleImageUrl, getVehicleFallbackImage } from '../../utils/documentUtils';
+import { useDiscount } from '../../hooks/useDiscount';
 
 export const FeaturedVehiclesSection = ({ onQuickBook }) => {
   const [activeCategory, setActiveCategory] = useState('Available Now');
   const [vehicles, setVehicles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { calculateDiscount, isDiscountActive, badgeText } = useDiscount();
 
   useEffect(() => {
     let isMounted = true;
@@ -239,12 +241,40 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
                         )}
                       </div>
 
-                      {/* Price Badge */}
+                      {/* Price Badge with Live Discount */}
                       <div className="absolute bottom-4 right-4 text-right">
-                        <span className="text-2xl font-black text-white drop-shadow-md">
-                          {vehicle.pricePerDay}
-                        </span>
-                        <span className="text-xs text-slate-300 ml-1">/ day</span>
+                        {isDiscountActive && vehicle.priceNumeric ? (
+                          (() => {
+                            const disc = calculateDiscount(vehicle.priceNumeric, vehicle.category === 'bike' ? 'self-drive-bike' : 'self-drive-car');
+                            return (
+                              <div className="flex flex-col items-end">
+                                {disc.discountAmount > 0 && (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-xs text-slate-300 line-through drop-shadow">
+                                      ₹{vehicle.priceNumeric.toLocaleString('en-IN')}
+                                    </span>
+                                    <span className="px-1.5 py-0.2 rounded bg-emerald-600 text-white text-[9px] font-black uppercase">
+                                      {disc.badgeText}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="flex items-baseline">
+                                  <span className="text-2xl font-black text-white drop-shadow-md">
+                                    ₹{disc.finalAmount.toLocaleString('en-IN')}
+                                  </span>
+                                  <span className="text-xs text-slate-300 ml-1">/ day</span>
+                                </div>
+                              </div>
+                            );
+                          })()
+                        ) : (
+                          <>
+                            <span className="text-2xl font-black text-white drop-shadow-md">
+                              {vehicle.pricePerDay}
+                            </span>
+                            <span className="text-xs text-slate-300 ml-1">/ day</span>
+                          </>
+                        )}
                       </div>
                     </Link>
 

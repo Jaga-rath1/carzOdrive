@@ -217,7 +217,7 @@ export const DriverVerifyModal = ({ isOpen, onClose, driver, onStatusUpdated }) 
 
             <div className="flex items-center gap-2.5 text-xs text-zinc-700">
               <Award className="w-4 h-4 text-zinc-900 shrink-0" />
-              <span>{driver.drivingExperience || (driver.experience ? `${driver.experience} Years Exp` : 'Professional Chauffeur')}</span>
+              <span>{driver.drivingExperience || (driver.experience ? `${driver.experience} Years Exp` : 'Professional Driver')}</span>
             </div>
 
             <div className="flex items-center gap-2.5 text-xs text-zinc-700">

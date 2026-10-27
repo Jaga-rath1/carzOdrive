@@ -23,7 +23,7 @@ export const DriverRegSuccess = ({
           Application Transmitted
         </span>
         <h3 className="text-2xl sm:text-3xl font-black text-slate-950">
-          Welcome to the CARZODRIVE Chauffeur Fleet
+          Welcome to the CARZODRIVE Driver Fleet
         </h3>
         <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
           Thank you, <strong className="text-slate-900">{formData.name || 'Partner'}</strong>. Your application dossier has been submitted. Our Operations Team in {formData.city} will review your documents and reach out within 24–48 hours.

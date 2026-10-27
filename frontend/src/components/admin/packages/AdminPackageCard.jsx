@@ -74,7 +74,7 @@ export const AdminPackageCard = ({ pkg, onView, onEdit, onDelete }) => {
             <p className="text-[11px] text-zinc-500 line-clamp-2 mt-0.5 leading-relaxed">
               {pkg.tagline ||
                 pkg.description ||
-                'Exclusive curated Odisha tour package with dedicated chauffeur and priority assistance.'}
+                'Exclusive curated Odisha tour package with dedicated driver and priority assistance.'}
             </p>
           </div>
 

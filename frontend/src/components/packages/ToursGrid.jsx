@@ -48,7 +48,7 @@ export const ToursGrid = ({ onOpenQuickBook }) => {
                 'https://images.unsplash.com/photo-1596405835955-4532a4e21245?q=80&w=1200&auto=format&fit=crop',
               highlights: p.highlights?.length
                 ? p.highlights
-                : ['Dedicated AC Executive Vehicle', 'Chauffeur in Formal Livery', 'Monument Entry Passes Included'],
+                : ['Dedicated AC Executive Vehicle', 'Driver in Formal Livery', 'Monument Entry Passes Included'],
               inclusions: p.inclusions?.length
                 ? p.inclusions
                 : ['Luxury AC Vehicle', 'Driver Allowance & Fuel', 'Hotel Accommodation & Breakfast'],
