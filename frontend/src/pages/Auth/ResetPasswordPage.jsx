@@ -8,7 +8,7 @@ export const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') || searchParams.get('otp') || '';
+  const token = searchParams.get('token') || searchParams.get('otp') || location.state?.devOtp || location.state?.token || location.state?.otp || '';
   const email = searchParams.get('email') || location.state?.email || '';
 
 

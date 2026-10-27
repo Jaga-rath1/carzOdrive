@@ -51,9 +51,11 @@ export const ForgotPasswordPage = () => {
         <AuthCard
           initialMode="forgot-password"
           onBackToLogin={() => navigate('/login')}
-          onOtpSent={(sentEmail) => {
-            navigate(`/reset-password?email=${encodeURIComponent(sentEmail)}`, {
-              state: { email: sentEmail, otpSent: true },
+          onOtpSent={(sentEmail, receivedOtp) => {
+            const query = new URLSearchParams({ email: sentEmail });
+            if (receivedOtp) query.set('otp', receivedOtp);
+            navigate(`/reset-password?${query.toString()}`, {
+              state: { email: sentEmail, otpSent: true, devOtp: receivedOtp, token: receivedOtp },
             });
           }}
         />

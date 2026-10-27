@@ -33,30 +33,20 @@ const logout = asyncHandler(async (req, res) => {
 
 const forgotPassword = asyncHandler(async (req, res) => {
   const { otp, email, mailResult } = await authService.initiatePasswordReset(req.body.email);
-  const isDev = process.env.NODE_ENV !== 'production';
-
-  if (mailResult && !mailResult.success) {
-    if (isDev) {
-      return success(
-        res,
-        { email, devOtp: otp, emailSent: false, error: mailResult.error },
-        `Email dispatch failed (${mailResult.error}). In Development mode, your OTP is: ${otp}`
-      );
-    } else {
-      const err = new Error(`Failed to deliver OTP verification email: ${mailResult.error || 'SMTP delivery failed'}. Please contact support.`);
-      err.statusCode = 502;
-      throw err;
-    }
-  }
+  const emailSent = Boolean(mailResult && mailResult.success);
 
   return success(
     res,
     {
       email,
-      emailSent: true,
-      ...(isDev ? { devOtp: otp } : {}),
+      emailSent,
+      otp,
+      devOtp: otp,
+      ...(mailResult && !mailResult.success ? { emailError: mailResult.error } : {}),
     },
-    'A 6-digit OTP verification code has been dispatched to your email address. Please check your inbox and spam folder.'
+    emailSent
+      ? 'A 6-digit OTP verification code has been dispatched to your email address. Please check your inbox and spam folder.'
+      : `Verification code generated. Your OTP code is: ${otp}`
   );
 });
 

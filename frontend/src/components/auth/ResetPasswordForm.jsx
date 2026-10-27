@@ -20,6 +20,17 @@ export const ResetPasswordForm = ({
 }) => {
   return (
     <>
+      {/* Security Dispatch Notice */}
+      <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-200/90 space-y-1">
+        <div className="flex items-center gap-1.5 font-bold text-cyan-300">
+          <Mail className="w-4 h-4 text-cyan-400 shrink-0" />
+          <span>OTP code dispatched to {email || 'your email'}</span>
+        </div>
+        <p className="text-[11px] text-slate-300 pl-5.5 leading-relaxed">
+          Please check your <strong className="text-white">Inbox</strong> and <strong className="text-amber-300">Spam / Junk folder</strong>.
+        </p>
+      </div>
+
       {/* Account Email */}
       <div className="space-y-1">
         <div className="flex items-center justify-between">
@@ -63,6 +74,19 @@ export const ResetPasswordForm = ({
               : 'Resend Code'}
           </button>
         </div>
+
+        {resetToken && resetToken.length === 6 && (
+          <div className="px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-between text-[11px] text-emerald-300">
+            <span className="flex items-center gap-1.5 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              Code Auto-detected: <strong className="font-mono text-emerald-200 tracking-wider">{resetToken}</strong>
+            </span>
+            <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-900/60 px-1.5 py-0.2 rounded">
+              Ready
+            </span>
+          </div>
+        )}
+
         <input
           type="text"
           required
@@ -72,8 +96,8 @@ export const ResetPasswordForm = ({
           placeholder="Enter 6-digit OTP"
           className="w-full bg-slate-900 border border-cyan-500/50 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 rounded-xl px-3.5 py-2.5 text-sm sm:text-base font-mono font-bold tracking-widest text-center text-cyan-300 placeholder-slate-600 transition-all focus:outline-none"
         />
-        <p className="text-[10px] text-slate-500 pt-0.5 flex items-center justify-between">
-          <span>💡 Check <strong>Spam / Junk</strong> folder if email takes a moment.</span>
+        <p className="text-[10px] text-slate-400 pt-0.5 flex items-center justify-between">
+          <span>💡 If not in inbox, please check your <strong>Spam / Junk</strong> folder.</span>
         </p>
       </div>
 

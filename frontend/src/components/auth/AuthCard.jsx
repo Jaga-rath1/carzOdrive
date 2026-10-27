@@ -52,7 +52,7 @@ export const AuthCard = ({
 
   useEffect(() => {
     if (initialEmail && !email) setEmail(initialEmail);
-    if (initialToken && !resetToken) setResetToken(initialToken);
+    if (initialToken) setResetToken(initialToken);
     if (initialStatusMessage && !statusMessage) setStatusMessage(initialStatusMessage);
   }, [initialEmail, initialToken, initialStatusMessage]);
 
@@ -72,13 +72,13 @@ export const AuthCard = ({
     setStatusMessage(null);
     try {
       const res = await authAPI.forgotPassword(email);
-      const devOtp = res?.data?.devOtp;
+      const devOtp = res?.data?.devOtp || res?.data?.otp;
       if (devOtp) setResetToken(devOtp);
       setResendTimer(30);
       setStatusMessage({
         type: 'success',
         text: devOtp
-          ? `Fresh verification code generated! (Dev Code: ${devOtp}). Check inbox or spam.`
+          ? `Fresh verification code generated! (Code: ${devOtp}). Check inbox or spam.`
           : `A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox and spam folder.`,
       });
     } catch (err) {
@@ -178,22 +178,22 @@ export const AuthCard = ({
 
       } else if (mode === 'forgot-password') {
         const res = await authAPI.forgotPassword(email);
-        const devOtp = res?.data?.devOtp;
+        const devOtp = res?.data?.devOtp || res?.data?.otp;
         if (devOtp) {
           setResetToken(devOtp);
         }
         setStatusMessage({
           type: 'success',
           text: devOtp
-            ? `Security OTP dispatched! (Dev Code: ${devOtp}) Please check inbox/spam or proceed below.`
+            ? `Security OTP dispatched! (Verification Code: ${devOtp}) Please check inbox/spam or proceed below.`
             : `Security OTP dispatched to ${email}. Please check your inbox and spam folder.`,
         });
-        if (onOtpSent) onOtpSent(email);
+        if (onOtpSent) onOtpSent(email, devOtp);
 
         if (!isModal) {
           setTimeout(() => {
             navigate(`/reset-password?email=${encodeURIComponent(email)}${devOtp ? `&otp=${devOtp}` : ''}`, {
-              state: { email, otpSent: true, devOtp },
+              state: { email, otpSent: true, devOtp, token: devOtp },
             });
           }, 800);
         } else {

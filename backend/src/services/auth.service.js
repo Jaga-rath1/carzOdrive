@@ -159,11 +159,17 @@ async function initiatePasswordReset(email) {
   user.passwordResetExpires = Date.now() + 15 * 60 * 1000;
   await user.save({ validateBeforeSave: false });
 
-  const mailResult = await sendPasswordResetOtp({
-    email: user.email,
-    name: user.name,
-    otp,
-  });
+  let mailResult;
+  try {
+    mailResult = await sendPasswordResetOtp({
+      email: user.email,
+      name: user.name,
+      otp,
+    });
+  } catch (mailErr) {
+    logger.error(`sendPasswordResetOtp exception for ${user.email}:`, mailErr.message);
+    mailResult = { success: false, error: mailErr.message, otp };
+  }
 
   return { otp, email: user.email, mailResult };
 }
