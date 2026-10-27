@@ -25,6 +25,8 @@ export const LoginForm = ({
           <input
             type="email"
             required
+            autoComplete="email"
+            autoFocus={!email}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="name@example.com"
@@ -52,6 +54,8 @@ export const LoginForm = ({
           <input
             type={showPassword ? 'text' : 'password'}
             required
+            autoComplete="current-password"
+            autoFocus={Boolean(email)}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your account password"

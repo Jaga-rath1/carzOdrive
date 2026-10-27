@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   ChevronDown, 
   Car, 
@@ -65,6 +65,23 @@ export const SERVICES_MENU = [
 
 export const NavLinks = () => {
   const [servicesOpen, setServicesOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleServicesClick = (e) => {
+    if (location.pathname === '/') {
+      const el = document.getElementById('hero-booking-console');
+      if (el) {
+        e.preventDefault();
+        const yOffset = -95;
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+        setServicesOpen(false);
+        return;
+      }
+    }
+    setServicesOpen(!servicesOpen);
+  };
 
   const navLinkClass = ({ isActive }) =>
     `text-xs sm:text-[13px] font-bold tracking-normal transition-all duration-200 py-1.5 px-3 rounded-lg cursor-pointer select-none ${
@@ -88,7 +105,7 @@ export const NavLinks = () => {
       >
         <button
           type="button"
-          onClick={() => setServicesOpen(!servicesOpen)}
+          onClick={handleServicesClick}
           className={`text-xs sm:text-[13px] font-bold tracking-normal transition-all duration-200 py-1.5 px-3 rounded-lg inline-flex items-center gap-1 cursor-pointer select-none ${
             servicesOpen
               ? 'text-blue-400 bg-white/10 shadow-[0_0_12px_rgba(37,99,235,0.25)] border border-blue-500/30'

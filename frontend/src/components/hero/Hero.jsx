@@ -240,6 +240,18 @@ export const Hero = ({ onOpenQuickBook }) => {
     }
   };
 
+  const handleServiceSelect = (tabId) => {
+    setActiveTab(tabId);
+    setTimeout(() => {
+      const el = document.getElementById('hero-booking-console');
+      if (el) {
+        const yOffset = -95;
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 40);
+  };
+
   return (
     <div className="w-full bg-gradient-to-b from-[#060D1E] via-[#091530] via-[#071127] to-[#040814] text-white relative overflow-hidden">
       {/* 1. STUDIO WHITE SPOTLIGHT DOME ON METALLIC LOGO */}
@@ -259,7 +271,7 @@ export const Hero = ({ onOpenQuickBook }) => {
       />
 
       {/* HERO SECTION WITH BOLD 3D CARZODRIVE PNG EMBLEM & BOOKING CONSOLE */}
-      <section className="relative z-10 w-full pt-[76px] sm:pt-[88px] pb-8 sm:pb-12 border-b border-white/10">
+      <section className="relative z-10 w-full pt-[84px] sm:pt-[96px] pb-8 sm:pb-12 border-b border-white/10">
         <Container className="w-full px-3.5 sm:px-6 lg:px-8">
           <div className="w-full max-w-4xl lg:max-w-5xl mx-auto flex flex-col items-center text-center">
             {/* 1. CLEAN PROPORTIONED 3D METALLIC CARZODRIVE PNG EMBLEM */}
@@ -278,13 +290,13 @@ export const Hero = ({ onOpenQuickBook }) => {
             <div className="w-full mt-2 sm:mt-3 mb-2.5 sm:mb-3.5">
               <HeroServiceTabs
                 activeTab={activeTab}
-                onTabSelect={setActiveTab}
+                onTabSelect={handleServiceSelect}
                 serviceMeta={SERVICE_META}
               />
             </div>
 
             {/* 3. UNIFIED INSTANT BOOKING SEARCH CONSOLE */}
-            <div className="w-full">
+            <div id="hero-booking-console" className="w-full scroll-mt-28">
               <HeroSearchConsole
                 activeTab={activeTab}
                 activeService={activeService}

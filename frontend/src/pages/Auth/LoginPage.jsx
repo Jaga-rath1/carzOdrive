@@ -14,6 +14,13 @@ export const LoginPage = () => {
   const resetSuccessMsg = location.state?.message || (location.state?.resetSuccess ? 'Password reset successful! Please log in with your new password.' : null);
 
   React.useEffect(() => {
+    if (location.state?.resetSuccess) {
+      clearAuthSession();
+      setCurrentUser(null);
+    }
+  }, [location.state?.resetSuccess]);
+
+  React.useEffect(() => {
     const handleAuthChange = () => {
       setCurrentUser(getCurrentUser());
     };

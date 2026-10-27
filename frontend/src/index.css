@@ -116,3 +116,25 @@
     background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px);
   }
 }
+
+/* Continuous Marquee Ticker */
+@keyframes tickerMarquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-infinite {
+  display: flex;
+  width: max-content;
+  animation: tickerMarquee 32s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-infinite:hover {
+  animation-play-state: paused;
+}
+

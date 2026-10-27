@@ -12,6 +12,7 @@ import {
 import { NavLinks } from './NavLinks';
 import { MobileMenu } from './MobileMenu';
 import { DrivoraLogo } from './DrivoraLogo';
+import { NavbarPromoTicker } from './NavbarPromoTicker';
 import { useScrollPosition } from '../../hooks/useScrollPosition';
 import { getAccessToken, getCurrentUser, clearAuthSession, authAPI, isAdminUser } from '../../services/api';
 
@@ -308,6 +309,9 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
             </div>
           </div>
         </div>
+
+        {/* Dynamic Promotional Discount Scrolling Marquee Ticker */}
+        <NavbarPromoTicker />
       </header>
 
       {/* Mobile Drawer */}
