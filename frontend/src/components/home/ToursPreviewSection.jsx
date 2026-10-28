@@ -103,25 +103,25 @@ export const ToursPreviewSection = () => {
                   className="group relative flex flex-col justify-between rounded-3xl bg-white border border-slate-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.18)] hover:border-blue-500 transition-all duration-300 hover:-translate-y-2 overflow-hidden"
                 >
                   {/* Large Image Header */}
-                  <Link to={detailUrl} className="relative h-60 w-full overflow-hidden bg-slate-900 block">
+                  <Link to={detailUrl} className="relative h-60 w-full overflow-hidden bg-slate-100 block">
                     <img
                       src={tour.image}
                       alt={tour.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent" />
 
                     {/* Badge */}
                     <div className="absolute top-3 left-3">
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-white">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-900 shadow-xs">
                         {tour.badge}
                       </span>
                     </div>
 
                     {/* Duration Badge */}
-                    <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900/90 backdrop-blur-md border border-white/10 text-white text-xs font-bold">
-                      <Clock className="w-3.5 h-3.5 text-blue-400" />
+                    <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/95 backdrop-blur-md border border-slate-200/90 text-slate-900 text-xs font-bold shadow-xs">
+                      <Clock className="w-3.5 h-3.5 text-blue-600" />
                       <span>{tour.duration}</span>
                     </div>
 

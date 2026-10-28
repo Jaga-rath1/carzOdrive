@@ -17,8 +17,8 @@ export const LoginForm = ({
     <>
       {/* Email Address */}
       <div className="space-y-1">
-        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-          <Mail className="w-3.5 h-3.5 text-cyan-400" />
+        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+          <Mail className="w-3.5 h-3.5 text-blue-600" />
           <span>Email Address</span>
         </label>
         <div className="relative">
@@ -30,7 +30,7 @@ export const LoginForm = ({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="name@example.com"
-            className="w-full bg-slate-900 border border-slate-800 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 transition-all focus:outline-none"
+            className="w-full bg-slate-50/90 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 transition-all focus:outline-none font-medium"
           />
         </div>
       </div>
@@ -38,14 +38,14 @@ export const LoginForm = ({
       {/* Password */}
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-cyan-400" />
+          <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5 text-blue-600" />
             <span>Password</span>
           </label>
           <button
             type="button"
             onClick={onForgotPassword}
-            className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 hover:underline transition-colors cursor-pointer"
+            className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer"
           >
             Forgot Password?
           </button>
@@ -59,12 +59,12 @@ export const LoginForm = ({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your account password"
-            className="w-full bg-slate-900 border border-slate-800 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 rounded-xl pl-3.5 pr-10 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 transition-all focus:outline-none"
+            className="w-full bg-slate-50/90 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 rounded-xl pl-3.5 pr-10 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 transition-all focus:outline-none font-medium"
           />
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
@@ -78,9 +78,9 @@ export const LoginForm = ({
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-3.5 h-3.5 rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-400/40"
+            className="w-3.5 h-3.5 rounded bg-white border-slate-300 text-blue-600 focus:ring-blue-500"
           />
-          <span className="text-xs text-slate-400 font-medium">Keep me signed in</span>
+          <span className="text-xs text-slate-600 font-medium">Keep me signed in</span>
         </label>
       </div>
 
@@ -88,7 +88,7 @@ export const LoginForm = ({
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full mt-2 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-400 hover:from-cyan-300 hover:to-blue-300 transition-all shadow-[0_0_20px_rgba(0,240,255,0.35)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-wait"
+        className="w-full mt-2 py-3 px-4 rounded-xl font-black text-xs sm:text-sm text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:via-indigo-500 hover:to-blue-600 transition-all shadow-[0_6px_22px_rgba(37,99,235,0.35)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.5)] border border-blue-400/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-wait active:scale-95"
       >
         {isLoading ? (
           <>

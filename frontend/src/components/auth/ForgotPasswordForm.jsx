@@ -10,8 +10,8 @@ export const ForgotPasswordForm = ({
   return (
     <>
       <div className="space-y-1">
-        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-          <Mail className="w-3.5 h-3.5 text-cyan-400" />
+        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+          <Mail className="w-3.5 h-3.5 text-blue-600" />
           <span>Email Address or Mobile</span>
         </label>
         <div className="relative">
@@ -21,7 +21,7 @@ export const ForgotPasswordForm = ({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Registered email or 10-digit mobile"
-            className="w-full bg-slate-900 border border-slate-800 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 transition-all focus:outline-none"
+            className="w-full bg-slate-50/90 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 transition-all focus:outline-none font-medium"
           />
         </div>
       </div>
@@ -29,7 +29,7 @@ export const ForgotPasswordForm = ({
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full mt-2 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-400 hover:from-cyan-300 hover:to-blue-300 transition-all shadow-[0_0_20px_rgba(0,240,255,0.35)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-wait"
+        className="w-full mt-2 py-3 px-4 rounded-xl font-black text-xs sm:text-sm text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:via-indigo-500 hover:to-blue-600 transition-all shadow-[0_6px_22px_rgba(37,99,235,0.35)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.5)] border border-blue-400/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-wait active:scale-95"
       >
         {isLoading ? (
           <>
@@ -48,7 +48,7 @@ export const ForgotPasswordForm = ({
         <button
           type="button"
           onClick={onBackToLogin}
-          className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:underline transition-colors cursor-pointer"
+          className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer"
         >
           ← Return to Sign In
         </button>

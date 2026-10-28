@@ -25,21 +25,21 @@ export const DriverRegistrationCTA = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1e3a8a] via-[#1e3a8a]/30 to-transparent" />
 
                 {/* Floating Driver Trust Card */}
-                <div className="absolute bottom-5 left-5 right-5 p-4 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/35 shadow-xl flex items-center justify-between">
+                <div className="absolute bottom-5 left-5 right-5 p-4 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-2xl flex items-center justify-between text-slate-900">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shadow-xs">
                       <Award className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
                         Verified Driver Network
                       </span>
-                      <span className="text-sm font-black text-white">
+                      <span className="text-sm font-black text-slate-900">
                         ₹38,000+ Avg Earnings / Mo
                       </span>
                     </div>
                   </div>
-                  <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
+                  <span className="text-[10px] font-black text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
                     Hiring Now
                   </span>
                 </div>
@@ -48,8 +48,8 @@ export const DriverRegistrationCTA = () => {
 
             {/* Right Content */}
             <div className="lg:col-span-7 order-1 lg:order-2 space-y-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-400 text-xs font-black tracking-widest uppercase">
-                <UserPlus className="w-3.5 h-3.5" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 border border-white/35 text-white text-xs font-black tracking-widest uppercase shadow-xs">
+                <UserPlus className="w-3.5 h-3.5 text-cyan-200" />
                 <span>DRIVER PARTNERSHIP</span>
               </div>
 
@@ -57,26 +57,26 @@ export const DriverRegistrationCTA = () => {
                 Drive With CARZODRIVE
               </h2>
 
-              <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed max-w-xl">
+              <p className="text-base sm:text-lg text-blue-50 font-normal leading-relaxed max-w-xl">
                 Join our professional driver network and turn your driving skills into opportunity. Drive premium executive vehicles, serve corporate leaders and verified tourists, and enjoy punctual weekly payouts.
               </p>
 
               {/* Driver Benefits Checkmarks */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs sm:text-sm font-semibold text-slate-300">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs sm:text-sm font-semibold text-white">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-cyan-200 shrink-0" />
                   <span>Guaranteed Weekly Bank Payouts</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-cyan-200 shrink-0" />
                   <span>Flexible Shifts (Full/Part Time)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-cyan-200 shrink-0" />
                   <span>Executive & Corporate VIP Clients</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-cyan-200 shrink-0" />
                   <span>Comprehensive On-Duty Insurance</span>
                 </div>
               </div>

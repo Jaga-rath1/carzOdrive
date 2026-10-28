@@ -36,7 +36,7 @@ export const ContactHubs = () => {
                 <MapPin className="w-5 h-5" />
               </div>
             </div>
-            <div className="mt-2 px-3 py-1 rounded-full bg-slate-950/90 text-white text-[11px] font-black border border-white/20 backdrop-blur-md shadow-lg">
+            <div className="mt-2 px-3 py-1 rounded-full bg-white/95 text-slate-900 text-[11px] font-black border border-slate-200/90 backdrop-blur-md shadow-lg">
               CARZODRIVE Flagship Hub
             </div>
           </div>
@@ -51,7 +51,7 @@ export const ContactHubs = () => {
               href="https://www.google.com/maps/@20.2605665,85.7603121,21z/data=!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D"
               target="_blank"
               rel="noreferrer"
-              className="px-3 py-1.5 rounded-lg bg-slate-950 hover:bg-blue-600 text-white text-xs font-bold transition-colors inline-flex items-center gap-1"
+              className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors inline-flex items-center gap-1 shadow-xs"
             >
               <span>Directions</span>
               <Navigation className="w-3 h-3" />

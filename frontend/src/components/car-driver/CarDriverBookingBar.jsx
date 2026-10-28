@@ -79,29 +79,29 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
   const whatsappMessage = `Hello CARZODRIVE! 👋\n\nI want to book a Car with Driver:\n🚗 Vehicle: ${carType}\n📍 Pickup: ${pickup || 'SUM Hospital, Bhubaneswar'}\n🏁 Destination: ${destination || 'Hotel / Office'}\n📅 Date: ${date}\n⏰ Time: ${time}\n\nPlease confirm availability and rate quote!`;
 
   return (
-    <section id="booking-form-section" className="py-16 sm:py-20 bg-slate-900 text-white relative">
+    <section id="booking-form-section" className="py-16 sm:py-20 bg-gradient-to-b from-[#f8fafc] via-[#f1f5f9] to-[#f8fafc] text-slate-900 relative border-t border-slate-200/80">
       <Container>
-        <div className="max-w-3xl mx-auto rounded-3xl bg-slate-950 border border-white/10 p-6 sm:p-10 shadow-2xl">
+        <div className="max-w-3xl mx-auto rounded-3xl bg-white border border-slate-200/90 p-6 sm:p-10 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
           <div className="text-center space-y-2 mb-8">
-            <span className="text-xs font-black uppercase tracking-widest text-blue-400">
+            <span className="text-xs font-black uppercase tracking-widest text-blue-600">
               DIRECT RESERVATION
             </span>
-            <h3 className="text-2xl sm:text-3xl font-black text-white">
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
               Book With Driver
             </h3>
-            <p className="text-xs sm:text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-600">
               Confirm your pickup details for instant driver assignment.
             </p>
           </div>
 
           {bookedSubmitted ? (
-            <div className="p-8 rounded-2xl bg-white/5 border border-white/10 text-center space-y-4">
-              <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+            <div className="p-8 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-4">
+              <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-xs">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h4 className="text-xl font-bold text-white">Driver Request Queued!</h4>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto">
-                Your comfortable ride in the <strong>{carType}</strong> has been received. Our concierge officer will call you to confirm pickup coordinates.
+              <h4 className="text-xl font-bold text-slate-900">Driver Request Queued!</h4>
+              <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
+                Your comfortable ride in the <strong className="text-slate-900">{carType}</strong> has been received. Our concierge officer will call you to confirm pickup coordinates.
               </p>
               
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -114,7 +114,7 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                 <button
                   type="button"
                   onClick={() => setBookedSubmitted(false)}
-                  className="text-xs font-bold text-blue-400 hover:underline cursor-pointer"
+                  className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
                 >
                   Modify Reservation
                 </button>
@@ -124,35 +124,35 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
                     Pickup Location *
                   </label>
                   <div className="relative">
-                    <MapPin className="w-4 h-4 text-blue-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <MapPin className="w-4 h-4 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       required
                       value={pickup}
                       onChange={(e) => setPickup(e.target.value)}
                       placeholder="e.g. SUM Hospital / Airport Terminal"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white font-medium focus:outline-none focus:border-blue-500"
+                      className="w-full bg-slate-50/90 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-blue-600 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-900 font-semibold focus:outline-none transition-all shadow-xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
                     Drop-off Destination *
                   </label>
                   <div className="relative">
-                    <MapPin className="w-4 h-4 text-blue-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <MapPin className="w-4 h-4 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       required
                       value={destination}
                       onChange={(e) => setDestination(e.target.value)}
                       placeholder="e.g. Corporate HQ / Puri Beach Resort"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white font-medium focus:outline-none focus:border-blue-500"
+                      className="w-full bg-slate-50/90 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-blue-600 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-900 font-semibold focus:outline-none transition-all shadow-xs"
                     />
                   </div>
                 </div>
@@ -160,11 +160,11 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
                     Pickup Date *
                   </label>
                   <div className="relative">
-                    <Calendar className="w-4 h-4 text-blue-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Calendar className="w-4 h-4 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="date"
                       min={getTodayDateString(0)}
@@ -174,36 +174,36 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                         const today = getTodayDateString(0);
                         setDate(val && val < today ? today : val);
                       }}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white font-medium focus:outline-none focus:border-blue-500"
+                      className="w-full bg-slate-50/90 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-blue-600 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-900 font-semibold focus:outline-none transition-all shadow-xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
                     Pickup Time *
                   </label>
                   <div className="relative">
-                    <Clock className="w-4 h-4 text-blue-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Clock className="w-4 h-4 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="time"
                       value={time}
                       onChange={(e) => setTime(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white font-medium focus:outline-none focus:border-blue-500"
+                      className="w-full bg-slate-50/90 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-blue-600 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-900 font-semibold focus:outline-none transition-all shadow-xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
                     Select Vehicle *
                   </label>
                   <div className="relative">
-                    <Car className="w-4 h-4 text-blue-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Car className="w-4 h-4 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <select
                       value={carType}
                       onChange={(e) => setCarType(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white font-bold focus:outline-none focus:border-blue-500 cursor-pointer"
+                      className="w-full bg-slate-50/90 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-blue-600 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-900 font-bold focus:outline-none transition-all shadow-xs cursor-pointer"
                     >
                       {fleet.map((c) => (
                         <option
@@ -225,7 +225,7 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                 <AuthRequiredNotice
                   title="Login Required to Book Car with Driver"
                   message="Please sign in or create an account to book your car with verified driver."
-                  className="my-1 bg-amber-950/40 border-amber-500/30 text-amber-200"
+                  className="my-1 bg-amber-50 border-amber-200 text-amber-800"
                 />
               )}
 
@@ -244,7 +244,7 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                     <button
                       type="button"
                       onClick={() => openAuthModal('login')}
-                      className="py-3 px-4 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer"
+                      className="py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs cursor-pointer shadow-xs"
                     >
                       Popup
                     </button>
@@ -252,7 +252,7 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                 ) : (
                   <button
                     type="submit"
-                    className="flex-1 py-4 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm transition-all shadow-lg shadow-blue-500/25 cursor-pointer flex items-center justify-center gap-2"
+                    className="flex-1 py-4 px-6 rounded-xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black text-sm transition-all shadow-lg shadow-blue-500/25 cursor-pointer flex items-center justify-center gap-2"
                   >
                     <span>Confirm Driver Ride</span>
                     <ArrowRight className="w-4 h-4" />
@@ -264,7 +264,7 @@ export const CarDriverBookingBar = ({ selectedCar, onQuickBook }) => {
                   label="Book via WhatsApp"
                   variant="outline"
                   size="lg"
-                  className="sm:w-auto justify-center bg-slate-900 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white"
+                  className="sm:w-auto justify-center bg-white border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white shadow-xs"
                 />
               </div>
             </form>

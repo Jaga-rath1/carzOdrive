@@ -43,7 +43,7 @@ export const RentBikeSuccess = ({ formData, submittedItem, onReset }) => {
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
         <Link
           to="/"
-          className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-sm inline-flex items-center justify-center gap-1.5"
+          className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md inline-flex items-center justify-center gap-1.5"
         >
           <span>Return to Home</span>
           <ArrowRight className="w-3.5 h-3.5" />

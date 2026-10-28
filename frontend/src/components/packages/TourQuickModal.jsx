@@ -40,7 +40,7 @@ export const TourQuickModal = ({ tour, isOpen, onClose, onOpenQuickBook }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-md"
         />
 
         <motion.div
@@ -56,12 +56,12 @@ export const TourQuickModal = ({ tour, isOpen, onClose, onOpenQuickBook }) => {
               alt={tour.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent" />
 
             <button
               type="button"
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 rounded-full bg-slate-950/80 text-white hover:bg-slate-900 transition-colors border border-white/20 cursor-pointer"
+              className="absolute top-4 right-4 p-2 rounded-full bg-white/90 text-slate-800 hover:bg-white hover:text-slate-950 transition-colors border border-slate-200/80 shadow-md cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>

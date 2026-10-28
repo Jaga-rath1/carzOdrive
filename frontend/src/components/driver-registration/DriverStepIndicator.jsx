@@ -17,7 +17,7 @@ export const DriverStepIndicator = ({ currentStep, isSubmitted, steps }) => {
                   isCompleted
                     ? 'bg-blue-600 border-blue-600 text-white shadow-md'
                     : isActive
-                    ? 'bg-slate-950 border-slate-950 text-white ring-4 ring-blue-100 shadow-md'
+                    ? 'bg-gradient-to-tr from-blue-600 to-indigo-600 border-blue-600 text-white ring-4 ring-blue-100 shadow-md'
                     : 'bg-slate-50 border-slate-200 text-slate-400'
                 }`}
               >

@@ -9,17 +9,18 @@ export const SignupPage = () => {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen relative flex flex-col justify-between bg-slate-950 text-white overflow-x-hidden pt-6 pb-10 px-4">
-      {/* Background with Ambient Cyber Glow */}
+    <div className="min-h-screen relative flex flex-col justify-between bg-slate-50 text-slate-900 overflow-x-hidden pt-6 pb-10 px-4">
+      {/* Background with Ambient Sky Glow */}
       <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-0">
-        <div className="absolute inset-0 bg-slate-950" />
-        <img
-          src={heroBgImage}
-          alt="Carzodrive Background"
-          className="w-full h-full object-cover object-center filter brightness-[0.25] contrast-[1.2] blur-[2px] select-none"
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-blue-100/60 rounded-full blur-[140px]" />
+        <div className="absolute bottom-10 right-10 w-[500px] h-[300px] bg-sky-100/50 rounded-full blur-[140px]" />
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.03]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 50% 20%, rgba(2, 132, 199, 0.8) 1.5px, transparent 1.5px), linear-gradient(to right, rgba(2, 132, 199, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(2, 132, 199, 0.2) 1px, transparent 1px)`,
+            backgroundSize: '40px 40px, 40px 40px, 40px 40px',
+          }}
         />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-cyan-500/15 rounded-full blur-[140px]" />
-        <div className="absolute bottom-10 right-10 w-[500px] h-[300px] bg-blue-600/12 rounded-full blur-[140px]" />
       </div>
 
       {/* Top Navigation Bar: Sign In & Home */}
@@ -27,22 +28,22 @@ export const SignupPage = () => {
         <div className="flex items-center gap-2">
           <Link
             to="/login"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-cyan-300 hover:text-cyan-200 px-3.5 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 transition-all shadow-[0_0_12px_rgba(0,240,255,0.2)]"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-700 hover:text-blue-800 px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all shadow-xs"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 text-blue-600" />
             <span>Sign In</span>
           </Link>
 
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-400 hover:text-white px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-600 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200/90 transition-all shadow-xs"
           >
             <span>Home</span>
           </Link>
         </div>
 
-        <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-400 font-semibold bg-slate-900/60 border border-slate-800 px-3 py-1 rounded-full">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-600 font-semibold bg-white border border-slate-200/90 px-3.5 py-1.5 rounded-full shadow-xs">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           <span>Verified Fleet Membership</span>
         </div>
       </div>
@@ -62,19 +63,19 @@ export const SignupPage = () => {
       </div>
 
       {/* Footer Trust Guarantees */}
-      <div className="relative z-10 max-w-md mx-auto text-center space-y-2 text-[11px] text-slate-400">
+      <div className="relative z-10 max-w-md mx-auto text-center space-y-2 text-[11px] text-slate-500">
         <div className="flex items-center justify-center gap-4">
           <span className="flex items-center gap-1">
-            <Lock className="w-3 h-3 text-cyan-400" />
+            <Lock className="w-3 h-3 text-blue-600" />
             <span>Zero Spam Privacy</span>
           </span>
           <span>•</span>
           <span className="flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-cyan-400" />
+            <Sparkles className="w-3 h-3 text-blue-600" />
             <span>₹0 Security Deposit Option</span>
           </span>
         </div>
-        <p className="text-slate-500">
+        <p className="text-slate-400">
           © {new Date().getFullYear()} CARZODRIVE Odisha Mobility. All rights reserved.
         </p>
       </div>

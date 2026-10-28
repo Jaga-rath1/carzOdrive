@@ -19,7 +19,7 @@ export const CarRideCard = ({ vehicle, onOpenQuickBook }) => {
       }`}
     >
       {/* Car Image Header */}
-      <Link to={detailTarget} className="relative h-60 w-full overflow-hidden bg-slate-900 block">
+      <Link to={detailTarget} className="relative h-60 w-full overflow-hidden bg-slate-100 block">
         <img
           src={vehicle.image}
           alt={vehicle.name}
@@ -30,10 +30,10 @@ export const CarRideCard = ({ vehicle, onOpenQuickBook }) => {
             e.currentTarget.src = getVehicleFallbackImage(vehicle);
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent" />
 
         <div className="absolute top-3 left-3">
-          <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-white">
+          <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-900 shadow-xs">
             {vehicle.badge}
           </span>
         </div>

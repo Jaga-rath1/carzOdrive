@@ -65,42 +65,42 @@ export const RentYourCarPromoSection = () => {
               </div>
 
               {/* Secondary Text */}
-              <div className="pt-2 text-xs sm:text-sm font-semibold text-slate-400 flex items-center gap-2">
+              <div className="pt-2 text-xs sm:text-sm font-semibold text-blue-100 flex items-center gap-2">
                 <span>Easy onboarding</span>
-                <span className="text-blue-500">•</span>
+                <span className="text-cyan-300">•</span>
                 <span>Verified renters</span>
-                <span className="text-blue-500">•</span>
+                <span className="text-cyan-300">•</span>
                 <span>Secure process</span>
               </div>
             </div>
 
             {/* Right Visual Image */}
             <div className="lg:col-span-5 relative">
-              <div className="relative rounded-3xl overflow-hidden border border-white/15 shadow-2xl bg-slate-900">
+              <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-slate-100">
                 <img
                   src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1000&auto=format&fit=crop"
                   alt="Luxury vehicle earning passive income"
                   className="w-full h-80 sm:h-96 object-cover"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-transparent to-transparent" />
 
                 {/* Floating Earnings Pill Card */}
-                <div className="absolute bottom-5 left-5 right-5 p-4 rounded-2xl bg-slate-950/90 backdrop-blur-xl border border-white/15 shadow-xl flex items-center justify-between">
+                <div className="absolute bottom-5 left-5 right-5 p-4 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-2xl flex items-center justify-between text-slate-900">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-xs">
                       <DollarSign className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
                         Monthly Direct Deposit
                       </span>
-                      <span className="text-sm font-black text-white">
+                      <span className="text-sm font-black text-slate-900">
                         ₹52,400 Transferred
                       </span>
                     </div>
                   </div>
-                  <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
+                  <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
                     Active Host
                   </span>
                 </div>

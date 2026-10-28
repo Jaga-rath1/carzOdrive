@@ -36,7 +36,7 @@ export const Button = ({
     ghost:
       'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent',
     white:
-      'bg-slate-950 hover:bg-slate-800 text-white font-semibold shadow-md', // High contrast black
+      'bg-white hover:bg-slate-50 text-slate-900 border border-slate-200/90 font-semibold shadow-xs',
     danger:
       'bg-rose-600 hover:bg-rose-700 text-white border border-rose-500',
   };

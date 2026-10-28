@@ -7,16 +7,16 @@ export const AboutStory = () => {
       <Container>
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-12 items-center">
           <div className="md:col-span-5 relative">
-            <div className="rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-slate-900">
+            <div className="rounded-3xl overflow-hidden border border-slate-200/90 shadow-xl bg-slate-100">
               <img
                 src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1000&auto=format&fit=crop"
                 alt="CARZODRIVE Fleet Craftsmanship"
                 className="w-full h-80 sm:h-96 object-cover"
               />
             </div>
-            <div className="absolute -bottom-4 -right-4 p-4 rounded-2xl bg-slate-950 text-white border border-white/10 shadow-xl hidden sm:block">
-              <span className="text-xs font-black text-blue-400 uppercase tracking-widest block">Founded</span>
-              <span className="text-xl font-black">2022</span>
+            <div className="absolute -bottom-4 -right-4 p-4 rounded-2xl bg-white text-slate-900 border border-slate-200/90 shadow-[0_15px_35px_rgba(15,23,42,0.12)] hidden sm:block">
+              <span className="text-xs font-black text-blue-600 uppercase tracking-widest block">Founded</span>
+              <span className="text-xl font-black text-slate-900">2022</span>
             </div>
           </div>
 

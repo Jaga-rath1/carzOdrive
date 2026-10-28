@@ -63,9 +63,9 @@ export const HeroSearchWidget = ({
   };
 
   return (
-    <div className="w-full bg-slate-950/90 backdrop-blur-2xl border border-cyan-500/30 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.6)] text-white">
+    <div className="w-full bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-[0_20px_50px_rgba(15,23,42,0.08)] text-slate-900">
       {/* Category Tabs */}
-      <div className="flex items-center gap-1.5 sm:gap-2 pb-3 overflow-x-auto no-scrollbar border-b border-slate-800/80">
+      <div className="flex items-center gap-1.5 sm:gap-2 pb-3 overflow-x-auto no-scrollbar border-b border-slate-200/80">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

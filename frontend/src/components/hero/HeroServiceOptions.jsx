@@ -74,9 +74,7 @@ export const HeroServiceOptions = ({ activeService = 'self-drive-car', onSelectS
         Optimized compact height aligned to navbar scale:
         [ Self Drive ] | [ Car Rental ] | [ Bike Rental ] | [ Driver Rental ] | [ Tour Package ]
       */}
-      <div className="relative rounded-2xl bg-slate-950/85 backdrop-blur-2xl border border-cyan-500/30 p-1.5 sm:p-2 shadow-[0_12px_40px_rgba(0,210,255,0.16)]">
-        {/* Ambient Top Cyan Neon Glow Edge */}
-        <div className="absolute -top-[1px] left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#00F0FF]" />
+      <div className="relative rounded-2xl bg-white/95 backdrop-blur-2xl border border-slate-200/90 p-1.5 sm:p-2 shadow-[0_12px_40px_rgba(15,23,42,0.08)]">
 
         {/* 5 Service Buttons Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 items-stretch gap-1 sm:gap-1.5">

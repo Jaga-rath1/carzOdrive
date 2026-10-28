@@ -86,17 +86,17 @@ export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
             key={item.id}
             className="group flex flex-col justify-between rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-500 transition-all duration-300 overflow-hidden"
           >
-            <div className="relative h-48 w-full overflow-hidden bg-slate-900">
+            <div className="relative h-48 w-full overflow-hidden bg-slate-100">
               <img
                 src={item.image}
                 alt={item.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
 
               <div className="absolute top-3 left-3">
-                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-white shadow-sm">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-900 shadow-xs">
                   {item.badge || item.category}
                 </span>
               </div>

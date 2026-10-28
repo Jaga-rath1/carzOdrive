@@ -57,7 +57,7 @@ export const DriverRegSuccess = ({
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
         <Link
           to="/"
-          className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md inline-flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md inline-flex items-center justify-center gap-2"
         >
           <span>Return to Home</span>
         </Link>

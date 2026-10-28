@@ -105,18 +105,18 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
                 }`}
               >
                 {/* Vehicle Image Header */}
-                <div className="relative h-60 w-full overflow-hidden bg-slate-900">
+                <div className="relative h-60 w-full overflow-hidden bg-slate-100">
                   <img
                     src={item.image}
                     alt={item.name}
                     className={`w-full h-full object-cover ${isUnavailable ? 'grayscale-[35%] opacity-85' : ''}`}
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
                   
                   {/* Status & Type Pill */}
                   <div className="absolute top-3 left-3 flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-white">
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-900 shadow-xs">
                       {item.type}
                     </span>
                     {isUnavailable && (

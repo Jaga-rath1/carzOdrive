@@ -290,14 +290,14 @@ export const AuthCard = ({
   };
 
   return (
-    <div className="relative w-full max-w-md mx-auto rounded-3xl bg-slate-950/95 backdrop-blur-2xl border border-cyan-500/30 p-5 sm:p-7 shadow-[0_25px_70px_rgba(0,0,0,0.85)] text-white overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#00F0FF]" />
+    <div className="relative w-full max-w-md mx-auto rounded-3xl bg-white/95 backdrop-blur-3xl border border-slate-200/90 p-5 sm:p-7 shadow-[0_25px_60px_rgba(15,23,42,0.08),0_4px_16px_rgba(15,23,42,0.04)] text-slate-900 overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-600 to-transparent shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
 
       {isModal && onClose && (
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
+          className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-colors cursor-pointer"
           aria-label="Close dialog"
         >
           <X className="w-4 h-4" />
@@ -306,7 +306,7 @@ export const AuthCard = ({
 
       {/* Header */}
       <div className="flex flex-col items-center text-center space-y-2 mb-6">
-        <DrivoraLogo />
+        <DrivoraLogo isLight={true} />
         <div className="pt-1">
           <AnimatePresence mode="wait">
             <motion.div
@@ -317,13 +317,13 @@ export const AuthCard = ({
               transition={{ duration: 0.25 }}
               className="space-y-1"
             >
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
                 {mode === 'login' && 'Welcome Back'}
                 {mode === 'signup' && 'Create Your Account'}
                 {mode === 'forgot-password' && 'Forgot Password'}
                 {mode === 'reset-password' && 'Set New Password'}
               </h2>
-              <p className="text-xs sm:text-[13px] text-slate-400 font-medium max-w-xs mx-auto">
+              <p className="text-xs sm:text-[13px] text-slate-500 font-medium max-w-xs mx-auto">
                 {mode === 'login' && 'Sign in to access your bookings & exclusive fleet rates.'}
                 {mode === 'signup' && 'Unlock instant self-drive bookings with zero security deposit.'}
                 {mode === 'forgot-password' && 'Enter your email to receive a 6-digit verification code.'}
@@ -336,14 +336,14 @@ export const AuthCard = ({
 
       {/* Tabs */}
       {(mode === 'login' || mode === 'signup') && (
-        <div className="grid grid-cols-2 p-1 mb-5 rounded-xl bg-slate-900 border border-slate-800">
+        <div className="grid grid-cols-2 p-1 mb-5 rounded-xl bg-slate-100/90 border border-slate-200/80">
           <button
             type="button"
             onClick={() => switchMode('login')}
             className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               mode === 'login'
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_12px_rgba(0,240,255,0.4)]'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-md'
+                : 'text-slate-600 hover:text-blue-600'
             }`}
           >
             Sign In
@@ -353,8 +353,8 @@ export const AuthCard = ({
             onClick={() => switchMode('signup')}
             className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               mode === 'signup'
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_12px_rgba(0,240,255,0.4)]'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-md'
+                : 'text-slate-600 hover:text-blue-600'
             }`}
           >
             Create Account
@@ -369,14 +369,14 @@ export const AuthCard = ({
           animate={{ opacity: 1, y: 0 }}
           className={`mb-4 p-3 rounded-xl border text-xs font-semibold flex items-start gap-2 ${
             statusMessage.type === 'success'
-              ? 'bg-emerald-950/80 border-emerald-500/40 text-emerald-300'
-              : 'bg-rose-950/80 border-rose-500/40 text-rose-300'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-rose-50 border-rose-200 text-rose-800'
           }`}
         >
           {statusMessage.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
           )}
           <span>{statusMessage.text}</span>
         </motion.div>

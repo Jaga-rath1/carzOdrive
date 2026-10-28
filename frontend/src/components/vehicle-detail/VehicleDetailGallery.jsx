@@ -30,17 +30,17 @@ export const VehicleDetailGallery = ({ vehicle }) => {
           />
         </AnimatePresence>
 
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-transparent to-transparent pointer-events-none" />
 
         {/* Verification Badge */}
-        <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-white text-xs font-bold shadow-md">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+        <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 text-slate-900 text-xs font-bold shadow-md">
+          <ShieldCheck className="w-4 h-4 text-emerald-600" />
           <span>100% Inspected & Sanitized</span>
         </div>
 
         {/* Image Counter */}
         {images.length > 1 && (
-          <div className="absolute bottom-4 right-4 px-3 py-1 rounded-full bg-slate-950/80 backdrop-blur-md text-white text-xs font-bold border border-white/20">
+          <div className="absolute bottom-4 right-4 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-slate-900 text-xs font-bold border border-slate-200/90 shadow-xs">
             {images.indexOf(activeImage) + 1} / {images.length}
           </div>
         )}

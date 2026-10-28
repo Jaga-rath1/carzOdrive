@@ -211,7 +211,7 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
                     className="group relative flex flex-col justify-between rounded-3xl bg-white border border-slate-200/90 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_40px_rgba(37,99,235,0.16)] hover:border-blue-500 transition-all duration-300 overflow-hidden"
                   >
                     {/* Card Image */}
-                    <Link to={detailTarget} className="relative h-56 w-full overflow-hidden bg-slate-900 block">
+                    <Link to={detailTarget} className="relative h-56 w-full overflow-hidden bg-slate-100 block">
                       <img
                         src={vehicle.image}
                         alt={vehicle.name}
@@ -222,11 +222,11 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
                           e.currentTarget.src = getVehicleFallbackImage(vehicle);
                         }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent" />
 
                       {/* Top Badges */}
                       <div className="absolute top-4 left-4 flex flex-col gap-1 items-start">
-                        <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-white shadow-sm">
+                        <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-900 shadow-xs">
                           {vehicle.badge || vehicle.type}
                         </span>
                         {vehicle.isAvailable ? (
