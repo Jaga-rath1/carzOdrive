@@ -54,45 +54,27 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
                   </span>
                 )}
 
-                {/* 1. Dynamic Vehicle/Service Image from Database & Cloudinary */}
-                <div
-                  className={`relative w-full h-16 sm:h-20 rounded-lg overflow-hidden flex items-center justify-center transition-all ${
-                    isActive
-                      ? 'bg-white/15 border border-white/20'
-                      : 'bg-white border border-slate-200/90 group-hover:border-blue-200 shadow-inner'
-                  }`}
-                >
-                  {data.image ? (
+                {/* 1. The 3D Service App Tile directly from user's image */}
+                <div className="w-full flex items-center justify-center pt-0.5">
+                  <div
+                    className={`relative w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-2xl overflow-hidden transition-all duration-300 flex items-center justify-center ${
+                      isActive
+                        ? 'ring-2 ring-white/90 shadow-[0_6px_22px_rgba(0,0,0,0.4)] scale-[1.04]'
+                        : 'border border-slate-700/60 shadow-md group-hover:scale-105 group-hover:shadow-xl'
+                    }`}
+                  >
                     <img
-                      src={data.image}
+                      src={data.image || meta.image || `/images/services/${item.id}.png`}
                       alt={item.label}
-                      className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300 drop-shadow-sm"
-                      loading="lazy"
+                      className="w-full h-full object-cover select-none"
+                      loading="eager"
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-600">
-                      {Icon && <Icon className="w-8 h-8" />}
-                    </div>
-                  )}
-
-                  {/* Circular Service Icon Overlay (Matching the CarzoDrive billboard identity) */}
-                  {Icon && (
-                    <div
-                      className={`absolute top-1 left-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-xs transition-all ${
-                        isActive
-                          ? 'bg-white text-blue-700'
-                          : 'bg-blue-600 text-white group-hover:scale-110'
-                      }`}
-                      title={item.label}
-                    >
-                      <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* 2. Service Label */}
                 <span
-                  className={`text-[12px] sm:text-[13.5px] font-black tracking-wide leading-tight mt-1.5 line-clamp-1 ${
+                  className={`text-[12px] sm:text-[13.5px] font-black tracking-wide leading-tight mt-2 line-clamp-1 ${
                     isActive ? 'text-white' : 'text-slate-900 group-hover:text-blue-700'
                   }`}
                 >
@@ -106,10 +88,10 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
                       isActive ? 'text-blue-100' : 'text-slate-500 group-hover:text-blue-600'
                     }`}
                   >
-                    {data.tagline || meta.badge}
+                    {data.tagline || meta.tagline || meta.badge}
                   </span>
                   <span
-                    className={`text-[9px] sm:text-[10px] font-black mt-0.5 ${
+                    className={`text-[9.5px] sm:text-[10.5px] font-black mt-0.5 ${
                       isActive ? 'text-cyan-200' : 'text-blue-600'
                     }`}
                   >

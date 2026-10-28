@@ -76,9 +76,10 @@ export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook, onOpenAuth, curre
 
               {/* Navigation Links */}
               <div className="py-6 space-y-2.5">
-                {/* 1. About */}
+                {/* 1. Home */}
                 <NavLink
-                  to="/about"
+                  to="/"
+                  end
                   onClick={onClose}
                   className={({ isActive }) =>
                     `block text-sm font-bold py-2.5 px-3.5 rounded-xl transition-all ${
@@ -88,10 +89,10 @@ export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook, onOpenAuth, curre
                     }`
                   }
                 >
-                  About
+                  Home
                 </NavLink>
 
-                {/* 3. Services Collapsible */}
+                {/* 2. Services Collapsible */}
                 <div className="border border-white/10 rounded-2xl bg-white/[0.03] overflow-hidden">
                   <button
                     type="button"
@@ -173,6 +174,21 @@ export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook, onOpenAuth, curre
                   }
                 >
                   Rent Your Bike (Attach Fleet)
+                </NavLink>
+
+                {/* 6. About */}
+                <NavLink
+                  to="/about"
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    `block text-sm font-bold py-2.5 px-3.5 rounded-xl transition-all ${
+                      isActive
+                        ? 'text-blue-400 bg-white/10 border border-blue-500/30'
+                        : 'text-slate-200 hover:text-white hover:bg-white/5'
+                    }`
+                  }
+                >
+                  About
                 </NavLink>
 
                 {/* 7. Contact */}

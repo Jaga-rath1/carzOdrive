@@ -116,13 +116,13 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-11 sm:h-12">
-            {/* Logo: DRIVORA / CARZODRIVE */}
-            <DrivoraLogo />
-
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center">
-              <NavLinks />
-            </nav>
+            {/* Left: Brand Logo & Desktop Navigation Links starting right from the start */}
+            <div className="flex items-center gap-4 xl:gap-8">
+              <DrivoraLogo />
+              <nav className="hidden lg:flex items-center">
+                <NavLinks />
+              </nav>
+            </div>
 
             {/* Right Action CTA: User Auth & Book a Ride (Desktop) */}
             <div className="hidden lg:flex items-center gap-2.5">

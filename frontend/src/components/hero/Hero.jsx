@@ -23,33 +23,43 @@ import { useDriverSettings } from '../../hooks/useDriverSettings';
 const SERVICE_META = {
   'self-drive-car': {
     icon: SelfDriveCarIcon,
+    image: '/images/services/self-drive-car.png',
     route: '/car-self-ride',
     ctaText: 'Search Self-Drive Cars',
     badge: 'Live Fleet',
+    tagline: 'Drive Your Way',
   },
   'car-with-driver': {
     icon: WithDriverIcon,
+    image: '/images/services/car-with-driver.png',
     route: '/car-with-driver',
     ctaText: 'Search With-Driver Fleet',
     badge: 'Executive',
+    tagline: 'Rent & Ride',
   },
   'driver-only': {
     icon: DriverPilotIcon,
+    image: '/images/services/driver-only.png',
     route: '/driver-only',
     ctaText: 'Hire Verified Driver',
     badge: '₹799/Day',
+    tagline: 'Verified Drivers',
   },
   'self-drive-bike': {
     icon: BikeFleetIcon,
+    image: '/images/services/self-drive-bike.png',
     route: '/bike-rental',
     ctaText: 'Pre-Book Bike',
     badge: 'Coming Soon',
+    tagline: 'Ride the Freedom',
   },
   'tour-packages': {
     icon: TourPackageIcon,
+    image: '/images/services/tour-packages.png',
     route: '/tours-packages',
     ctaText: 'Explore Tour Packages',
     badge: 'Odisha Tours',
+    tagline: 'Explore More',
   },
 };
 
@@ -246,48 +256,51 @@ export const Hero = ({ onOpenQuickBook }) => {
   const serviceData = useMemo(() => {
     const selfDriveCar = dbCars.find((c) => c.isAvailable) || dbCars[0];
     const chauffeurCar = dbCars.find((c) => (c.category === 'luxury' || c.category === 'sedan') && c.isAvailable) || dbCars[1] || dbCars[0];
-    const driver = dbDrivers[0];
     const bike = dbBikes[0];
     const tour = dbTours[0];
 
     return {
       'self-drive-car': {
-        image: selfDriveCar?.image || 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792779598/carzodrive/cars/car-main-1792779591435-ee911a8b.jpg',
+        image: '/images/services/self-drive-car.png',
+        vehiclePhoto: selfDriveCar?.image,
         title: selfDriveCar?.name || 'Self-Drive Fleet',
         tagline: 'Drive Your Way',
         badge: 'Live Fleet',
         rate: selfDriveCar?.priceDisplay || (selfDriveCar?.pricePerDay ? `₹${selfDriveCar.pricePerDay}/d` : '₹1,499/d'),
       },
       'car-with-driver': {
-        image: chauffeurCar?.image || 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001791/carzodrive/cars/car-main-1793001789245-86ca636d.jpg',
+        image: '/images/services/car-with-driver.png',
+        vehiclePhoto: chauffeurCar?.image,
         title: chauffeurCar?.name || 'Car With Chauffeur',
         tagline: 'Rent & Ride',
         badge: 'Executive',
         rate: chauffeurCar?.priceDisplay || (chauffeurCar?.pricePerDay ? `₹${chauffeurCar.pricePerDay}/d` : '₹1,999/d'),
       },
       'driver-only': {
-        image: driver?.photo || driver?.image || 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792572194/carzodrive/drivers/photo-1792572194855-aa556746.jpg',
-        title: driver?.name || 'Verified Commercial Pilot',
-        tagline: 'Professional Drivers',
+        image: '/images/services/driver-only.png',
+        title: 'Verified Commercial Pilot',
+        tagline: 'Verified Drivers',
         badge: '₹799/Day',
         rate: driverSettings?.badgeText || `₹${driverSettings?.dailyRate || 799}/Day`,
       },
       'self-drive-bike': {
-        image: bike?.image || 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=1200&auto=format&fit=crop',
+        image: '/images/services/self-drive-bike.png',
+        vehiclePhoto: bike?.image,
         title: bike?.name || 'Cruisers & Sportbikes',
         tagline: 'Ride the Freedom',
         badge: 'Coming Soon',
         rate: bike?.priceDisplay || (bike?.pricePerDay ? `₹${bike.pricePerDay}/d` : '₹499/d'),
       },
       'tour-packages': {
-        image: tour?.image || tour?.rawTour?.image || 'https://images.unsplash.com/photo-1596405835955-4532a4e21245?q=80&w=1200&auto=format&fit=crop',
+        image: '/images/services/tour-packages.png',
+        vehiclePhoto: tour?.image || tour?.rawTour?.image,
         title: tour?.name || tour?.title || 'Odisha Heritage & Coast',
         tagline: 'Explore More',
         badge: 'Odisha Tours',
         rate: tour?.startingPrice || 'From ₹5,499',
       },
     };
-  }, [dbCars, dbDrivers, dbBikes, dbTours, driverSettings]);
+  }, [dbCars, dbBikes, dbTours, driverSettings]);
 
   const effectivePickup = pickupLocation;
   const effectiveDrop = dropLocation === 'Same as Pick-up Location' ? pickupLocation : dropLocation;
@@ -353,26 +366,26 @@ export const Hero = ({ onOpenQuickBook }) => {
       />
 
       {/* HERO SECTION WITH BOLD 3D CARZODRIVE PNG EMBLEM & BOOKING CONSOLE */}
-      <section className="relative z-10 w-full pt-[84px] sm:pt-[96px] pb-8 sm:pb-12 border-b border-slate-200/80">
+      <section className="relative z-10 w-full pt-[68px] sm:pt-[76px] pb-6 sm:pb-10 border-b border-slate-200/80">
         <Container className="w-full px-3.5 sm:px-6 lg:px-8">
           <div className="w-full max-w-4xl lg:max-w-5xl mx-auto flex flex-col items-center text-center">
             {/* 1. SCROLL-TRIGGERED 3D METALLIC CARZODRIVE PNG EMBLEM */}
-            <div className="w-full flex items-center justify-center pt-1 pb-1 overflow-visible">
+            <div className="w-full flex items-center justify-center pt-0 pb-0 overflow-visible">
               <motion.div
                 style={{ scale: logoScale, y: logoY, opacity: logoOpacity }}
-                className="w-full max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl flex items-center justify-center will-change-transform"
+                className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl flex items-center justify-center will-change-transform"
               >
                 <img
                   src={carzodriveLogo}
                   alt="CARZODRIVE — Drive Your World"
-                  className="w-auto h-auto max-h-[190px] sm:max-h-[240px] md:max-h-[290px] lg:max-h-[330px] scale-x-[1.08] sm:scale-x-[1.12] object-contain drop-shadow-[0_22px_45px_rgba(2,132,199,0.25)] filter brightness-[1.02] contrast-[1.05] select-none block origin-center transition-all"
+                  className="w-auto h-auto max-h-[105px] sm:max-h-[130px] md:max-h-[155px] lg:max-h-[175px] scale-x-[1.04] object-contain drop-shadow-[0_16px_36px_rgba(2,132,199,0.2)] filter brightness-[1.02] contrast-[1.05] select-none block origin-center transition-all"
                   loading="eager"
                 />
               </motion.div>
             </div>
 
             {/* 2. THE 5 SERVICE OPTIONS TABS (ALIGNED DIRECTLY UNDER LOGO) */}
-            <div className="w-full mt-2 sm:mt-3 mb-2.5 sm:mb-3.5">
+            <div className="w-full mt-1.5 sm:mt-2 mb-2 sm:mb-3">
               <HeroServiceTabs
                 activeTab={activeTab}
                 onTabSelect={handleServiceSelect}

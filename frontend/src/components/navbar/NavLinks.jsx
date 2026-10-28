@@ -92,9 +92,9 @@ export const NavLinks = () => {
 
   return (
     <div className="flex items-center gap-1">
-      {/* 1. About */}
-      <NavLink to="/about" className={navLinkClass}>
-        About
+      {/* 1. Home */}
+      <NavLink to="/" end className={navLinkClass}>
+        Home
       </NavLink>
 
       {/* 2. Services Dropdown */}
@@ -179,7 +179,12 @@ export const NavLinks = () => {
         Rent Your Bike
       </NavLink>
 
-      {/* 6. Contact */}
+      {/* 6. About */}
+      <NavLink to="/about" className={navLinkClass}>
+        About
+      </NavLink>
+
+      {/* 7. Contact */}
       <NavLink to="/contact" className={navLinkClass}>
         Contact
       </NavLink>
