@@ -60,17 +60,23 @@ export const AdminLoginPage = () => {
 
       {/* Top Header */}
       <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 xl:px-14 flex items-center justify-between">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-600 px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200/90 transition-all shadow-xs"
-        >
-          <ArrowLeft className="w-4 h-4 text-blue-600" />
-          <span>Back to Main Website</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <DrivoraLogo isLight={true} />
+        </div>
 
-        <div className="inline-flex items-center gap-1.5 text-xs text-amber-800 font-bold bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-full shadow-xs">
-          <ShieldCheck className="w-4 h-4 text-amber-600" />
-          <span>Staff & Admin Gateway</span>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-600 px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200/90 transition-all shadow-xs"
+          >
+            <ArrowLeft className="w-4 h-4 text-blue-600" />
+            <span className="hidden xs:inline">Back to</span> Main Website
+          </Link>
+
+          <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-amber-800 font-bold bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-full shadow-xs">
+            <ShieldCheck className="w-4 h-4 text-amber-600" />
+            <span>Staff & Admin Gateway</span>
+          </div>
         </div>
       </div>
 

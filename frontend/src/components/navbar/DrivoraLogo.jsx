@@ -1,8 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-export const DrivoraLogo = ({ className = '', theme = 'dark', darkText = false, onClick }) => {
-  const isLight = theme === 'light' || darkText;
+export const DrivoraLogo = ({
+  className = '',
+  theme = 'dark',
+  darkText = false,
+  isLight: isLightProp,
+  onClick,
+}) => {
+  const isLight = isLightProp !== undefined ? Boolean(isLightProp) : (theme === 'light' || Boolean(darkText));
 
   return (
     <Link
@@ -17,14 +23,12 @@ export const DrivoraLogo = ({ className = '', theme = 'dark', darkText = false, 
         <div
           className={`relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl p-[1px] transition-all duration-300 group-hover:scale-105 ${
             isLight
-              ? 'bg-black border border-black shadow-sm'
+              ? 'bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-800 shadow-[0_4px_12px_rgba(37,99,235,0.25)] border border-blue-400/40'
               : 'bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 border border-blue-500/30 shadow-[0_0_15px_rgba(37,99,235,0.3)] group-hover:shadow-[0_0_20px_rgba(37,99,235,0.6)]'
           }`}
         >
           <div
-            className={`w-full h-full rounded-[11px] flex items-center justify-center p-1 overflow-hidden relative ${
-              isLight ? 'bg-black' : 'bg-slate-950'
-            }`}
+            className="w-full h-full rounded-[11px] flex items-center justify-center p-1 overflow-hidden relative bg-slate-950"
           >
             <svg
               viewBox="0 0 48 48"
@@ -68,19 +72,19 @@ export const DrivoraLogo = ({ className = '', theme = 'dark', darkText = false, 
       </div>
 
       {/* Brand Typography Wordmark: CARZODRIVE */}
-      <div className="flex flex-col">
+      <div className="flex flex-col text-left">
         <div className="flex items-center tracking-tight leading-none">
           <span
             className={`font-black text-lg sm:text-xl tracking-wider ${
-              isLight ? 'text-black' : 'text-white'
+              isLight ? 'text-slate-950' : 'text-white'
             }`}
           >
-            CARZO<span className={isLight ? 'text-zinc-600' : 'text-blue-400'}>DRIVE</span>
+            CARZO<span className={isLight ? 'text-blue-600' : 'text-blue-400'}>DRIVE</span>
           </span>
         </div>
         <span
           className={`text-[7.5px] uppercase tracking-[0.24em] font-extrabold mt-0.5 ${
-            isLight ? 'text-zinc-500 font-bold' : 'text-slate-400'
+            isLight ? 'text-slate-500 font-bold' : 'text-slate-400'
           }`}
         >
           PREMIUM MOBILITY

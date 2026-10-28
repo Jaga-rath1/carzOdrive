@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck, Lock, Sparkles, UserCheck, LogOut } from 'lucide-react';
 import { AuthCard } from '../../components/auth/AuthCard';
+import { DrivoraLogo } from '../../components/navbar/DrivoraLogo';
 import { getCurrentUser, clearAuthSession } from '../../services/api';
 import heroBgImage from '../../assets/carzodrive-hero-bg.jpg';
 
@@ -54,15 +55,19 @@ export const LoginPage = () => {
         />
       </div>
 
-      {/* Top Navigation Bar: Back to Home */}
+      {/* Top Navigation Bar: Brand Logo & Navigation */}
       <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 xl:px-14 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <DrivoraLogo isLight={true} />
+        </div>
+
         <div className="flex items-center gap-2">
           <Link
             to="/"
             className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-600 px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200/90 transition-all shadow-xs"
           >
             <ArrowLeft className="w-4 h-4 text-blue-600" />
-            <span>Back to Home</span>
+            <span className="hidden xs:inline">Back to</span> Home
           </Link>
           <Link
             to="/signup"
@@ -70,11 +75,6 @@ export const LoginPage = () => {
           >
             <span>Create Account</span>
           </Link>
-        </div>
-
-        <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-600 font-semibold bg-white border border-slate-200/90 px-3.5 py-1.5 rounded-full shadow-xs">
-          <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-          <span>Customer & Rider Portal</span>
         </div>
       </div>
 

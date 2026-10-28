@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck, Lock, Sparkles } from 'lucide-react';
 import { AuthCard } from '../../components/auth/AuthCard';
+import { DrivoraLogo } from '../../components/navbar/DrivoraLogo';
 import heroBgImage from '../../assets/carzodrive-hero-bg.jpg';
 
 export const SignupPage = () => {
@@ -23,8 +24,12 @@ export const SignupPage = () => {
         />
       </div>
 
-      {/* Top Navigation Bar: Sign In & Home */}
+      {/* Top Navigation Bar: Brand Logo & Navigation */}
       <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 xl:px-14 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <DrivoraLogo isLight={true} />
+        </div>
+
         <div className="flex items-center gap-2">
           <Link
             to="/login"
@@ -40,11 +45,6 @@ export const SignupPage = () => {
           >
             <span>Home</span>
           </Link>
-        </div>
-
-        <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-600 font-semibold bg-white border border-slate-200/90 px-3.5 py-1.5 rounded-full shadow-xs">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Verified Fleet Membership</span>
         </div>
       </div>
 
