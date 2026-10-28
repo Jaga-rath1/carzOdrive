@@ -114,7 +114,7 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
             : 'bg-slate-950/80 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)] py-2.5 sm:py-3'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14">
           <div className="flex items-center justify-between h-12 sm:h-13">
             {/* Left: Brand Logo (aligned to left grid) */}
             <div className="shrink-0 flex items-center">
