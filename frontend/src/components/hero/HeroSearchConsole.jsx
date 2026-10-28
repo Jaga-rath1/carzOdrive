@@ -99,29 +99,29 @@ export const HeroSearchConsole = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.15 }}
-      className="w-full bg-slate-900/60 backdrop-blur-2xl border border-white/30 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-[0_25px_60px_rgba(0,15,60,0.35)] text-left relative overflow-hidden"
+      className="w-full bg-white/95 backdrop-blur-3xl border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-[0_25px_60px_rgba(15,23,42,0.08),0_4px_16px_rgba(15,23,42,0.04)] text-left relative overflow-hidden"
     >
-      {/* Ambient Cyan Top Edge */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-300 to-transparent shadow-[0_0_12px_#00F0FF]" />
+      {/* Ambient Royal Blue Top Accent Line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-600 to-transparent shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
 
       {/* Console Header with Direct Page Link */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-white/20 gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-200/80 gap-2">
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-300 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-cyan-300" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-emerald-500" />
           </span>
-          <span className="text-[11px] sm:text-[13px] font-black text-white tracking-wide uppercase truncate">
-            Live Fleet — <span className="text-cyan-200 font-extrabold">{activeService.label}</span>
+          <span className="text-[11px] sm:text-[13px] font-black text-slate-900 tracking-wide uppercase truncate">
+            Live Fleet — <span className="text-blue-600 font-extrabold">{activeService.label}</span>
           </span>
-          <span className="hidden md:inline text-[9px] font-bold text-emerald-200 bg-emerald-600/50 border border-emerald-300/40 px-2 py-0.5 rounded-full shrink-0 shadow-xs">
+          <span className="hidden md:inline text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0 shadow-xs">
             Instant Availability
           </span>
         </div>
 
         <Link
           to={activeMeta.route}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/20 hover:bg-white text-white hover:text-blue-900 border border-white/40 text-[11px] sm:text-xs font-black transition-all group/link shrink-0 shadow-md"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200/80 text-[11px] sm:text-xs font-black transition-all group/link shrink-0 shadow-xs hover:shadow-sm"
           title={`Open full ${activeService.label} page`}
         >
           <span>Open {activeService.label} Page</span>
@@ -150,18 +150,18 @@ export const HeroSearchConsole = ({
           />
 
           {/* Pick-up Hub in Bhubaneswar */}
-          <div className="space-y-1 p-2 sm:p-2.5 rounded-xl bg-white/12 hover:bg-white/18 focus-within:bg-white/25 border border-white/30 hover:border-cyan-300 focus-within:border-cyan-300 transition-all shadow-xs">
-            <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-cyan-200 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+          <div className="space-y-1 p-2 sm:p-2.5 rounded-xl bg-slate-50/90 hover:bg-white focus-within:bg-white border border-slate-200/90 hover:border-blue-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/15 transition-all shadow-xs">
+            <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
               <span>2. Pick-up Hub in Bhubaneswar</span>
             </label>
             <select
               value={pickupLocation}
               onChange={(e) => setPickupLocation(e.target.value)}
-              className="w-full bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer py-0.5"
+              className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer py-0.5"
             >
               {BHUBANESWAR_LOCATIONS.map((loc) => (
-                <option key={loc} value={loc} className="bg-slate-900 text-white">
+                <option key={loc} value={loc} className="bg-white text-slate-900 font-medium">
                   📍 {loc}
                 </option>
               ))}
@@ -185,14 +185,14 @@ export const HeroSearchConsole = ({
 
         {/* Bike pre-order notice */}
         {activeTab === 'self-drive-bike' && (
-          <div className="p-2 sm:p-2.5 rounded-xl bg-amber-950/60 border border-amber-800/80 text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 sm:gap-2 text-xs">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 sm:gap-2 text-xs">
             <div className="flex items-center gap-2 font-bold text-[11px] sm:text-xs">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
               <span>Two-Wheeler Fleet Coming Soon — Pre-bookings live via WhatsApp.</span>
             </div>
             <Link
               to="/bike-rental"
-              className="font-black text-cyan-300 hover:text-white underline shrink-0 text-xs"
+              className="font-black text-blue-600 hover:text-blue-800 underline shrink-0 text-xs"
             >
               View Bike Fleet & Pre-Book →
             </Link>
@@ -200,9 +200,9 @@ export const HeroSearchConsole = ({
         )}
 
         {/* BOTTOM ACTIONS: BOOK ON WHATSAPP & BOOK ONLINE */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-2.5 border-t border-slate-800/80">
-          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-400 font-semibold text-center sm:text-left justify-center sm:justify-start">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-2.5 border-t border-slate-200/80">
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-500 font-semibold text-center sm:text-left justify-center sm:justify-start">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span>Free cancellation up to 6 hours before pickup</span>
           </div>
 
@@ -211,10 +211,10 @@ export const HeroSearchConsole = ({
             <button
               type="button"
               onClick={handleBookOnWhatsApp}
-              className="w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-xs sm:text-sm text-emerald-300 hover:text-white bg-emerald-950/70 hover:bg-emerald-600 border border-emerald-500/50 hover:border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.25)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-2 group shrink-0"
+              className="w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-500 shadow-[0_4px_16px_rgba(16,185,129,0.35)] hover:shadow-[0_6px_24px_rgba(16,185,129,0.5)] transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-2 group shrink-0"
               title="Book directly on WhatsApp with pre-filled details"
             >
-              <MessageCircle className="w-4 h-4 text-emerald-400 group-hover:text-white transition-colors" />
+              <MessageCircle className="w-4 h-4 text-white transition-colors" />
               <span>Book on WhatsApp</span>
             </button>
 
@@ -223,7 +223,7 @@ export const HeroSearchConsole = ({
               <button
                 type="button"
                 onClick={handleBookOnWhatsApp}
-                className="w-full sm:w-auto px-6 py-3 rounded-xl font-black text-xs sm:text-sm text-amber-200 bg-amber-950/80 border border-amber-600/60 hover:bg-amber-900 transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl font-black text-xs sm:text-sm text-white bg-amber-600 border border-amber-500 hover:bg-amber-700 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>Pre-Book Bike Online</span>
                 <ArrowRight className="w-4 h-4" />
@@ -234,8 +234,8 @@ export const HeroSearchConsole = ({
                 disabled={currentSelectedItem?.isAvailable === false}
                 className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl font-black text-xs sm:text-sm border transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 group relative overflow-hidden ${
                   currentSelectedItem?.isAvailable === false
-                    ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed opacity-60'
-                    : 'text-white bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-600 shadow-[0_0_25px_rgba(0,240,255,0.45)] hover:shadow-[0_0_35px_rgba(0,240,255,0.7)] border-cyan-400/40 cursor-pointer'
+                    ? 'bg-slate-200 text-slate-500 border-slate-300 cursor-not-allowed opacity-75'
+                    : 'text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:via-indigo-500 hover:to-blue-600 shadow-[0_6px_22px_rgba(37,99,235,0.4)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.55)] border-blue-400/30 cursor-pointer'
                 }`}
                 title={
                   currentSelectedItem?.isAvailable === false

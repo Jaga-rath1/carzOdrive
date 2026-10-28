@@ -11,9 +11,9 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta }) => {
       transition={{ duration: 0.4, delay: 0.1 }}
       className="w-full"
     >
-      <div className="relative rounded-2xl bg-white/20 backdrop-blur-2xl border border-white/40 p-1 sm:p-1.5 shadow-[0_15px_35px_rgba(0,20,80,0.3)]">
-        {/* Top Cyan Neon Accent Line */}
-        <div className="absolute -top-[1px] left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-transparent via-cyan-300 to-transparent shadow-[0_0_12px_#00F0FF]" />
+      <div className="relative rounded-2xl bg-white/85 backdrop-blur-2xl border border-slate-200/90 p-1 sm:p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.07)]">
+        {/* Top Royal Blue Accent Line */}
+        <div className="absolute -top-[1px] left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_10px_rgba(59,130,246,0.4)]" />
 
         {/* 5 Service Tabs: Smooth Horizontal Swipe on Mobile, Even 5-Grid on Desktop */}
         <div className="flex items-stretch gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0.5 sm:py-0 snap-x lg:grid lg:grid-cols-5">
@@ -31,16 +31,16 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta }) => {
               <motion.div
                 key={item.id}
                 onClick={handleCardClick}
-                whileHover={{ y: -1.5 }}
+                whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 className={`group relative flex flex-col items-center justify-between py-2 sm:py-2.5 px-2 sm:px-2.5 rounded-xl transition-all duration-200 cursor-pointer select-none text-center min-w-[95px] xs:min-w-[105px] sm:min-w-0 flex-1 snap-start shrink-0 ${
                   isActive
-                    ? 'bg-white text-blue-900 border-2 border-cyan-400 shadow-[0_8px_25px_rgba(0,0,0,0.25)] ring-2 ring-cyan-200/60'
-                    : 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40'
+                    ? 'bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-[0_8px_22px_rgba(37,99,235,0.35)] ring-2 ring-blue-400/40 border border-blue-500'
+                    : 'bg-slate-50/70 hover:bg-white text-slate-700 hover:text-blue-600 border border-slate-200/70 hover:border-blue-300 shadow-xs hover:shadow-md'
                 }`}
               >
                 {isActive && (
-                  <span className="absolute -top-2 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md animate-pulse">
+                  <span className="absolute -top-2 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-white text-blue-700 shadow-md">
                     Active
                   </span>
                 )}
@@ -55,8 +55,8 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta }) => {
                 <div
                   className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-white/15 text-white group-hover:bg-white/25 border border-white/25'
+                      ? 'bg-white/20 text-white shadow-inner'
+                      : 'bg-blue-50/80 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-xs'
                   }`}
                 >
                   <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -66,8 +66,8 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta }) => {
                 <span
                   className={`text-[11.5px] sm:text-[13px] font-black tracking-wide leading-tight whitespace-nowrap mt-1 ${
                     isActive
-                      ? 'text-blue-950'
-                      : 'text-white group-hover:text-cyan-100 drop-shadow-xs'
+                      ? 'text-white'
+                      : 'text-slate-800 group-hover:text-blue-700'
                   }`}
                 >
                   {item.label}
@@ -76,7 +76,7 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta }) => {
                 {/* Micro info */}
                 <span
                   className={`text-[8.5px] sm:text-[10px] font-bold mt-0.5 line-clamp-1 ${
-                    isActive ? 'text-blue-600' : 'text-blue-100/90'
+                    isActive ? 'text-blue-100' : 'text-slate-500 group-hover:text-blue-600'
                   }`}
                 >
                   {meta.badge}
@@ -86,8 +86,8 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta }) => {
                 <div
                   className={`mt-1.5 w-full py-1 px-1.5 rounded-lg text-[8.5px] sm:text-[9.5px] font-black tracking-wider uppercase flex items-center justify-center gap-1 transition-all ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-white/15 text-white group-hover:bg-white/25 border border-white/20'
+                      ? 'bg-white/95 text-blue-700 hover:bg-white shadow-sm'
+                      : 'bg-slate-100 group-hover:bg-blue-50 text-slate-600 group-hover:text-blue-700 border border-slate-200/70 group-hover:border-blue-200'
                   }`}
                 >
                   <span>Book Now</span>

@@ -92,19 +92,19 @@ export const HeroDateTimeSelector = ({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2 sm:gap-3 items-start">
       {/* Drop-off Location */}
-      <div className="lg:col-span-4 space-y-1 p-2 sm:p-2.5 rounded-xl bg-white/12 hover:bg-white/18 focus-within:bg-white/25 border border-white/30 hover:border-cyan-300 focus-within:border-cyan-300 transition-all shadow-xs">
-        <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-cyan-200 flex items-center gap-1.5">
-          <MapPin className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+      <div className="lg:col-span-4 space-y-1 p-2 sm:p-2.5 rounded-xl bg-slate-50/90 hover:bg-white focus-within:bg-white border border-slate-200/90 hover:border-blue-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/15 transition-all shadow-xs">
+        <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+          <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
           <span>3. Drop-off Location</span>
         </label>
         <select
           value={dropLocation}
           onChange={(e) => setDropLocation(e.target.value)}
-          className="w-full bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer py-0.5"
+          className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer py-0.5"
         >
-          <option value="Same as Pick-up Location" className="bg-slate-900 text-white">🔄 Same as Pick-up Location</option>
+          <option value="Same as Pick-up Location" className="bg-white text-slate-900 font-medium">🔄 Same as Pick-up Location</option>
           {BHUBANESWAR_LOCATIONS.map((loc) => (
-            <option key={loc} value={loc} className="bg-slate-900 text-white">
+            <option key={loc} value={loc} className="bg-white text-slate-900 font-medium">
               📍 {loc}
             </option>
           ))}
@@ -112,13 +112,13 @@ export const HeroDateTimeSelector = ({
       </div>
 
       {/* Pick-up Date & Time */}
-      <div className="lg:col-span-4 space-y-1 p-2 sm:p-2.5 rounded-xl bg-white/12 hover:bg-white/18 focus-within:bg-white/25 border border-white/30 hover:border-cyan-300 focus-within:border-cyan-300 transition-all shadow-xs">
+      <div className="lg:col-span-4 space-y-1 p-2 sm:p-2.5 rounded-xl bg-slate-50/90 hover:bg-white focus-within:bg-white border border-slate-200/90 hover:border-blue-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/15 transition-all shadow-xs">
         <div className="flex items-center justify-between">
-          <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-cyan-200 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+          <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-blue-600 shrink-0" />
             <span>4. Pick-up Date & Time</span>
           </label>
-          <span className="text-[8px] text-cyan-200 font-bold bg-cyan-700/50 border border-cyan-400/40 px-1 py-0.2 rounded">
+          <span className="text-[8px] text-blue-700 font-bold bg-blue-50 border border-blue-200 px-1 py-0.2 rounded">
             Live
           </span>
         </div>
@@ -128,7 +128,7 @@ export const HeroDateTimeSelector = ({
             min={today}
             value={pickupDate}
             onChange={(e) => handlePickupDateChange(e.target.value)}
-            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer [color-scheme:dark] py-0.5"
+            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer [color-scheme:light] py-0.5"
           />
           <input
             type="time"
@@ -136,15 +136,15 @@ export const HeroDateTimeSelector = ({
             value={pickupTime}
             onChange={(e) => handlePickupTimeChange(e.target.value)}
             title={pickupDate === today ? `Cannot select past time (Current: ${nowTime})` : 'Select pick-up time'}
-            className="w-[74px] sm:w-20 shrink-0 bg-white/15 px-1 py-0.5 rounded text-xs font-semibold text-cyan-200 focus:outline-none cursor-pointer [color-scheme:dark] border border-white/30 focus:border-cyan-300"
+            className="w-[74px] sm:w-20 shrink-0 bg-slate-100 hover:bg-white px-1 py-0.5 rounded text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer [color-scheme:light] border border-slate-200/90 focus:border-blue-600"
           />
         </div>
       </div>
 
       {/* Return Date & Time */}
-      <div className="lg:col-span-4 space-y-1 p-2 sm:p-2.5 rounded-xl bg-white/12 hover:bg-white/18 focus-within:bg-white/25 border border-white/30 hover:border-cyan-300 focus-within:border-cyan-300 transition-all shadow-xs">
-        <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-cyan-200 flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+      <div className="lg:col-span-4 space-y-1 p-2 sm:p-2.5 rounded-xl bg-slate-50/90 hover:bg-white focus-within:bg-white border border-slate-200/90 hover:border-blue-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/15 transition-all shadow-xs">
+        <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+          <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
           <span>5. Return Date & Time</span>
         </label>
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -153,14 +153,14 @@ export const HeroDateTimeSelector = ({
             min={pickupDate || today}
             value={returnDate}
             onChange={(e) => handleReturnDateChange(e.target.value)}
-            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer [color-scheme:dark] py-0.5"
+            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer [color-scheme:light] py-0.5"
           />
           <input
             type="time"
             min={returnDate === pickupDate ? pickupTime : undefined}
             value={returnTime}
             onChange={(e) => handleReturnTimeChange(e.target.value)}
-            className="w-[74px] sm:w-20 shrink-0 bg-white/15 px-1 py-0.5 rounded text-xs font-semibold text-cyan-200 focus:outline-none cursor-pointer [color-scheme:dark] border border-white/30"
+            className="w-[74px] sm:w-20 shrink-0 bg-slate-100 hover:bg-white px-1 py-0.5 rounded text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer [color-scheme:light] border border-slate-200/90 focus:border-blue-600"
           />
         </div>
       </div>

@@ -273,32 +273,32 @@ export const Hero = ({ onOpenQuickBook }) => {
   return (
     <div
       ref={heroRef}
-      className="w-full bg-gradient-to-b from-[#1e40af] via-[#2563eb] via-[#1d4ed8] to-[#0284c7] text-white relative overflow-hidden"
+      className="w-full bg-gradient-to-b from-[#eef6ff] via-[#f8fafc] to-white text-slate-900 relative overflow-hidden"
     >
-      {/* 1. STUDIO AURORA SPOTLIGHT DOME ON METALLIC LOGO WITH PARALLAX */}
+      {/* 1. STUDIO CEILING SKY DIFFUSED SPOTLIGHT WITH PARALLAX */}
       <motion.div
         style={{ y: orb1Y }}
-        className="absolute -top-12 left-1/2 -translate-x-1/2 w-[600px] sm:w-[950px] h-[340px] bg-gradient-to-b from-white/35 via-cyan-300/30 to-transparent rounded-full blur-[90px] pointer-events-none will-change-transform"
+        className="absolute -top-16 left-1/2 -translate-x-1/2 w-[650px] sm:w-[1100px] h-[450px] bg-gradient-to-b from-sky-200/55 via-blue-200/35 to-transparent rounded-full blur-[100px] pointer-events-none will-change-transform"
       />
 
-      {/* 2. SAPPHIRE BLUE & ELECTRIC CYAN AMBIENT BACKLIGHT WITH PARALLAX */}
+      {/* 2. ELECTRIC CYAN & SAPPHIRE SHOWROOM ACCENT REFRACTION */}
       <motion.div
         style={{ y: orb2Y }}
-        className="absolute top-16 left-1/2 -translate-x-1/2 w-[750px] sm:w-[1200px] h-[450px] bg-gradient-to-r from-sky-400/40 via-cyan-300/40 to-blue-300/40 rounded-full blur-[135px] pointer-events-none will-change-transform"
+        className="absolute top-20 left-1/2 -translate-x-1/2 w-[750px] sm:w-[1250px] h-[450px] bg-gradient-to-r from-blue-400/20 via-cyan-300/30 to-indigo-300/20 rounded-full blur-[130px] pointer-events-none will-change-transform"
       />
-      <div className="absolute top-44 left-1/2 -translate-x-1/2 w-[550px] sm:w-[850px] h-[280px] bg-white/20 rounded-full blur-[110px] pointer-events-none" />
+      <div className="absolute top-48 left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[300px] bg-sky-200/35 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* 3. REFINED AUTOMOTIVE CYBER MESH */}
+      {/* 3. PRECISION AUTOMOTIVE STUDIO GRID */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-20"
+        className="absolute inset-0 pointer-events-none opacity-[0.04]"
         style={{
-          backgroundImage: `radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.45) 1px, transparent 1px), linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`,
-          backgroundSize: '36px 36px, 36px 36px, 36px 36px',
+          backgroundImage: `radial-gradient(circle at 50% 20%, rgba(2, 132, 199, 0.8) 1.5px, transparent 1.5px), linear-gradient(to right, rgba(2, 132, 199, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(2, 132, 199, 0.2) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px, 40px 40px, 40px 40px',
         }}
       />
 
       {/* HERO SECTION WITH BOLD 3D CARZODRIVE PNG EMBLEM & BOOKING CONSOLE */}
-      <section className="relative z-10 w-full pt-[84px] sm:pt-[96px] pb-8 sm:pb-12 border-b border-white/20">
+      <section className="relative z-10 w-full pt-[84px] sm:pt-[96px] pb-8 sm:pb-12 border-b border-slate-200/80">
         <Container className="w-full px-3.5 sm:px-6 lg:px-8">
           <div className="w-full max-w-4xl lg:max-w-5xl mx-auto flex flex-col items-center text-center">
             {/* 1. SCROLL-TRIGGERED 3D METALLIC CARZODRIVE PNG EMBLEM */}
@@ -310,7 +310,7 @@ export const Hero = ({ onOpenQuickBook }) => {
                 <img
                   src={carzodriveLogo}
                   alt="CARZODRIVE — Drive Your World"
-                  className="w-auto h-auto max-h-[190px] sm:max-h-[240px] md:max-h-[290px] lg:max-h-[330px] scale-x-[1.08] sm:scale-x-[1.12] object-contain drop-shadow-[0_20px_60px_rgba(255,255,255,0.4)] filter brightness-[1.06] contrast-[1.08] select-none block origin-center transition-all"
+                  className="w-auto h-auto max-h-[190px] sm:max-h-[240px] md:max-h-[290px] lg:max-h-[330px] scale-x-[1.08] sm:scale-x-[1.12] object-contain drop-shadow-[0_22px_45px_rgba(2,132,199,0.25)] filter brightness-[1.02] contrast-[1.05] select-none block origin-center transition-all"
                   loading="eager"
                 />
               </motion.div>
@@ -367,23 +367,23 @@ export const Hero = ({ onOpenQuickBook }) => {
             {/* 4. TRUST GUARANTEE PILLS */}
             <motion.div
               style={{ y: pillsY }}
-              className="w-full grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-white pt-1 will-change-transform"
+              className="w-full grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-slate-700 pt-1 will-change-transform"
             >
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/20 backdrop-blur-md border border-white/35 shadow-md hover:bg-white/30 transition-all">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
-                <span className="truncate text-white font-bold">100% Insured Fleet</span>
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span className="truncate text-slate-800 font-bold">100% Insured Fleet</span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/20 backdrop-blur-md border border-white/35 shadow-md hover:bg-white/30 transition-all">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
-                <span className="truncate text-white font-bold">₹0 Security Deposit</span>
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span className="truncate text-slate-800 font-bold">₹0 Security Deposit</span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/20 backdrop-blur-md border border-white/35 shadow-md hover:bg-white/30 transition-all">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
-                <span className="truncate text-white font-bold">Delivery in 45 Mins</span>
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span className="truncate text-slate-800 font-bold">Delivery in 45 Mins</span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/20 backdrop-blur-md border border-white/35 shadow-md hover:bg-white/30 transition-all">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
-                <span className="truncate text-white font-bold">4.9★ (2,400+ Trips)</span>
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span className="truncate text-slate-800 font-bold">4.9★ (2,400+ Trips)</span>
               </div>
             </motion.div>
           </div>
