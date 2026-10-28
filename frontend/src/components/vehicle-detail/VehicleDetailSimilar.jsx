@@ -21,7 +21,7 @@ export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
             .slice(0, 3)
             .map((v) => {
               const price = v.pricing?.dailyRate || v.pricePerDay || (isBike ? 499 : 1499);
-              const image = (v.images && v.images[0]) || v.image || (isBike ? '/images/vehicles/hero-splendor.jpg' : '/images/vehicles/swift-2026-grey.jpg');
+              const image = (v.images && v.images[0]) || v.image || (isBike ? 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' : '/images/vehicles/swift-2026-grey.jpg');
               const count = v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0));
               const isAvail = v.isAvailable !== false && count > 0 && v.availabilityStatus !== 'UNAVAILABLE' && v.availabilityStatus !== 'Currently Unavailable';
 

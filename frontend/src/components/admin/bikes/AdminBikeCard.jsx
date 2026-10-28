@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 export const AdminBikeCard = ({ bike, onView, onEdit, onDelete }) => {
-  const primaryImg = (bike.images && bike.images[0]) || bike.image || '/images/vehicles/hero-splendor.jpg';
+  const primaryImg = (bike.images && bike.images[0]) || bike.image || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop';
   const price = bike.pricePerDay || bike.priceNumeric || 499;
   const stockCount = bike.quantity !== undefined ? bike.quantity : (bike.availableCount ?? (bike.isAvailable !== false ? 1 : 0));
   const isAvailable = bike.isAvailable !== false && stockCount > 0 && bike.availabilityStatus !== 'Currently Unavailable';

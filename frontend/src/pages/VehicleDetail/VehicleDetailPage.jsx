@@ -41,7 +41,7 @@ export const VehicleDetailPage = () => {
 
         if (res?.data && isMounted) {
           const raw = res.data;
-          const fallbackImg = isBike ? '/images/vehicles/hero-splendor.jpg' : '/images/vehicles/swift-2026-grey.jpg';
+          const fallbackImg = isBike ? 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' : '/images/vehicles/swift-2026-grey.jpg';
           const rawImg = (raw.images && raw.images[0]) || raw.image || fallbackImg;
           const primaryImage = resolveVehicleImageUrl(rawImg, fallbackImg);
           const allImages = (raw.images && raw.images.length > 0)

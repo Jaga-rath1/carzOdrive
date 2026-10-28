@@ -25,7 +25,7 @@ export const VehicleDetailGallery = ({ vehicle }) => {
             className="w-full h-full object-cover object-center"
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = vehicle.vehicleType === 'bike' ? '/images/vehicles/hero-splendor.jpg' : '/images/vehicles/swift-2026-grey.jpg';
+              e.currentTarget.src = vehicle.vehicleType === 'bike' ? 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' : '/images/vehicles/swift-2026-grey.jpg';
             }}
           />
         </AnimatePresence>
