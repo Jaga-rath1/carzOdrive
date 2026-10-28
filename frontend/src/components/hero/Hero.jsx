@@ -366,7 +366,7 @@ export const Hero = ({ onOpenQuickBook }) => {
       />
 
       {/* HERO SECTION WITH BOLD 3D CARZODRIVE PNG EMBLEM & BOOKING CONSOLE */}
-      <section className="relative z-10 w-full pt-[84px] sm:pt-[96px] pb-8 sm:pb-12 border-b border-slate-200/80">
+      <section className="relative z-10 w-full pt-[96px] sm:pt-[106px] md:pt-[114px] pb-8 sm:pb-12 border-b border-slate-200/80">
         <Container className="w-full px-3.5 sm:px-6 lg:px-8">
           <div className="w-full max-w-4xl lg:max-w-5xl mx-auto flex flex-col items-center text-center">
             {/* 1. SCROLL-TRIGGERED 3D METALLIC CARZODRIVE PNG EMBLEM */}

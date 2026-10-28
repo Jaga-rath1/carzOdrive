@@ -84,14 +84,14 @@ export const NavLinks = () => {
   };
 
   const navLinkClass = ({ isActive }) =>
-    `text-xs sm:text-[13px] font-bold tracking-normal transition-all duration-200 py-1.5 px-3 rounded-lg cursor-pointer select-none ${
+    `text-xs xl:text-[13px] font-bold tracking-normal transition-all duration-200 py-1.5 px-2 xl:px-3 rounded-xl cursor-pointer select-none whitespace-nowrap inline-flex items-center border ${
       isActive
-        ? 'text-blue-400 bg-white/10 shadow-[0_0_12px_rgba(37,99,235,0.25)] border border-blue-500/30'
-        : 'text-slate-200 hover:text-white hover:bg-white/10'
+        ? 'text-blue-400 bg-white/10 shadow-[0_0_12px_rgba(37,99,235,0.25)] border-blue-500/30'
+        : 'text-slate-200 hover:text-white hover:bg-white/10 border-transparent'
     }`;
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-0.5 xl:gap-1.5">
       {/* 1. Home */}
       <NavLink to="/" end className={navLinkClass}>
         Home
@@ -106,10 +106,10 @@ export const NavLinks = () => {
         <button
           type="button"
           onClick={handleServicesClick}
-          className={`text-xs sm:text-[13px] font-bold tracking-normal transition-all duration-200 py-1.5 px-3 rounded-lg inline-flex items-center gap-1 cursor-pointer select-none ${
+          className={`text-xs xl:text-[13px] font-bold tracking-normal transition-all duration-200 py-1.5 px-2 xl:px-3 rounded-xl inline-flex items-center gap-1 cursor-pointer select-none whitespace-nowrap border ${
             servicesOpen
-              ? 'text-blue-400 bg-white/10 shadow-[0_0_12px_rgba(37,99,235,0.25)] border border-blue-500/30'
-              : 'text-slate-200 hover:text-white hover:bg-white/10'
+              ? 'text-blue-400 bg-white/10 shadow-[0_0_12px_rgba(37,99,235,0.25)] border-blue-500/30'
+              : 'text-slate-200 hover:text-white hover:bg-white/10 border-transparent'
           }`}
         >
           <span>Services</span>
