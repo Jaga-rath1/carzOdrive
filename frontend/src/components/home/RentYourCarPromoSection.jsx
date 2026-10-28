@@ -8,39 +8,39 @@ export const RentYourCarPromoSection = () => {
   return (
     <section className="py-10 sm:py-14 bg-white relative">
       <Container>
-        <div className="relative rounded-3xl sm:rounded-[36px] overflow-hidden bg-gradient-to-br from-[#020617] via-[#09153a] to-[#040c24] text-white p-6 sm:p-10 lg:p-12 border border-blue-500/20 shadow-[0_25px_60px_rgba(0,0,0,0.3)]">
+        <div className="relative rounded-3xl sm:rounded-[36px] overflow-hidden bg-gradient-to-br from-[#1d4ed8] via-[#2563eb] to-[#0284c7] text-white p-6 sm:p-10 lg:p-12 border border-white/30 shadow-[0_25px_60px_rgba(37,99,235,0.25)]">
           {/* Subtle Ambient Lighting Aura */}
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[140px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/15 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-300/30 rounded-full blur-[140px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/20 rounded-full blur-[120px] pointer-events-none" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center relative z-10">
             {/* Left Content */}
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-400 text-xs font-black tracking-widest uppercase">
-                <Sparkles className="w-3.5 h-3.5" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 border border-white/35 text-white text-xs font-black tracking-widest uppercase shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-200" />
                 <span>HOST FLEET PARTNER</span>
               </div>
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.15] text-white">
                 Your Vehicle Can Earn <br className="hidden sm:inline" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-500 to-cyan-400">
+                <span className="text-cyan-200 drop-shadow-sm">
                   While You Sleep.
                 </span>
               </h2>
 
-              <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed max-w-xl">
+              <p className="text-base sm:text-lg text-blue-50 font-normal leading-relaxed max-w-xl">
                 List your car or bike with CARZODRIVE and turn your idle vehicle into recurring income. Enjoy comprehensive insurance coverage, verified renters, and guaranteed weekly/monthly payouts.
               </p>
 
               {/* Earnings Stat Pills */}
               <div className="flex flex-wrap items-center gap-4 py-2">
-                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                  <span className="text-xs text-slate-400 font-bold block">Avg Monthly Earning</span>
+                <div className="p-3.5 rounded-2xl bg-white/15 border border-white/30 backdrop-blur-md">
+                  <span className="text-xs text-blue-100 font-bold block">Avg Monthly Earning</span>
                   <span className="text-xl sm:text-2xl font-black text-white">₹35,000 - ₹75,000</span>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                  <span className="text-xs text-slate-400 font-bold block">Zero Damage Liability</span>
-                  <span className="text-xl sm:text-2xl font-black text-blue-400">100% Insured</span>
+                <div className="p-3.5 rounded-2xl bg-white/15 border border-white/30 backdrop-blur-md">
+                  <span className="text-xs text-blue-100 font-bold block">Zero Damage Liability</span>
+                  <span className="text-xl sm:text-2xl font-black text-white">100% Insured</span>
                 </div>
               </div>
 

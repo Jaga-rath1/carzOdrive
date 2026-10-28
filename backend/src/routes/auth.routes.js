@@ -62,7 +62,7 @@ router.post('/logout', authenticate, controller.logout);
 router.post(
   '/forgot-password',
   validate([
-    body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
+    body('email').trim().notEmpty().withMessage('Please enter your registered email address or mobile number'),
   ]),
   controller.forgotPassword
 );

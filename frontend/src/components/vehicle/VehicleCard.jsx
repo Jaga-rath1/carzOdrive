@@ -123,8 +123,8 @@ export const VehicleCard = ({
                   <span className="text-xs text-slate-400 line-through font-semibold">
                     {formatCurrency(vehicle.pricePerDay)}
                   </span>
-                  <span className="px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black tracking-wide">
-                    {priceCalc.badgeText}
+                  <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black tracking-wide">
+                    {priceCalc.badgeText.includes('%') ? priceCalc.badgeText : `${priceCalc.badgeText} (${priceCalc.discountPercent}% OFF)`}
                   </span>
                 </div>
                 <div className="flex items-baseline gap-1">

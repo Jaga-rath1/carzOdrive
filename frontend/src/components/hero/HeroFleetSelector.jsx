@@ -38,8 +38,8 @@ export const HeroFleetSelector = ({
     <div
       className={`space-y-1 p-2 sm:p-2.5 rounded-xl transition-all border ${
         isSelectedUnavailable
-          ? 'bg-rose-950/30 border-rose-800/80'
-          : 'bg-slate-950/80 border border-slate-800 hover:border-cyan-500/60 focus-within:border-cyan-400'
+          ? 'bg-rose-950/40 border-rose-500/80'
+          : 'bg-white/12 hover:bg-white/18 focus-within:bg-white/25 border border-white/30 hover:border-cyan-300 focus-within:border-cyan-300 shadow-xs'
       }`}
     >
       <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-cyan-300 flex items-center justify-between">

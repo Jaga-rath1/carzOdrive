@@ -144,12 +144,38 @@ async function logout(userId) {
   await User.findByIdAndUpdate(userId, { $unset: { refreshToken: '' } });
 }
 
-async function initiatePasswordReset(email) {
-  const cleanEmail = (email || '').toLowerCase().trim();
-  const user = await User.findOne({ email: cleanEmail });
+async function initiatePasswordReset(identifier) {
+  const raw = String(identifier || '').trim();
+  if (!raw) {
+    const err = new Error('Please enter your registered email address or mobile number.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const cleanEmail = raw.toLowerCase();
+  const digitsOnly = raw.replace(/[^0-9]/g, '');
+
+  const queryOr = [
+    { email: cleanEmail },
+    { email: new RegExp(`^${cleanEmail.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') },
+  ];
+
+  if (digitsOnly.length >= 10) {
+    const last10 = digitsOnly.slice(-10);
+    queryOr.push({ phone: last10 });
+    queryOr.push({ phone: `+91${last10}` });
+  }
+
+  const user = await User.findOne({ $or: queryOr });
   if (!user) {
-    const err = new Error(`No registered account found with email: ${cleanEmail}. Please check the email address or create a new account.`);
+    const err = new Error(`No registered account found with "${raw}". Please check the details or create a new account.`);
     err.statusCode = 404;
+    throw err;
+  }
+
+  if (!user.email) {
+    const err = new Error('No email address registered for this account. Please contact CARZODRIVE customer support.');
+    err.statusCode = 400;
     throw err;
   }
 
@@ -160,25 +186,25 @@ async function initiatePasswordReset(email) {
   user.passwordResetExpires = Date.now() + 15 * 60 * 1000;
   await user.save({ validateBeforeSave: false });
 
-  // High-performance asynchronous background dispatch:
-  // Guarantees sub-50ms HTTP response so the user experiences zero loading lag
-  sendPasswordResetOtp({
+  // Direct dispatch with full error handling and retry logging
+  const mailResult = await sendPasswordResetOtp({
     email: user.email,
-    name: user.name,
+    name: user.name || 'Valued Member',
     otp,
-  })
-    .then((result) => {
-      if (result && result.success) {
-        logger.success(`Background OTP email delivered to ${user.email} [MessageId: ${result.messageId}]`);
-      } else {
-        logger.warn(`Background OTP email attempt finished with issue for ${user.email}: ${result?.error}`);
-      }
-    })
-    .catch((mailErr) => {
-      logger.error(`Background sendPasswordResetOtp error for ${user.email}:`, mailErr.message);
-    });
+  });
 
-  return { otp, email: user.email, emailSent: true };
+  if (!mailResult.success) {
+    logger.warn(`Password reset OTP email dispatch returned error for ${user.email}: ${mailResult.error}`);
+  } else {
+    logger.success(`✓ Password reset OTP successfully dispatched via Nodemailer to ${user.email} [MessageId: ${mailResult.messageId}]`);
+  }
+
+  return {
+    otp,
+    email: user.email,
+    emailSent: Boolean(mailResult?.success),
+    mailError: mailResult?.error || null,
+  };
 }
 
 async function resetPassword({ token, email, password }) {
@@ -197,7 +223,17 @@ async function resetPassword({ token, email, password }) {
   };
 
   if (email) {
-    query.email = email.toLowerCase().trim();
+    const clean = String(email).toLowerCase().trim();
+    const digitsOnly = clean.replace(/[^0-9]/g, '');
+    if (digitsOnly.length >= 10 && !clean.includes('@')) {
+      const last10 = digitsOnly.slice(-10);
+      query.$or = [{ phone: last10 }, { phone: `+91${last10}` }];
+    } else {
+      query.$or = [
+        { email: clean },
+        { email: new RegExp(`^${clean.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') },
+      ];
+    }
   }
 
   const user = await User.findOne(query).select('+password');

@@ -6,12 +6,12 @@ import { Container } from '../common/Container';
 
 export const FinalHeroCTA = ({ onOpenQuickBook }) => {
   return (
-    <section className="relative py-14 sm:py-20 bg-[#030712] text-white overflow-hidden border-t border-white/10">
+    <section className="relative py-16 sm:py-24 bg-gradient-to-b from-[#1e40af] via-[#2563eb] to-[#1d4ed8] text-white overflow-hidden border-t border-white/20">
       {/* Cinematic Animated Background Elements */}
       <div className="absolute inset-0 pointer-events-none select-none">
         {/* Pulsing deep blue ambient lighting */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-blue-600/15 rounded-full blur-[160px]" />
-        <div className="absolute bottom-0 left-1/3 w-[500px] h-[300px] bg-indigo-600/10 rounded-full blur-[140px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[520px] bg-cyan-300/30 rounded-full blur-[160px]" />
+        <div className="absolute bottom-0 left-1/3 w-[550px] h-[340px] bg-white/20 rounded-full blur-[140px]" />
 
         {/* Ambient Glowing Road Speedline Curves */}
         <svg

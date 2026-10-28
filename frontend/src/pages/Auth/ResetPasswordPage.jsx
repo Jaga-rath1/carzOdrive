@@ -58,19 +58,18 @@ export const ResetPasswordPage = () => {
           initialEmail={email}
           initialToken={token}
           onBackToLogin={() => navigate('/login')}
-          onSuccess={(data) => {
-            const userEmail = data?.email || email;
-            const returnTo = data?.from || location.state?.from || location.state?.returnTo;
-            setTimeout(() => {
-              navigate('/login', {
-                state: {
-                  email: userEmail,
-                  resetSuccess: true,
-                  message: 'Password reset successful! Please log in with your new password.',
-                  returnTo,
-                },
-              });
-            }, 600);
+          onResetSuccess={(savedEmail) => {
+            const userEmail = savedEmail || email;
+            const returnTo = location.state?.from || location.state?.returnTo;
+            navigate('/login', {
+              replace: true,
+              state: {
+                email: userEmail,
+                resetSuccess: true,
+                message: 'Password reset successful! Please log in with your new password.',
+                returnTo,
+              },
+            });
           }}
         />
       </div>

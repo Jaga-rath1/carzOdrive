@@ -99,29 +99,29 @@ export const HeroSearchConsole = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.15 }}
-      className="w-full bg-slate-900/85 backdrop-blur-2xl border border-slate-700/60 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-[0_25px_60px_rgba(0,0,0,0.65)] text-left relative overflow-hidden"
+      className="w-full bg-slate-900/60 backdrop-blur-2xl border border-white/30 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-[0_25px_60px_rgba(0,15,60,0.35)] text-left relative overflow-hidden"
     >
       {/* Ambient Cyan Top Edge */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#00F0FF]" />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-300 to-transparent shadow-[0_0_12px_#00F0FF]" />
 
       {/* Console Header with Direct Page Link */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-800/80 gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-white/20 gap-2">
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-cyan-400" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-300 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-cyan-300" />
           </span>
           <span className="text-[11px] sm:text-[13px] font-black text-white tracking-wide uppercase truncate">
-            Live Fleet — <span className="text-cyan-400 font-extrabold">{activeService.label}</span>
+            Live Fleet — <span className="text-cyan-200 font-extrabold">{activeService.label}</span>
           </span>
-          <span className="hidden md:inline text-[9px] font-bold text-emerald-400 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-full shrink-0">
+          <span className="hidden md:inline text-[9px] font-bold text-emerald-200 bg-emerald-600/50 border border-emerald-300/40 px-2 py-0.5 rounded-full shrink-0 shadow-xs">
             Instant Availability
           </span>
         </div>
 
         <Link
           to={activeMeta.route}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-500/15 hover:bg-cyan-400 text-cyan-300 hover:text-slate-950 border border-cyan-400/50 text-[11px] sm:text-xs font-black transition-all group/link shrink-0 shadow-[0_0_12px_rgba(0,240,255,0.25)]"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/20 hover:bg-white text-white hover:text-blue-900 border border-white/40 text-[11px] sm:text-xs font-black transition-all group/link shrink-0 shadow-md"
           title={`Open full ${activeService.label} page`}
         >
           <span>Open {activeService.label} Page</span>
@@ -150,18 +150,18 @@ export const HeroSearchConsole = ({
           />
 
           {/* Pick-up Hub in Bhubaneswar */}
-          <div className="space-y-1 p-2 sm:p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-cyan-500/60 focus-within:border-cyan-400 transition-all">
-            <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+          <div className="space-y-1 p-2 sm:p-2.5 rounded-xl bg-white/12 hover:bg-white/18 focus-within:bg-white/25 border border-white/30 hover:border-cyan-300 focus-within:border-cyan-300 transition-all shadow-xs">
+            <label className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-cyan-200 flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
               <span>2. Pick-up Hub in Bhubaneswar</span>
             </label>
             <select
               value={pickupLocation}
               onChange={(e) => setPickupLocation(e.target.value)}
-              className="w-full bg-slate-950 text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer py-0.5"
+              className="w-full bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer py-0.5"
             >
               {BHUBANESWAR_LOCATIONS.map((loc) => (
-                <option key={loc} value={loc}>
+                <option key={loc} value={loc} className="bg-slate-900 text-white">
                   📍 {loc}
                 </option>
               ))}

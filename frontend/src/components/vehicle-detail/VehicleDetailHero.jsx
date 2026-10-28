@@ -1,13 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ChevronRight, MapPin, Share2, ShieldCheck } from 'lucide-react';
+import { Star, ChevronRight, MapPin, Share2, ShieldCheck, Sparkles } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
+import { useDiscount } from '../../hooks/useDiscount';
 
 export const VehicleDetailHero = ({ vehicle }) => {
   const isBike = vehicle.vehicleType === 'bike';
   const categoryLink = isBike ? '/bike-self-ride' : '/car-self-ride';
   const categoryLabel = isBike ? 'Self-Drive Bikes' : 'Self-Drive Cars';
+
+  const { calculateDiscount, discountPercentage } = useDiscount();
+  const serviceType = isBike ? 'self-drive-bike' : 'self-drive-car';
+  const rawPrice = vehicle.priceNumeric || (
+    typeof vehicle.pricePerDay === 'number'
+      ? vehicle.pricePerDay
+      : parseInt(String(vehicle.pricePerDay || '').replace(/[^0-9]/g, '')) || 2999
+  );
+  const priceCalc = calculateDiscount(rawPrice, serviceType);
 
   const handleShare = () => {
     if (navigator.share) {
@@ -71,6 +81,39 @@ export const VehicleDetailHero = ({ vehicle }) => {
           <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-2xl font-normal leading-relaxed">
             {vehicle.tagline || vehicle.description}
           </p>
+
+          {/* Slashed Original Price & Discount Percentage Cut Badge */}
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 mt-3 pt-2.5 border-t border-slate-100">
+            {priceCalc.isDiscountActive && priceCalc.discountAmount > 0 ? (
+              <>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm sm:text-base text-slate-400 line-through font-bold">
+                    ₹{rawPrice.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-2xl sm:text-3xl font-black text-emerald-600">
+                    ₹{priceCalc.finalAmount.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-500">/ 24 hrs</span>
+                </div>
+
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[11px] font-black uppercase tracking-wider shadow-sm">
+                  <Sparkles className="w-3 h-3 text-emerald-200" />
+                  <span>{priceCalc.badgeText} ({discountPercentage}% OFF)</span>
+                </span>
+
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                  You Save ₹{priceCalc.discountAmount.toLocaleString('en-IN')} /day
+                </span>
+              </>
+            ) : (
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl sm:text-3xl font-black text-slate-950">
+                  ₹{rawPrice.toLocaleString('en-IN')}
+                </span>
+                <span className="text-xs font-semibold text-slate-500">/ 24 hrs</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Rating & Fast Actions */}

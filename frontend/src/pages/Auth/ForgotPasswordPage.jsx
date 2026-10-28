@@ -58,6 +58,16 @@ export const ForgotPasswordPage = () => {
               state: { email: sentEmail, otpSent: true, devOtp: receivedOtp, token: receivedOtp },
             });
           }}
+          onResetSuccess={(savedEmail) => {
+            navigate('/login', {
+              replace: true,
+              state: {
+                email: savedEmail,
+                resetSuccess: true,
+                message: 'Password reset successful! Please log in with your new password.',
+              },
+            });
+          }}
         />
       </div>
 

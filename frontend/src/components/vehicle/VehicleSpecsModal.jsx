@@ -7,6 +7,7 @@ import { Check, ShieldCheck, Gauge, Sparkles, ArrowRight } from 'lucide-react';
 import { formatCurrency, formatRating } from '../../utils/formatters';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
+import { useDiscount } from '../../hooks/useDiscount';
 
 export const VehicleSpecsModal = ({
   vehicle,
@@ -15,6 +16,7 @@ export const VehicleSpecsModal = ({
   onBookNow
 }) => {
   const [activeImage, setActiveImage] = useState(vehicle?.image || '');
+  const { calculateDiscount } = useDiscount();
 
   React.useEffect(() => {
     if (vehicle?.image) {
@@ -26,6 +28,13 @@ export const VehicleSpecsModal = ({
 
   const specs = vehicle.specs || {};
   const gallery = [vehicle.image, ...(vehicle.secondaryImages || [])];
+  const serviceType = vehicle.vehicleType === 'bike' ? 'self-drive-bike' : 'self-drive-car';
+  const rawPrice = vehicle.priceNumeric || (
+    typeof vehicle.pricePerDay === 'number'
+      ? vehicle.pricePerDay
+      : parseInt(String(vehicle.pricePerDay || '').replace(/[^0-9]/g, '')) || 2999
+  );
+  const priceCalc = calculateDiscount(rawPrice, serviceType);
 
   return (
     <Modal
@@ -82,11 +91,28 @@ export const VehicleSpecsModal = ({
           </div>
 
           <div className="text-right shrink-0">
-            <div className="text-2xl font-black text-slate-950">
-              {formatCurrency(vehicle.pricePerDay)}
-              <span className="text-xs text-slate-500 font-normal"> / day</span>
-            </div>
-            <div className="text-xs text-slate-500">
+            {priceCalc.isDiscountActive && priceCalc.discountAmount > 0 ? (
+              <div>
+                <div className="flex items-center justify-end gap-1.5 mb-0.5">
+                  <span className="text-xs sm:text-sm text-slate-400 line-through font-bold">
+                    ₹{rawPrice.toLocaleString('en-IN')}
+                  </span>
+                  <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider shadow-xs">
+                    {priceCalc.discountPercentage}% OFF
+                  </span>
+                </div>
+                <div className="text-2xl font-black text-emerald-600">
+                  ₹{priceCalc.finalAmount.toLocaleString('en-IN')}
+                  <span className="text-xs text-slate-500 font-normal"> / day</span>
+                </div>
+              </div>
+            ) : (
+              <div className="text-2xl font-black text-slate-950">
+                {formatCurrency(vehicle.pricePerDay)}
+                <span className="text-xs text-slate-500 font-normal"> / day</span>
+              </div>
+            )}
+            <div className="text-xs text-slate-500 mt-0.5">
               or {formatCurrency(vehicle.pricePerHour)} / hr
             </div>
           </div>

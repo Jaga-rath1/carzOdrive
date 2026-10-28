@@ -37,10 +37,12 @@ export const AuthModal = ({
               isModal={true}
               onClose={onClose}
               onSuccess={(data) => {
-                if (onSuccess) onSuccess(data);
-                setTimeout(() => {
-                  if (onClose) onClose();
-                }, 1200);
+                if (data?.user || data?.accessToken) {
+                  if (onSuccess) onSuccess(data);
+                  setTimeout(() => {
+                    if (onClose) onClose();
+                  }, 1000);
+                }
               }}
             />
           </motion.div>

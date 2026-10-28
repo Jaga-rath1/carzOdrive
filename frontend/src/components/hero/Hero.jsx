@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
 import { Container } from '../common/Container';
 import carzodriveLogo from '../../assets/carzodrive-logo.png';
@@ -65,6 +66,23 @@ export const Hero = ({ onOpenQuickBook }) => {
   const navigate = useNavigate();
   const { isAuthenticated, openAuthModal } = useAuth();
   const { driverSettings } = useDriverSettings();
+
+  // ScrollTrigger Parallax & Scaling transforms
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 90, damping: 24, restDelta: 0.001 });
+
+  const logoScale = useTransform(smoothProgress, [0, 0.45, 1], [1, 0.95, 0.88]);
+  const logoY = useTransform(smoothProgress, [0, 0.7], [0, 24]);
+  const logoOpacity = useTransform(smoothProgress, [0, 0.95], [1, 0.75]);
+  const orb1Y = useTransform(smoothProgress, [0, 1], [0, 140]);
+  const orb2Y = useTransform(smoothProgress, [0, 1], [0, -90]);
+  const consoleY = useTransform(smoothProgress, [0, 0.5], [0, -10]);
+  const consoleScale = useTransform(smoothProgress, [0, 0.5], [1, 0.995]);
+  const pillsY = useTransform(smoothProgress, [0, 0.6], [0, 12]);
 
   // 1. Service Selection
   const [activeTab, setActiveTab] = useState('self-drive-car');
@@ -253,37 +271,49 @@ export const Hero = ({ onOpenQuickBook }) => {
   };
 
   return (
-    <div className="w-full bg-gradient-to-b from-[#060D1E] via-[#091530] via-[#071127] to-[#040814] text-white relative overflow-hidden">
-      {/* 1. STUDIO WHITE SPOTLIGHT DOME ON METALLIC LOGO */}
-      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[600px] sm:w-[950px] h-[340px] bg-gradient-to-b from-white/20 via-sky-300/12 to-transparent rounded-full blur-[90px] pointer-events-none" />
+    <div
+      ref={heroRef}
+      className="w-full bg-gradient-to-b from-[#1e40af] via-[#2563eb] via-[#1d4ed8] to-[#0284c7] text-white relative overflow-hidden"
+    >
+      {/* 1. STUDIO AURORA SPOTLIGHT DOME ON METALLIC LOGO WITH PARALLAX */}
+      <motion.div
+        style={{ y: orb1Y }}
+        className="absolute -top-12 left-1/2 -translate-x-1/2 w-[600px] sm:w-[950px] h-[340px] bg-gradient-to-b from-white/35 via-cyan-300/30 to-transparent rounded-full blur-[90px] pointer-events-none will-change-transform"
+      />
 
-      {/* 2. SAPPHIRE BLUE & ELECTRIC CYAN AMBIENT BACKLIGHT */}
-      <div className="absolute top-16 left-1/2 -translate-x-1/2 w-[750px] sm:w-[1200px] h-[450px] bg-gradient-to-r from-blue-600/30 via-cyan-400/22 to-blue-700/30 rounded-full blur-[135px] pointer-events-none" />
-      <div className="absolute top-44 left-1/2 -translate-x-1/2 w-[550px] sm:w-[850px] h-[280px] bg-sky-500/18 rounded-full blur-[110px] pointer-events-none" />
+      {/* 2. SAPPHIRE BLUE & ELECTRIC CYAN AMBIENT BACKLIGHT WITH PARALLAX */}
+      <motion.div
+        style={{ y: orb2Y }}
+        className="absolute top-16 left-1/2 -translate-x-1/2 w-[750px] sm:w-[1200px] h-[450px] bg-gradient-to-r from-sky-400/40 via-cyan-300/40 to-blue-300/40 rounded-full blur-[135px] pointer-events-none will-change-transform"
+      />
+      <div className="absolute top-44 left-1/2 -translate-x-1/2 w-[550px] sm:w-[850px] h-[280px] bg-white/20 rounded-full blur-[110px] pointer-events-none" />
 
       {/* 3. REFINED AUTOMOTIVE CYBER MESH */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-25"
+        className="absolute inset-0 pointer-events-none opacity-20"
         style={{
-          backgroundImage: `radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.35) 1px, transparent 1px), linear-gradient(to right, rgba(56, 189, 248, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(56, 189, 248, 0.06) 1px, transparent 1px)`,
+          backgroundImage: `radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.45) 1px, transparent 1px), linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`,
           backgroundSize: '36px 36px, 36px 36px, 36px 36px',
         }}
       />
 
       {/* HERO SECTION WITH BOLD 3D CARZODRIVE PNG EMBLEM & BOOKING CONSOLE */}
-      <section className="relative z-10 w-full pt-[84px] sm:pt-[96px] pb-8 sm:pb-12 border-b border-white/10">
+      <section className="relative z-10 w-full pt-[84px] sm:pt-[96px] pb-8 sm:pb-12 border-b border-white/20">
         <Container className="w-full px-3.5 sm:px-6 lg:px-8">
           <div className="w-full max-w-4xl lg:max-w-5xl mx-auto flex flex-col items-center text-center">
-            {/* 1. CLEAN PROPORTIONED 3D METALLIC CARZODRIVE PNG EMBLEM */}
+            {/* 1. SCROLL-TRIGGERED 3D METALLIC CARZODRIVE PNG EMBLEM */}
             <div className="w-full flex items-center justify-center pt-1 pb-1 overflow-visible">
-              <div className="w-full max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl flex items-center justify-center">
+              <motion.div
+                style={{ scale: logoScale, y: logoY, opacity: logoOpacity }}
+                className="w-full max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl flex items-center justify-center will-change-transform"
+              >
                 <img
                   src={carzodriveLogo}
                   alt="CARZODRIVE — Drive Your World"
-                  className="w-auto h-auto max-h-[190px] sm:max-h-[240px] md:max-h-[290px] lg:max-h-[330px] scale-x-[1.08] sm:scale-x-[1.12] object-contain drop-shadow-[0_18px_50px_rgba(0,210,255,0.35)] filter brightness-[1.04] contrast-[1.06] select-none block origin-center"
+                  className="w-auto h-auto max-h-[190px] sm:max-h-[240px] md:max-h-[290px] lg:max-h-[330px] scale-x-[1.08] sm:scale-x-[1.12] object-contain drop-shadow-[0_20px_60px_rgba(255,255,255,0.4)] filter brightness-[1.06] contrast-[1.08] select-none block origin-center transition-all"
                   loading="eager"
                 />
-              </div>
+              </motion.div>
             </div>
 
             {/* 2. THE 5 SERVICE OPTIONS TABS (ALIGNED DIRECTLY UNDER LOGO) */}
@@ -295,8 +325,12 @@ export const Hero = ({ onOpenQuickBook }) => {
               />
             </div>
 
-            {/* 3. UNIFIED INSTANT BOOKING SEARCH CONSOLE */}
-            <div id="hero-booking-console" className="w-full scroll-mt-28">
+            {/* 3. UNIFIED INSTANT BOOKING SEARCH CONSOLE WITH SCROLL-TRIGGERED FLOAT */}
+            <motion.div
+              id="hero-booking-console"
+              style={{ y: consoleY, scale: consoleScale }}
+              className="w-full scroll-mt-28 will-change-transform"
+            >
               <HeroSearchConsole
                 activeTab={activeTab}
                 activeService={activeService}
@@ -328,27 +362,30 @@ export const Hero = ({ onOpenQuickBook }) => {
                 currentSelectedItem={currentSelectedItem}
                 handleSearch={handleSearch}
               />
-            </div>
+            </motion.div>
 
             {/* 4. TRUST GUARANTEE PILLS */}
-            <div className="w-full grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-slate-300 pt-1">
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-800 shadow-sm hover:border-cyan-500/50 transition-all">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                <span className="truncate text-slate-200 font-semibold">100% Insured Fleet</span>
+            <motion.div
+              style={{ y: pillsY }}
+              className="w-full grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-white pt-1 will-change-transform"
+            >
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/20 backdrop-blur-md border border-white/35 shadow-md hover:bg-white/30 transition-all">
+                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
+                <span className="truncate text-white font-bold">100% Insured Fleet</span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-800 shadow-sm hover:border-cyan-500/50 transition-all">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                <span className="truncate text-slate-200 font-semibold">₹0 Security Deposit</span>
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/20 backdrop-blur-md border border-white/35 shadow-md hover:bg-white/30 transition-all">
+                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
+                <span className="truncate text-white font-bold">₹0 Security Deposit</span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-800 shadow-sm hover:border-cyan-500/50 transition-all">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                <span className="truncate text-slate-200 font-semibold">Delivery in 45 Mins</span>
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/20 backdrop-blur-md border border-white/35 shadow-md hover:bg-white/30 transition-all">
+                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
+                <span className="truncate text-white font-bold">Delivery in 45 Mins</span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-800 shadow-sm hover:border-cyan-500/50 transition-all">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                <span className="truncate text-slate-200 font-semibold">4.9★ (2,400+ Trips)</span>
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/20 backdrop-blur-md border border-white/35 shadow-md hover:bg-white/30 transition-all">
+                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
+                <span className="truncate text-white font-bold">4.9★ (2,400+ Trips)</span>
               </div>
-            </div>
+            </motion.div>
           </div>
         </Container>
       </section>

@@ -253,8 +253,8 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
                                     <span className="text-xs text-slate-300 line-through drop-shadow">
                                       ₹{vehicle.priceNumeric.toLocaleString('en-IN')}
                                     </span>
-                                    <span className="px-1.5 py-0.2 rounded bg-emerald-600 text-white text-[9px] font-black uppercase">
-                                      {disc.badgeText}
+                                    <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[9px] font-black uppercase shadow-xs">
+                                      {disc.badgeText.includes('%') ? disc.badgeText : `${disc.badgeText} (${disc.discountPercent}% OFF)`}
                                     </span>
                                   </div>
                                 )}

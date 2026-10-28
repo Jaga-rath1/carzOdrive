@@ -7,12 +7,14 @@ import {
   CheckCircle2,
   CreditCard,
   Coins,
-  MessageCircle
+  MessageCircle,
+  Sparkles
 } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
 import { getTodayDateString } from '../../utils/formatters';
+import { useDiscount } from '../../hooks/useDiscount';
 
 export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
   const count = vehicle.quantity !== undefined ? Number(vehicle.quantity) : (vehicle.availableCount ?? vehicle.count ?? (vehicle.isAvailable !== false ? 1 : 0));
@@ -38,7 +40,14 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
       : parseInt(String(vehicle.pricePerDay).replace(/[^0-9]/g, '')) || 2999
   );
 
-  const estimatedTotal = priceNum * daysDiff;
+  const { calculateDiscount, discountPercentage } = useDiscount();
+  const serviceType = vehicle.vehicleType === 'bike' ? 'self-drive-bike' : 'self-drive-car';
+  const priceCalc = calculateDiscount(priceNum, serviceType);
+
+  const originalEstimatedTotal = priceNum * daysDiff;
+  const totalDiscount = priceCalc.isDiscountActive ? priceCalc.discountAmount * daysDiff : 0;
+  const estimatedTotal = originalEstimatedTotal - totalDiscount;
+
   const partialAmount = Math.max(499, Math.round(estimatedTotal * 0.25));
   const remainingAmount = Math.max(0, estimatedTotal - partialAmount);
   const depositText = vehicle.deposit || (vehicle.depositNumeric ? `₹${vehicle.depositNumeric}` : '₹5,000');
@@ -59,13 +68,20 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
       return;
     }
     onOpenQuickBook?.({
-      vehicle,
+      vehicle: {
+        ...vehicle,
+        pricePerDay: priceCalc.isDiscountActive ? priceCalc.finalAmount : priceNum,
+        originalPricePerDay: priceNum,
+        discountApplied: priceCalc.isDiscountActive,
+      },
       type: vehicle.vehicleType || 'vehicle',
       pickupDate,
       returnDate,
       location: effectiveLocation,
       pickupLocation: effectiveLocation,
       paymentMode,
+      totalAmount: estimatedTotal,
+      discountAmount: totalDiscount,
     });
   };
 
@@ -77,12 +93,32 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
             Rental Rate
           </span>
-          <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-3xl sm:text-4xl font-black text-slate-950">
-              {vehicle.priceDisplay || (vehicle.pricePerDay ? (typeof vehicle.pricePerDay === 'string' ? vehicle.pricePerDay : `₹${vehicle.pricePerDay}`) : '₹4,999')}
-            </span>
-            <span className="text-xs font-semibold text-slate-500">/ 24 hours</span>
-          </div>
+          {priceCalc.isDiscountActive && priceCalc.discountAmount > 0 ? (
+            <div className="mt-1">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-sm text-slate-400 line-through font-bold">
+                  ₹{priceNum.toLocaleString('en-IN')}
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider shadow-xs">
+                  <Sparkles className="w-2.5 h-2.5 text-emerald-200" />
+                  <span>{priceCalc.badgeText} ({discountPercentage}% OFF)</span>
+                </span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl sm:text-4xl font-black text-emerald-600">
+                  ₹{priceCalc.finalAmount.toLocaleString('en-IN')}
+                </span>
+                <span className="text-xs font-semibold text-slate-500">/ 24 hours</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-3xl sm:text-4xl font-black text-slate-950">
+                {vehicle.priceDisplay || `₹${priceNum.toLocaleString('en-IN')}`}
+              </span>
+              <span className="text-xs font-semibold text-slate-500">/ 24 hours</span>
+            </div>
+          )}
           {vehicle.color && (
             <span className="text-[11px] font-semibold text-slate-500 block mt-1">
               Color: <strong className="text-slate-800">{vehicle.color}</strong>
@@ -229,11 +265,35 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
             <span className="text-[10px] text-slate-500">Includes all taxes & FASTag</span>
           </div>
           <div className="text-right">
-            <span className="text-base font-black text-slate-900">
-              ₹{estimatedTotal.toLocaleString('en-IN')}
-            </span>
+            {priceCalc.isDiscountActive && totalDiscount > 0 ? (
+              <div>
+                <span className="text-xs text-slate-400 line-through font-medium block">
+                  ₹{originalEstimatedTotal.toLocaleString('en-IN')}
+                </span>
+                <span className="text-base font-black text-emerald-600">
+                  ₹{estimatedTotal.toLocaleString('en-IN')}
+                </span>
+              </div>
+            ) : (
+              <span className="text-base font-black text-slate-900">
+                ₹{estimatedTotal.toLocaleString('en-IN')}
+              </span>
+            )}
           </div>
         </div>
+
+        {/* Highlighted Promotional Discount Cut Row */}
+        {priceCalc.isDiscountActive && totalDiscount > 0 && (
+          <div className="flex items-center justify-between font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-xl border border-emerald-200">
+            <span className="text-[11px] flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Promotional Discount ({discountPercentage}% OFF):</span>
+            </span>
+            <span className="text-xs font-black">
+              -₹{totalDiscount.toLocaleString('en-IN')}
+            </span>
+          </div>
+        )}
 
         <div className="flex items-center justify-between font-semibold pt-0.5">
           <span className="text-slate-600 text-[11px]">

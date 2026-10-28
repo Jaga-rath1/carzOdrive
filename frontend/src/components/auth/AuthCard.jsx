@@ -15,6 +15,7 @@ export const AuthCard = ({
   initialToken = '',
   initialStatusMessage = null,
   onSuccess,
+  onResetSuccess,
   onClose,
   onOtpSent,
   onBackToLogin,
@@ -24,12 +25,11 @@ export const AuthCard = ({
   const [mode, setMode] = useState(initialMode);
 
   const handleBackToLogin = () => {
+    switchMode('login');
     if (onBackToLogin) {
       onBackToLogin();
-    } else if (!isModal) {
+    } else if (!isModal && window.location.pathname !== '/login') {
       navigate('/login');
-    } else {
-      switchMode('login');
     }
   };
 
@@ -179,6 +179,8 @@ export const AuthCard = ({
       } else if (mode === 'forgot-password') {
         const res = await authAPI.forgotPassword(email);
         const devOtp = res?.data?.devOtp || res?.data?.otp;
+        const targetEmail = res?.data?.email || email;
+        setEmail(targetEmail);
         if (devOtp) {
           setResetToken(devOtp);
         }
@@ -186,14 +188,14 @@ export const AuthCard = ({
           type: 'success',
           text: devOtp
             ? `Security OTP dispatched! (Verification Code: ${devOtp}) Please check inbox/spam or proceed below.`
-            : `Security OTP dispatched to ${email}. Please check your inbox and spam folder.`,
+            : `Security OTP dispatched to ${targetEmail}. Please check your inbox and spam folder.`,
         });
 
         if (onOtpSent) {
-          onOtpSent(email, devOtp);
+          onOtpSent(targetEmail, devOtp);
         } else if (!isModal) {
-          navigate(`/reset-password?email=${encodeURIComponent(email)}${devOtp ? `&otp=${devOtp}` : ''}`, {
-            state: { email, otpSent: true, devOtp, token: devOtp },
+          navigate(`/reset-password?email=${encodeURIComponent(targetEmail)}${devOtp ? `&otp=${devOtp}` : ''}`, {
+            state: { email: targetEmail, otpSent: true, devOtp, token: devOtp },
           });
         } else {
           setResendTimer(30);
@@ -221,16 +223,32 @@ export const AuthCard = ({
           setIsLoading(false);
           return;
         }
+
         await authAPI.resetPassword({ token: resetToken, email, password });
+
+        // Clean up sensitive reset inputs
+        setPassword('');
+        setConfirmPassword('');
+        setResetToken('');
+
         setStatusMessage({
           type: 'success',
           text: 'Password reset successful! Redirecting to sign in...',
         });
-        if (onSuccess) {
-          onSuccess({ email, mode: 'reset-password' });
-        } else {
-          setTimeout(() => {
-            if (isModal) {
+
+        if (onResetSuccess) {
+          onResetSuccess(email);
+        }
+
+        setTimeout(() => {
+          if (isModal) {
+            setMode('login');
+            setStatusMessage({
+              type: 'success',
+              text: 'Password reset successful! Please log in with your new password.',
+            });
+          } else {
+            if (window.location.pathname === '/login') {
               setMode('login');
               setStatusMessage({
                 type: 'success',
@@ -238,6 +256,7 @@ export const AuthCard = ({
               });
             } else {
               navigate('/login', {
+                replace: true,
                 state: {
                   email,
                   resetSuccess: true,
@@ -245,8 +264,8 @@ export const AuthCard = ({
                 },
               });
             }
-          }, 1000);
-        }
+          }
+        }, 700);
       }
     } catch (err) {
       if (err.message && err.message.includes('Failed to fetch')) {

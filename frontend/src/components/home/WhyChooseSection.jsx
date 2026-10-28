@@ -36,22 +36,31 @@ export const WHY_CHOOSE_ITEMS = [
 
 export const WhyChooseSection = () => {
   return (
-    <section className="py-12 sm:py-16 bg-[#030712] text-white relative overflow-hidden border-y border-white/10">
+    <section className="py-14 sm:py-20 bg-gradient-to-b from-[#1e40af] via-[#1d4ed8] to-[#1e3a8a] text-white relative overflow-hidden border-y border-white/20">
       {/* Background ambient lighting */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-[480px] h-[480px] bg-cyan-300/30 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-[480px] h-[480px] bg-sky-400/30 rounded-full blur-[140px] pointer-events-none" />
 
-      <Container>
+      {/* Cyber ambient mesh */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-20"
+        style={{
+          backgroundImage: `radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.5) 1px, transparent 1px), linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px, 40px 40px, 40px 40px',
+        }}
+      />
+
+      <Container className="relative z-10">
         {/* Section Heading */}
-        <div className="max-w-3xl mx-auto text-center space-y-3 mb-10 sm:mb-12">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-black tracking-widest uppercase shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+        <div className="max-w-3xl mx-auto text-center space-y-3 mb-10 sm:mb-14">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 border border-white/35 text-white text-xs font-black tracking-widest uppercase shadow-md">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-200" />
             <span>THE CARZODRIVE STANDARD</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white drop-shadow-sm">
             More Than Just a Rental
           </h2>
-          <p className="text-sm sm:text-base text-slate-400 font-medium max-w-xl mx-auto">
+          <p className="text-sm sm:text-base text-blue-100 font-medium max-w-xl mx-auto">
             A concierge mobility standard engineered around safety, transparency, and effortless road freedom.
           </p>
         </div>
@@ -68,43 +77,43 @@ export const WhyChooseSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.12 }}
-                className="group relative p-7 sm:p-8 rounded-3xl bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-blue-500/60 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between overflow-hidden shadow-[0_10px_35px_rgba(0,0,0,0.5)]"
+                className="group relative p-7 sm:p-8 rounded-3xl bg-white/12 hover:bg-white/20 backdrop-blur-xl border border-white/30 hover:border-cyan-300 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between overflow-hidden shadow-[0_15px_35px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_45px_rgba(0,210,255,0.35)]"
               >
                 {/* Large Background Typography Number */}
-                <div className="absolute -top-4 -right-2 text-7xl sm:text-8xl font-black text-white/[0.04] group-hover:text-blue-500/10 transition-colors pointer-events-none select-none font-mono">
+                <div className="absolute -top-4 -right-2 text-7xl sm:text-8xl font-black text-white/15 group-hover:text-white/25 transition-colors pointer-events-none select-none font-mono">
                   {item.num}
                 </div>
 
                 <div className="space-y-6 relative z-10">
                   {/* Top Header: Number Pill & Icon */}
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black tracking-widest text-blue-400 font-mono px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/30">
+                    <span className="text-xs font-black tracking-widest text-white font-mono px-3 py-1 rounded-full bg-white/20 border border-white/35 shadow-xs">
                       {item.num}
                     </span>
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-md">
+                    <div className="w-12 h-12 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-white group-hover:bg-white group-hover:text-blue-700 transition-all duration-300 shadow-md">
                       <Icon className="w-5 h-5" />
                     </div>
                   </div>
 
                   {/* Title & Tagline */}
                   <div className="space-y-1">
-                    <h3 className="text-xl font-black text-white group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-xl font-black text-white group-hover:text-cyan-200 transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-xs font-bold text-blue-300/80 uppercase tracking-wider">
+                    <p className="text-xs font-bold text-cyan-200 uppercase tracking-wider">
                       {item.tagline}
                     </p>
                   </div>
 
                   {/* Description */}
-                  <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-normal">
+                  <p className="text-xs sm:text-sm text-blue-50 leading-relaxed font-normal">
                     {item.desc}
                   </p>
                 </div>
 
                 {/* Subtle Bottom Glow Accent */}
-                <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-[11px] font-bold text-blue-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                <div className="mt-6 pt-4 border-t border-white/20 flex items-center gap-2 text-[11px] font-bold text-cyan-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />
                   <span>Guaranteed Standards</span>
                 </div>
               </motion.div>

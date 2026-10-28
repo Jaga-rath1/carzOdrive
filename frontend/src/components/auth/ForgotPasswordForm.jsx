@@ -12,15 +12,15 @@ export const ForgotPasswordForm = ({
       <div className="space-y-1">
         <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
           <Mail className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Email Address</span>
+          <span>Email Address or Mobile</span>
         </label>
         <div className="relative">
           <input
-            type="email"
+            type="text"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@example.com"
+            placeholder="Registered email or 10-digit mobile"
             className="w-full bg-slate-900 border border-slate-800 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 transition-all focus:outline-none"
           />
         </div>

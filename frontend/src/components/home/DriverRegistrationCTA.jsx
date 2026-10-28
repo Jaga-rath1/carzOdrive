@@ -8,24 +8,24 @@ export const DriverRegistrationCTA = () => {
   return (
     <section className="py-10 sm:py-14 bg-white relative">
       <Container>
-        <div className="relative rounded-3xl sm:rounded-[36px] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-[#030712] text-white p-6 sm:p-10 lg:p-12 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+        <div className="relative rounded-3xl sm:rounded-[36px] overflow-hidden bg-gradient-to-br from-[#1e40af] via-[#1d4ed8] to-[#2563eb] text-white p-6 sm:p-10 lg:p-12 border border-white/30 shadow-[0_20px_50px_rgba(37,99,235,0.25)]">
           {/* Subtle Ambient Lighting Aura */}
-          <div className="absolute top-1/2 left-0 w-96 h-96 bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
+          <div className="absolute top-1/2 left-0 w-96 h-96 bg-cyan-300/30 rounded-full blur-[140px] pointer-events-none" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center relative z-10">
             {/* Left Visual of Professional Driver / Car */}
             <div className="lg:col-span-5 order-2 lg:order-1">
-              <div className="relative rounded-3xl overflow-hidden border border-white/15 shadow-2xl bg-slate-950">
+              <div className="relative rounded-3xl overflow-hidden border border-white/30 shadow-2xl bg-[#1e3a8a]">
                 <img
                   src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=1000&auto=format&fit=crop"
                   alt="Professional CARZODRIVE Driver with executive vehicle"
                   className="w-full h-80 sm:h-96 object-cover"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1e3a8a] via-[#1e3a8a]/30 to-transparent" />
 
                 {/* Floating Driver Trust Card */}
-                <div className="absolute bottom-5 left-5 right-5 p-4 rounded-2xl bg-slate-950/90 backdrop-blur-xl border border-white/15 shadow-xl flex items-center justify-between">
+                <div className="absolute bottom-5 left-5 right-5 p-4 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/35 shadow-xl flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
                       <Award className="w-5 h-5" />

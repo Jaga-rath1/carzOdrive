@@ -4,6 +4,39 @@ const logger = require('./logger');
 
 let transporter = null;
 
+function resetTransporter() {
+  if (transporter && typeof transporter.close === 'function') {
+    try {
+      transporter.close();
+    } catch (_) {}
+  }
+  transporter = null;
+}
+
+function getFormattedFrom(customFrom) {
+  const rawUser = process.env.SMTP_USER || process.env.EMAIL_USER || '';
+  const user = rawUser.trim();
+  const rawFrom = (customFrom || process.env.EMAIL_FROM || '').replace(/^["']|["']$/g, '').trim();
+
+  if (rawFrom) {
+    const match = rawFrom.match(/^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/);
+    if (match) {
+      const name = (match[1] || 'CARZODRIVE Concierge').trim();
+      const addr = match[2].trim();
+      return `"${name}" <${addr}>`;
+    }
+    if (rawFrom.includes('@')) {
+      return `"CARZODRIVE Concierge" <${rawFrom}>`;
+    }
+  }
+
+  if (user) {
+    return `"CARZODRIVE Concierge" <${user}>`;
+  }
+
+  return '"CARZODRIVE Concierge" <no-reply@carzodrive.com>';
+}
+
 function getTransporter() {
   if (transporter) return transporter;
 
@@ -26,16 +59,19 @@ function getTransporter() {
       port: isGmail ? 465 : port,
       secure: isGmail ? true : isSecure,
       auth: { user, pass },
+      pool: true,
+      maxConnections: 3,
+      maxMessages: 100,
       tls: {
         rejectUnauthorized: false,
       },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
     };
 
     transporter = nodemailer.createTransport(transportConfig);
-    logger.success(`✓ Nodemailer configured with ${isGmail ? 'Direct Gmail SSL (465)' : `${host}:${port}`} [User: ${user}]`);
+    logger.success(`✓ Nodemailer configured with ${isGmail ? 'Direct Gmail SSL (465) [Pooled]' : `${host}:${port}`} [User: ${user}]`);
   } else {
     // Development / fallback transporter using JSON transport or logging
     transporter = nodemailer.createTransport({
@@ -77,8 +113,7 @@ async function verifyMailer() {
 async function sendPasswordResetOtp({ email, name = 'Customer', otp }) {
   const rawUser = process.env.SMTP_USER || process.env.EMAIL_USER || '';
   const user = rawUser.trim();
-  const cleanEnvFrom = (process.env.EMAIL_FROM || '').replace(/^["']|["']$/g, '').trim();
-  const from = cleanEnvFrom || (user ? `"CARZODRIVE Concierge" <${user}>` : '"CARZODRIVE Concierge" <no-reply@carzodrive.com>');
+  const from = getFormattedFrom();
   const subject = `CARZODRIVE Verification Code: ${otp}`;
 
   const textContent = `Hello ${name},\n\nYour 6-digit verification code to reset your CARZODRIVE password is:\n\n${otp}\n\nThis OTP is valid for 15 minutes. If you did not request this, please ignore this email or contact support.\n\nWarm regards,\nCARZODRIVE Odisha Mobility Team`;
@@ -132,11 +167,18 @@ async function sendPasswordResetOtp({ email, name = 'Customer', otp }) {
       subject,
       text: textContent,
       html: htmlContent,
+      priority: 'high',
+      headers: {
+        'X-Priority': '1 (Highest)',
+        'X-MSMail-Priority': 'High',
+        Importance: 'High',
+      },
     });
     logger.success(`✓ Password reset OTP sent successfully to: ${email} [MessageId: ${info.messageId}]`);
     return { success: true, messageId: info.messageId, otp };
   } catch (err) {
     logger.error(`Email sending error for ${email}:`, err.message);
+    resetTransporter();
     return { success: false, error: err.message, otp };
   }
 }

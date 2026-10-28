@@ -32,17 +32,22 @@ const logout = asyncHandler(async (req, res) => {
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
-  const { otp, email } = await authService.initiatePasswordReset(req.body.email);
+  const identifier = req.body.email || req.body.phone || req.body.identifier;
+  const result = await authService.initiatePasswordReset(identifier);
+
+  const message = result.emailSent
+    ? `A 6-digit OTP verification code has been dispatched to ${result.email}. Please check your inbox and spam folder.`
+    : `Verification code generated. If you did not receive the email, please check your spam folder or contact support.`;
 
   return success(
     res,
     {
-      email,
-      emailSent: true,
-      otp,
-      devOtp: otp,
+      email: result.email,
+      emailSent: result.emailSent,
+      otp: result.otp,
+      devOtp: result.otp,
     },
-    'A 6-digit OTP verification code has been dispatched to your email address. Please check your inbox and spam folder.'
+    message
   );
 });
 

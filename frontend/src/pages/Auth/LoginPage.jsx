@@ -8,10 +8,16 @@ import heroBgImage from '../../assets/carzodrive-hero-bg.jpg';
 export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [currentUser, setCurrentUser] = React.useState(() => getCurrentUser());
-
   const prefilledEmail = location.state?.email || '';
   const resetSuccessMsg = location.state?.message || (location.state?.resetSuccess ? 'Password reset successful! Please log in with your new password.' : null);
+
+  const [currentUser, setCurrentUser] = React.useState(() => {
+    if (location.state?.resetSuccess) {
+      clearAuthSession();
+      return null;
+    }
+    return getCurrentUser();
+  });
 
   React.useEffect(() => {
     if (location.state?.resetSuccess) {
@@ -105,6 +111,7 @@ export const LoginPage = () => {
           </div>
         ) : (
           <AuthCard
+            key={`${prefilledEmail}-${resetSuccessMsg ? 'reset-success' : 'normal'}`}
             initialMode="login"
             initialEmail={prefilledEmail}
             initialStatusMessage={resetSuccessMsg ? { type: 'success', text: resetSuccessMsg } : null}
