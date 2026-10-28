@@ -85,6 +85,42 @@ export const HeroSearchConsole = ({
     navigate('/book-on-whatsapp', { state: bookingPayload });
   };
 
+  const handleViewDetails = (e) => {
+    if (e?.preventDefault) e.preventDefault();
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+    const targetSlug =
+      currentSelectedItem?.slug ||
+      currentSelectedItem?.catalogId ||
+      currentSelectedItem?.rawId ||
+      currentSelectedItem?._id ||
+      currentSelectedItem?.id;
+
+    if (activeTab === 'self-drive-car' || activeTab === 'car-with-driver') {
+      if (targetSlug) {
+        navigate(`/vehicle/${targetSlug}`);
+      } else {
+        navigate(activeMeta.route);
+      }
+    } else if (activeTab === 'self-drive-bike') {
+      if (targetSlug) {
+        navigate(`/bike/${targetSlug}`);
+      } else {
+        navigate('/bike-rental');
+      }
+    } else if (activeTab === 'tour-packages') {
+      if (targetSlug) {
+        navigate(`/tour/${targetSlug}`);
+      } else {
+        navigate('/tours-packages');
+      }
+    } else {
+      navigate(activeMeta.route);
+    }
+  };
+
   const handleOnlineBookingSubmit = (e) => {
     if (e?.preventDefault) e.preventDefault();
     if (!isAuthenticated) {
@@ -104,7 +140,7 @@ export const HeroSearchConsole = ({
       {/* Ambient Royal Blue Top Accent Line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-600 to-transparent shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
 
-      {/* Console Header with Direct Page Link */}
+      {/* Console Header with View Details Action (Auth Guarded) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-200/80 gap-2">
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5 shrink-0">
@@ -119,14 +155,24 @@ export const HeroSearchConsole = ({
           </span>
         </div>
 
-        <Link
-          to={activeMeta.route}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200/80 text-[11px] sm:text-xs font-black transition-all group/link shrink-0 shadow-xs hover:shadow-sm"
-          title={`Open full ${activeService.label} page`}
-        >
-          <span>Open {activeService.label} Page</span>
-          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-1" />
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleViewDetails}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200/80 text-[11px] sm:text-xs font-black transition-all group/link shrink-0 shadow-xs hover:shadow-sm cursor-pointer"
+            title={`View Details for ${currentSelectedItem?.name || activeService.label}`}
+          >
+            <span>View Details</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-1" />
+          </button>
+          <Link
+            to={activeMeta.route}
+            className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-blue-600 transition-colors px-1"
+            title={`Explore all ${activeService.label} models`}
+          >
+            <span>All Fleet →</span>
+          </Link>
+        </div>
       </div>
 
       {/* SEARCH FORM */}
@@ -206,8 +252,19 @@ export const HeroSearchConsole = ({
             <span>Free cancellation up to 6 hours before pickup</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
-            {/* OPTION 1: BOOK ON WHATSAPP (NAVIGATES TO DEDICATED BOOKING PAGE) */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+            {/* OPTION 1: VIEW DETAILS (AUTH-GUARDED) */}
+            <button
+              type="button"
+              onClick={handleViewDetails}
+              className="w-full sm:w-auto px-4 py-3 rounded-xl font-bold text-xs sm:text-sm text-slate-800 hover:text-blue-700 bg-slate-100 hover:bg-slate-200/90 border border-slate-300 shadow-xs transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+              title="View full vehicle specifications & details"
+            >
+              <span>View Details</span>
+              <ArrowRight className="w-4 h-4 text-blue-600 transition-transform group-hover:translate-x-0.5" />
+            </button>
+
+            {/* OPTION 2: BOOK ON WHATSAPP (NAVIGATES TO DEDICATED BOOKING PAGE) */}
             <button
               type="button"
               onClick={handleBookOnWhatsApp}

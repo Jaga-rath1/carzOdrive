@@ -8,8 +8,10 @@ import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { vehiclesAPI, bikesAPI } from '../../services/api';
 import { resolveVehicleImageUrl, getVehicleFallbackImage } from '../../utils/documentUtils';
 import { useDiscount } from '../../hooks/useDiscount';
+import { useAuth } from '../../hooks/useAuth';
 
 export const FeaturedVehiclesSection = ({ onQuickBook }) => {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [activeCategory, setActiveCategory] = useState('Available Now');
   const [vehicles, setVehicles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -314,6 +316,12 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
                       <div className="flex items-center gap-2 pt-1">
                         <Link
                           to={detailTarget}
+                          onClick={(e) => {
+                            if (!isAuthenticated) {
+                              e.preventDefault();
+                              openAuthModal('login');
+                            }
+                          }}
                           className="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 hover:border-blue-500 font-bold text-xs text-slate-700 hover:text-blue-600 transition-all cursor-pointer text-center bg-slate-50 hover:bg-white"
                         >
                           View Details

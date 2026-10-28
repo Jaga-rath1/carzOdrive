@@ -366,11 +366,11 @@ export const Hero = ({ onOpenQuickBook }) => {
       />
 
       {/* HERO SECTION WITH BOLD 3D CARZODRIVE PNG EMBLEM & BOOKING CONSOLE */}
-      <section className="relative z-10 w-full pt-[96px] sm:pt-[106px] md:pt-[114px] pb-8 sm:pb-12 border-b border-slate-200/80">
+      <section className="relative z-10 w-full pt-[78px] xs:pt-[84px] sm:pt-[100px] md:pt-[114px] pb-6 sm:pb-12 border-b border-slate-200/80">
         <Container>
           <div className="w-full max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center text-center">
             {/* 1. SCROLL-TRIGGERED 3D METALLIC CARZODRIVE PNG EMBLEM */}
-            <div className="w-full flex items-center justify-center pt-2 pb-2 overflow-visible">
+            <div className="w-full flex items-center justify-center pt-1 pb-1 sm:pt-2 sm:pb-2 overflow-visible">
               <motion.div
                 style={{ scale: logoScale, y: logoY, opacity: logoOpacity }}
                 className="w-full max-w-xl sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex items-center justify-center will-change-transform"
@@ -378,7 +378,7 @@ export const Hero = ({ onOpenQuickBook }) => {
                 <img
                   src={carzodriveLogo}
                   alt="CARZODRIVE — Drive Your World"
-                  className="w-auto h-auto max-h-[240px] sm:max-h-[300px] md:max-h-[360px] lg:max-h-[420px] xl:max-h-[460px] scale-x-[1.08] sm:scale-x-[1.12] object-contain drop-shadow-[0_24px_50px_rgba(2,132,199,0.3)] filter brightness-[1.02] contrast-[1.05] select-none block origin-center transition-all"
+                  className="w-auto h-auto max-h-[140px] xs:max-h-[180px] sm:max-h-[260px] md:max-h-[340px] lg:max-h-[420px] xl:max-h-[460px] max-w-[94vw] sm:max-w-full scale-x-[1.04] sm:scale-x-[1.12] object-contain drop-shadow-[0_16px_36px_rgba(2,132,199,0.25)] sm:drop-shadow-[0_24px_50px_rgba(2,132,199,0.3)] filter brightness-[1.02] contrast-[1.05] select-none block origin-center transition-all"
                   loading="eager"
                 />
               </motion.div>
@@ -436,21 +436,21 @@ export const Hero = ({ onOpenQuickBook }) => {
             {/* 4. TRUST GUARANTEE PILLS */}
             <motion.div
               style={{ y: pillsY }}
-              className="w-full grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-slate-700 pt-1 will-change-transform"
+              className="w-full grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-1.5 sm:gap-3 text-[9.5px] xs:text-[10px] sm:text-xs font-semibold text-slate-700 pt-1 will-change-transform"
             >
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 <span className="truncate text-slate-800 font-bold">100% Insured Fleet</span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 <span className="truncate text-slate-800 font-bold">₹0 Security Deposit</span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 <span className="truncate text-slate-800 font-bold">Delivery in 45 Mins</span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xs hover:border-blue-500/50 hover:text-blue-700 transition-all">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 <span className="truncate text-slate-800 font-bold">4.9★ (2,400+ Trips)</span>
               </div>

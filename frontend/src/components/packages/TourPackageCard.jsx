@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import { Clock, MapPin, ArrowRight, CheckCircle2, Sparkles, Eye } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getTourWhatsAppMessage } from '../../utils/whatsapp';
+import { useAuth } from '../../hooks/useAuth';
 
 export const TourPackageCard = ({ tour, onOpenQuickBook, onQuickLook }) => {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const detailUrl = `/tour/${tour.id || tour.slug || tour._id}`;
 
   const handleBookNow = (e) => {
@@ -101,6 +103,12 @@ export const TourPackageCard = ({ tour, onOpenQuickBook, onQuickLook }) => {
           <div className="flex items-center gap-2">
             <Link
               to={detailUrl}
+              onClick={(e) => {
+                if (!isAuthenticated) {
+                  e.preventDefault();
+                  openAuthModal('login');
+                }
+              }}
               className="flex-1 py-2.5 px-3 rounded-xl font-black text-xs text-slate-800 bg-slate-100 hover:bg-slate-200 hover:text-blue-600 transition-all cursor-pointer flex items-center justify-center gap-1.5 group/btn border border-slate-200"
             >
               <Eye className="w-3.5 h-3.5" />

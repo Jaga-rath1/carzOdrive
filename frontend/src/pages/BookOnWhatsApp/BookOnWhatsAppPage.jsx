@@ -209,7 +209,8 @@ export const BookOnWhatsAppPage = () => {
         }}
       />
 
-      <Container className="relative z-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+      <Container className="relative z-10">
+        <div className="w-full max-w-6xl xl:max-w-7xl mx-auto">
         {/* 1. TOP HEADER & NAVIGATION BAR WITH BACK BUTTON */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8 pb-5 border-b border-slate-200">
           <div className="flex items-center gap-3">
@@ -639,6 +640,7 @@ export const BookOnWhatsAppPage = () => {
             <div className="text-xs font-bold text-slate-800 mt-1">Easy Cancellation</div>
             <div className="text-[11px] text-slate-500 mt-0.5">Up to 6 hours before pickup</div>
           </div>
+        </div>
         </div>
       </Container>
     </div>

@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { Gauge, Fuel, Bike } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
+import { useAuth } from '../../hooks/useAuth';
 
 export const BikeRideCard = ({ bike, onOpenQuickBook }) => {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const detailTarget = `/bike/${bike.id}`;
   const count = bike.quantity !== undefined ? Number(bike.quantity) : (bike.availableCount ?? bike.count ?? (bike.isAvailable !== false ? 1 : 0));
   const isAvailable = bike.isAvailable !== false && count > 0 && bike.availabilityStatus !== 'UNAVAILABLE' && bike.availabilityStatus !== 'Currently Unavailable';
@@ -12,7 +14,16 @@ export const BikeRideCard = ({ bike, onOpenQuickBook }) => {
   return (
     <div className="group rounded-3xl bg-white border border-slate-200/80 hover:border-blue-500/50 transition-all duration-500 shadow-card hover:shadow-card-hover overflow-hidden flex flex-col justify-between">
       {/* Bike Image Header */}
-      <Link to={detailTarget} className="relative aspect-[16/10] overflow-hidden bg-slate-100 block">
+      <Link
+        to={detailTarget}
+        onClick={(e) => {
+          if (!isAuthenticated) {
+            e.preventDefault();
+            openAuthModal('login');
+          }
+        }}
+        className="relative aspect-[16/10] overflow-hidden bg-slate-100 block"
+      >
         <img
           src={bike.image}
           alt={bike.name}
@@ -96,6 +107,12 @@ export const BikeRideCard = ({ bike, onOpenQuickBook }) => {
         <div className="flex items-center gap-2 pt-1">
           <Link
             to={detailTarget}
+            onClick={(e) => {
+              if (!isAuthenticated) {
+                e.preventDefault();
+                openAuthModal('login');
+              }
+            }}
             className="flex-1 py-3 px-2 rounded-xl border border-slate-200 hover:border-blue-500 font-bold text-xs text-slate-700 hover:text-blue-600 transition-all cursor-pointer text-center bg-slate-50 hover:bg-white"
           >
             View Details

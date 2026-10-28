@@ -6,8 +6,10 @@ import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getTourWhatsAppMessage } from '../../utils/whatsapp';
 import { packagesAPI } from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
 
 export const ToursPreviewSection = () => {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -155,6 +157,12 @@ export const ToursPreviewSection = () => {
                     <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
                       <Link
                         to={detailUrl}
+                        onClick={(e) => {
+                          if (!isAuthenticated) {
+                            e.preventDefault();
+                            openAuthModal('login');
+                          }
+                        }}
                         className="flex-1 py-3 px-3 rounded-xl font-black text-xs text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all shadow-md flex items-center justify-center gap-2 group/btn"
                       >
                         <span>View Details</span>

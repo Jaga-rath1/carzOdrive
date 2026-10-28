@@ -4,8 +4,10 @@ import { Users, Fuel, Gauge } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { getVehicleFallbackImage } from '../../utils/documentUtils';
+import { useAuth } from '../../hooks/useAuth';
 
 export const CarRideCard = ({ vehicle, onOpenQuickBook }) => {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const detailTarget = `/vehicle/${vehicle.id}`;
   const count = vehicle.quantity !== undefined ? Number(vehicle.quantity) : (vehicle.availableCount ?? vehicle.count ?? (vehicle.isAvailable !== false ? 1 : 0));
   const isAvailable = vehicle.isAvailable !== false && count > 0 && vehicle.availabilityStatus !== 'UNAVAILABLE' && vehicle.availabilityStatus !== 'Currently Unavailable';
@@ -19,7 +21,16 @@ export const CarRideCard = ({ vehicle, onOpenQuickBook }) => {
       }`}
     >
       {/* Car Image Header */}
-      <Link to={detailTarget} className="relative h-60 w-full overflow-hidden bg-slate-100 block">
+      <Link
+        to={detailTarget}
+        onClick={(e) => {
+          if (!isAuthenticated) {
+            e.preventDefault();
+            openAuthModal('login');
+          }
+        }}
+        className="relative h-60 w-full overflow-hidden bg-slate-100 block"
+      >
         <img
           src={vehicle.image}
           alt={vehicle.name}
@@ -111,6 +122,12 @@ export const CarRideCard = ({ vehicle, onOpenQuickBook }) => {
         <div className="flex items-center gap-2 pt-1">
           <Link
             to={detailTarget}
+            onClick={(e) => {
+              if (!isAuthenticated) {
+                e.preventDefault();
+                openAuthModal('login');
+              }
+            }}
             className="flex-1 py-3 px-2 rounded-xl border border-slate-200 hover:border-blue-500 font-bold text-xs text-slate-700 hover:text-blue-600 transition-all cursor-pointer text-center bg-slate-50 hover:bg-white"
           >
             View Details
