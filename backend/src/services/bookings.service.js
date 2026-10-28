@@ -9,6 +9,7 @@ function Vehicle() { return require('../models/vehicle.model').Vehicle; }
 function Bike() { return require('../models/bike.model').Bike; }
 function Driver() { return require('../models/driver.model').Driver; }
 function TourPackage() { return require('../models/package.model').TourPackage; }
+function User() { return require('../models/user.model').User; }
 
 // Validate that no overlapping confirmed booking exists for a resource
 async function assertNoOverlap(filter) {
@@ -940,10 +941,29 @@ async function getBooking(bookingId, userId, userRole) {
 async function listBookings(query, userId, userRole) {
   const { page, limit, skip } = getPagination(query);
   const filter = {};
+  const andClauses = [];
+
   if (!ADMIN_ROLES.includes(userRole)) {
-    if (userRole === 'VENDOR') filter.vendorId = query.vendorId || userId;
-    else filter.customerId = userId;
+    if (userRole === 'VENDOR') {
+      filter.vendorId = query.vendorId || userId;
+    } else {
+      const userConditions = [{ customerId: userId }];
+      try {
+        const user = await User().findById(userId).lean();
+        if (user?.email) {
+          userConditions.push({ guestEmail: new RegExp(`^${user.email.trim()}$`, 'i') });
+        }
+        if (user?.phone) {
+          const digits = user.phone.replace(/[^0-9]/g, '').slice(-10);
+          if (digits.length >= 6) {
+            userConditions.push({ guestPhone: new RegExp(digits, 'i') });
+          }
+        }
+      } catch (_) {}
+      andClauses.push({ $or: userConditions });
+    }
   }
+
   if (query.status && query.status !== 'ALL') filter.status = query.status;
   if (query.serviceType && query.serviceType !== 'ALL') filter.serviceType = query.serviceType;
   if (query.paymentStatus && query.paymentStatus !== 'ALL') filter.paymentStatus = query.paymentStatus;
@@ -951,14 +971,20 @@ async function listBookings(query, userId, userRole) {
 
   if (query.search || query.q) {
     const s = new RegExp(query.search || query.q, 'i');
-    filter.$or = [
-      { bookingNumber: s },
-      { guestName: s },
-      { guestPhone: s },
-      { guestEmail: s },
-      { vehicleName: s },
-      { transactionId: s },
-    ];
+    andClauses.push({
+      $or: [
+        { bookingNumber: s },
+        { guestName: s },
+        { guestPhone: s },
+        { guestEmail: s },
+        { vehicleName: s },
+        { transactionId: s },
+      ],
+    });
+  }
+
+  if (andClauses.length > 0) {
+    filter.$and = andClauses;
   }
 
   const [bookings, total] = await Promise.all([
@@ -1127,19 +1153,55 @@ async function getBookingByCode(bookingCode) {
   return booking;
 }
 
-async function lookupBookings(query) {
-  const filter = {};
-  if (query.phone) filter.guestPhone = new RegExp(query.phone.replace(/[^0-9]/g, '').slice(-10), 'i');
-  if (query.email) filter.guestEmail = query.email.toLowerCase().trim();
-  if (query.code) {
-    filter.$or = [
-      { bookingNumber: query.code.trim().toUpperCase() },
-      { transactionId: query.code.trim() },
-    ];
+async function lookupBookings(queryInput) {
+  let searchStr = '';
+  let phone = '';
+  let email = '';
+  let code = '';
+
+  if (typeof queryInput === 'string') {
+    searchStr = queryInput.trim();
+  } else if (queryInput && typeof queryInput === 'object') {
+    searchStr = (queryInput.query || queryInput.q || '').trim();
+    phone = (queryInput.phone || '').trim();
+    email = (queryInput.email || '').trim();
+    code = (queryInput.code || '').trim();
   }
-  if (!filter.guestPhone && !filter.guestEmail && !filter.$or) {
+
+  const conditions = [];
+
+  // 1. Explicit phone or query containing phone
+  const targetPhone = phone || searchStr;
+  const cleanDigits = targetPhone.replace(/[^0-9]/g, '');
+  if (cleanDigits.length >= 10) {
+    const tenDigit = cleanDigits.slice(-10);
+    conditions.push({ guestPhone: new RegExp(tenDigit, 'i') });
+  } else if (cleanDigits.length >= 6 && !searchStr.includes('@') && !searchStr.toUpperCase().startsWith('CZ')) {
+    conditions.push({ guestPhone: new RegExp(cleanDigits, 'i') });
+  }
+
+  // 2. Explicit email or search containing @
+  const targetEmail = email || (searchStr.includes('@') ? searchStr : '');
+  if (targetEmail) {
+    conditions.push({ guestEmail: new RegExp(`^${targetEmail.toLowerCase().trim()}$`, 'i') });
+  }
+
+  // 3. Explicit code / transaction ID or general search
+  const targetCode = code || searchStr;
+  if (targetCode) {
+    const escaped = targetCode.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+    conditions.push({ bookingNumber: new RegExp(escaped, 'i') });
+    conditions.push({ transactionId: new RegExp(escaped, 'i') });
+    if (!targetCode.includes('@') && cleanDigits.length < 10) {
+      conditions.push({ guestName: new RegExp(escaped, 'i') });
+    }
+  }
+
+  if (conditions.length === 0) {
     return [];
   }
+
+  const filter = { $or: conditions };
   const bookings = await Booking.find(filter)
     .populate('customerId', 'name email phone')
     .populate('vehicleId', 'name make model brand image')

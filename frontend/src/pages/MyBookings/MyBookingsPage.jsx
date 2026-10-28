@@ -121,29 +121,29 @@ export const MyBookingsPage = () => {
       {/* Light Ambient Glows */}
       <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[300px] bg-gradient-to-r from-blue-100/50 via-sky-100/40 to-indigo-100/50 rounded-full blur-[110px] pointer-events-none" />
 
-      <Container className="max-w-4xl space-y-8 relative z-10">
+      <Container className="w-full max-w-6xl xl:max-w-7xl mx-auto space-y-8 relative z-10">
         {/* Page Hero */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shadow-xs">
             <CalendarCheck className="w-4 h-4 text-blue-600" />
             <span>Official Booking & Voucher Portal</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight">
             My Bookings & Payment History
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
-            View your active vehicle reservations, download confirmed booking receipts, or track payment status in real-time.
+          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto">
+            View your confirmed vehicle reservations, track real-time advance & balance payments, download official GST Tax Invoices, or print travel vouchers.
           </p>
         </div>
 
         {/* Lookup Box */}
-        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.05)]">
+        <div className="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-6 shadow-[0_4px_25px_rgba(0,0,0,0.05)] max-w-3xl mx-auto w-full">
           <form onSubmit={handleLookup} className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Enter Booking Code (e.g. CZ-...) or 10-digit Phone Number"
+                placeholder="Enter Booking Code (e.g. CZ-...), 10-digit Phone, or Email"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-950 placeholder-slate-400 outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600 transition-all font-medium"
@@ -152,7 +152,7 @@ export const MyBookingsPage = () => {
             <button
               type="submit"
               disabled={isLoading || !searchQuery.trim()}
-              className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2 shrink-0"
             >
               {isLoading ? (
                 <>
@@ -185,7 +185,7 @@ export const MyBookingsPage = () => {
         ) : bookings.length > 0 ? (
           <div className="space-y-6">
             <div className="flex items-center justify-between text-xs text-slate-600 font-semibold px-1">
-              <span>Found {bookings.length} reservation{bookings.length > 1 ? 's' : ''}</span>
+              <span>Found {bookings.length} reservation{bookings.length > 1 ? 's' : ''} & payment record{bookings.length > 1 ? 's' : ''}</span>
               <button
                 type="button"
                 onClick={() => window.print()}

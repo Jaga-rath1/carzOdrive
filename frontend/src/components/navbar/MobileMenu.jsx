@@ -239,7 +239,7 @@ export const MobileMenu = ({ isOpen, onClose, onOpenQuickBook, onOpenAuth, curre
                       className="w-full py-2.5 px-3 rounded-xl font-bold text-xs text-cyan-300 hover:text-white bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center gap-2 transition-all"
                     >
                       <CalendarCheck className="w-4 h-4 text-cyan-400" />
-                      <span>View My Bookings</span>
+                      <span>Bookings & Payment History</span>
                     </Link>
                   )}
 

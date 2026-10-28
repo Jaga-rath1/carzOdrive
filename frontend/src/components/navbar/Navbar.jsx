@@ -209,7 +209,7 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
                               className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
                             >
                               <CalendarCheck className="w-4 h-4 text-cyan-400" />
-                              <span>My Bookings</span>
+                              <span>Bookings & Payment History</span>
                             </Link>
                           )}
 
