@@ -29,7 +29,7 @@ export const CarRidePerks = () => {
   return (
     <section className="py-12 bg-slate-50/80 border-b border-slate-200/80">
       <Container>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
           {perks.map((p, idx) => {
             const Icon = p.icon;
             return (

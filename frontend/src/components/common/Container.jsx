@@ -8,15 +8,15 @@ export const Container = ({
   ...props
 }) => {
   const sizeStyles = {
-    sm: 'max-w-4xl',
-    default: 'max-w-7xl',
-    wide: 'max-w-[1440px]',
-    full: 'max-w-full',
+    sm: 'max-w-4xl mx-auto',
+    default: 'w-full',
+    wide: 'w-full',
+    full: 'w-full',
   };
 
   return (
     <Component
-      className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${sizeStyles[size]} ${className}`}
+      className={`w-full px-4 sm:px-6 lg:px-10 xl:px-14 ${sizeStyles[size]} ${className}`}
       {...props}
     >
       {children}

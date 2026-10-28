@@ -23,7 +23,7 @@ export const ForgotPasswordPage = () => {
       </div>
 
       {/* Top Navigation Bar: Back to Login & Home */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full flex items-center justify-between">
+      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 xl:px-14 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Link
             to="/login"

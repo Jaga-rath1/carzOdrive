@@ -367,18 +367,18 @@ export const Hero = ({ onOpenQuickBook }) => {
 
       {/* HERO SECTION WITH BOLD 3D CARZODRIVE PNG EMBLEM & BOOKING CONSOLE */}
       <section className="relative z-10 w-full pt-[96px] sm:pt-[106px] md:pt-[114px] pb-8 sm:pb-12 border-b border-slate-200/80">
-        <Container className="w-full px-3.5 sm:px-6 lg:px-8">
-          <div className="w-full max-w-4xl lg:max-w-5xl mx-auto flex flex-col items-center text-center">
+        <Container>
+          <div className="w-full max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center text-center">
             {/* 1. SCROLL-TRIGGERED 3D METALLIC CARZODRIVE PNG EMBLEM */}
             <div className="w-full flex items-center justify-center pt-2 pb-2 overflow-visible">
               <motion.div
                 style={{ scale: logoScale, y: logoY, opacity: logoOpacity }}
-                className="w-full max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl flex items-center justify-center will-change-transform"
+                className="w-full max-w-xl sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex items-center justify-center will-change-transform"
               >
                 <img
                   src={carzodriveLogo}
                   alt="CARZODRIVE — Drive Your World"
-                  className="w-auto h-auto max-h-[220px] sm:max-h-[270px] md:max-h-[320px] lg:max-h-[360px] scale-x-[1.08] sm:scale-x-[1.12] object-contain drop-shadow-[0_24px_50px_rgba(2,132,199,0.3)] filter brightness-[1.02] contrast-[1.05] select-none block origin-center transition-all"
+                  className="w-auto h-auto max-h-[240px] sm:max-h-[300px] md:max-h-[360px] lg:max-h-[420px] xl:max-h-[460px] scale-x-[1.08] sm:scale-x-[1.12] object-contain drop-shadow-[0_24px_50px_rgba(2,132,199,0.3)] filter brightness-[1.02] contrast-[1.05] select-none block origin-center transition-all"
                   loading="eager"
                 />
               </motion.div>
