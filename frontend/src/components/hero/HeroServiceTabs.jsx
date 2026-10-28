@@ -57,10 +57,10 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
                 {/* 1. The 3D Service App Tile directly from user's image */}
                 <div className="w-full flex items-center justify-center pt-0.5">
                   <div
-                    className={`relative w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-2xl overflow-hidden transition-all duration-300 flex items-center justify-center ${
+                    className={`relative w-18 h-18 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden transition-all duration-300 flex items-center justify-center ${
                       isActive
-                        ? 'ring-2 ring-white/90 shadow-[0_6px_22px_rgba(0,0,0,0.4)] scale-[1.04]'
-                        : 'border border-slate-700/60 shadow-md group-hover:scale-105 group-hover:shadow-xl'
+                        ? 'ring-2 ring-white/90 shadow-[0_8px_25px_rgba(0,0,0,0.45)] scale-[1.05]'
+                        : 'border border-slate-700/60 shadow-lg group-hover:scale-105 group-hover:shadow-2xl'
                     }`}
                   >
                     <img
