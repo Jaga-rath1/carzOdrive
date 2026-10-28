@@ -189,23 +189,31 @@ export const HeroFleetSelector = ({
         </select>
       )}
 
-      {/* Dynamic availability notice below selector */}
+      {/* Dynamic availability notice + Live Cloudinary Vehicle Thumbnail */}
       {selectedCarObj && (
-        <div className="pt-0.5">
-          {isSelectedUnavailable ? (
-            <div className="text-[10px] font-bold text-rose-600 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3 shrink-0 text-rose-600" />
-              <span>Not available right now (0 in stock). Choose an available car.</span>
-            </div>
-          ) : (
-            <div className="text-[10px] font-semibold text-emerald-700 flex items-center justify-between">
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                {selectedCarObj.availableCount || 1} available for instant pickup
-              </span>
-              {selectedCarObj.seats && (
-                <span className="text-slate-500 text-[9.5px] font-medium">{selectedCarObj.seats}</span>
-              )}
+        <div className="pt-1.5 flex items-center justify-between gap-2 border-t border-slate-200/60 mt-1">
+          <div className="min-w-0 flex-1">
+            {isSelectedUnavailable ? (
+              <div className="text-[10px] font-bold text-rose-600 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3 shrink-0 text-rose-600" />
+                <span className="truncate">Not available right now (0 in stock).</span>
+              </div>
+            ) : (
+              <div className="text-[10px] font-semibold text-emerald-700 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span className="truncate">{selectedCarObj.availableCount || 1} available • {selectedCarObj.seats || '5 Seats'}</span>
+              </div>
+            )}
+          </div>
+
+          {selectedCarObj.image && (
+            <div className="w-12 h-8 rounded bg-white border border-slate-200/90 p-0.5 shrink-0 flex items-center justify-center overflow-hidden shadow-xs">
+              <img
+                src={selectedCarObj.image}
+                alt={selectedCarObj.name}
+                className="w-full h-full object-contain"
+                loading="lazy"
+              />
             </div>
           )}
         </div>

@@ -5,7 +5,7 @@ import { CheckCircle2 } from 'lucide-react';
 import { Container } from '../common/Container';
 import carzodriveLogo from '../../assets/carzodrive-logo.png';
 import { BHUBANESWAR_LOCATIONS, SERVICE_OPTIONS } from '../../config/bookingConfig';
-import { vehiclesAPI, bikesAPI, packagesAPI } from '../../services/api';
+import { vehiclesAPI, bikesAPI, packagesAPI, driversAPI } from '../../services/api';
 import { getTodayDateString, getCurrentTimeString } from '../../utils/formatters';
 import { useAuth } from '../../hooks/useAuth';
 import { HeroServiceTabs } from './HeroServiceTabs';
@@ -53,13 +53,14 @@ const SERVICE_META = {
   },
 };
 
+// Real Database & Cloudinary vehicles as instant high-resolution defaults
 const FALLBACK_CARS = [
-  { id: 'swift-2026', name: 'Swift 2026 New Model', color: 'Magma Grey', pricePerDay: 1499, priceDisplay: '₹1,499', seats: '5 Seats', quantity: 5, availableCount: 5, isAvailable: true, image: '/images/vehicles/swift-2026-grey.jpg' },
-  { id: 'baleno-alpha', name: 'Maruti Baleno Alpha', color: 'Nexa Blue', pricePerDay: 1599, priceDisplay: '₹1,599', seats: '5 Seats', quantity: 4, availableCount: 4, isAvailable: true, image: '/images/vehicles/swift-2026-grey.jpg' },
-  { id: 'thar-4x4', name: 'Mahindra Thar 4x4 Hard Top', color: 'Napoli Black', pricePerDay: 3299, priceDisplay: '₹3,299', seats: '4 Seats', quantity: 2, availableCount: 2, isAvailable: true, image: '/images/vehicles/swift-2026-grey.jpg' },
-  { id: 'scorpio-classic', name: 'Mahindra Scorpio Classic S11', color: 'Pearl White', pricePerDay: 2899, priceDisplay: '₹2,899', seats: '7 Seats', quantity: 0, availableCount: 0, isAvailable: false, image: '/images/vehicles/swift-2026-grey.jpg' },
-  { id: 'creta-sx', name: 'Hyundai Creta SX (O)', color: 'Knight Black', pricePerDay: 2499, priceDisplay: '₹2,499', seats: '5 Seats', quantity: 3, availableCount: 3, isAvailable: true, image: '/images/vehicles/swift-2026-grey.jpg' },
-  { id: 'innova-crysta', name: 'Toyota Innova Crysta ZX', color: 'Super White', pricePerDay: 3499, priceDisplay: '₹3,499', seats: '7 Seats', quantity: 0, availableCount: 0, isAvailable: false, image: '/images/vehicles/swift-2026-grey.jpg' },
+  { id: 'creta-sx', name: 'Hyundai Creta', category: 'suv', color: 'Knight Black', pricePerDay: 2499, priceDisplay: '₹2,499', seats: '5 Seats', quantity: 8, availableCount: 8, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001791/carzodrive/cars/car-main-1793001789245-86ca636d.jpg' },
+  { id: 'swift-new', name: 'Maruti Suzuki Swift', category: 'hatchback', color: 'Magma Grey', pricePerDay: 1499, priceDisplay: '₹1,499', seats: '5 Seats', quantity: 5, availableCount: 5, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001974/carzodrive/cars/car-main-1793001972073-6c682a6c.jpg' },
+  { id: 'thar-4x4', name: 'Mahindra Thar 4x4', category: 'luxury', color: 'Napoli Black', pricePerDay: 3299, priceDisplay: '₹3,299', seats: '4 Seats', quantity: 6, availableCount: 6, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792772183/carzodrive/cars/car-main-1792772159781-4249df0c.jpg' },
+  { id: 'kia-sonet', name: 'Kia Sonet', category: 'suv', color: 'Glacier White', pricePerDay: 1899, priceDisplay: '₹1,899', seats: '5 Seats', quantity: 8, availableCount: 8, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001904/carzodrive/cars/car-main-1793001901616-cda93cca.jpg' },
+  { id: 'tata-punch', name: 'Tata Punch', category: 'suv', color: 'Tropical Mist', pricePerDay: 1599, priceDisplay: '₹1,599', seats: '5 Seats', quantity: 8, availableCount: 8, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001842/carzodrive/cars/car-main-1793001834294-0ebc139b.jpg' },
+  { id: 'fortuner-suv', name: 'Toyota Fortuner', category: 'luxury', color: 'Super White', pricePerDay: 4499, priceDisplay: '₹4,499', seats: '7 Seats', quantity: 4, availableCount: 4, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792779598/carzodrive/cars/car-main-1792779591435-ee911a8b.jpg' },
 ];
 
 export const Hero = ({ onOpenQuickBook }) => {
@@ -87,10 +88,11 @@ export const Hero = ({ onOpenQuickBook }) => {
   // 1. Service Selection
   const [activeTab, setActiveTab] = useState('self-drive-car');
 
-  // 2. Dynamic Database Fleet State with instant fallbacks
+  // 2. Dynamic Database Fleet State with instant Cloudinary fallbacks
   const [dbCars, setDbCars] = useState(FALLBACK_CARS);
   const [dbBikes, setDbBikes] = useState([]);
   const [dbTours, setDbTours] = useState([]);
+  const [dbDrivers, setDbDrivers] = useState([]);
 
   const [selectedCarId, setSelectedCarId] = useState(FALLBACK_CARS[0].id);
   const [selectedChauffeurId, setSelectedChauffeurId] = useState(FALLBACK_CARS[0].id);
@@ -101,10 +103,11 @@ export const Hero = ({ onOpenQuickBook }) => {
     let isMounted = true;
     async function loadHeroFleet() {
       try {
-        const [carsRes, bikesRes, toursRes] = await Promise.allSettled([
+        const [carsRes, bikesRes, toursRes, driversRes] = await Promise.allSettled([
           vehiclesAPI.getAll(),
           bikesAPI.getAll(),
           packagesAPI.getAll(),
+          driversAPI.getAll(),
         ]);
 
         if (isMounted) {
@@ -118,10 +121,11 @@ export const Hero = ({ onOpenQuickBook }) => {
                 rawId: c._id,
                 vehicleId: c._id,
                 name: c.name,
+                category: c.category || 'suv',
                 color: c.color || 'Available',
                 pricePerDay: c.pricing?.dailyRate || c.pricePerDay || 1499,
                 priceDisplay: `₹${(c.pricing?.dailyRate || c.pricePerDay || 1499).toLocaleString('en-IN')}`,
-                image: (c.images && c.images[0]) || c.image || '/images/vehicles/swift-2026-grey.jpg',
+                image: (c.images && c.images[0]) || c.image || 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001791/carzodrive/cars/car-main-1793001789245-86ca636d.jpg',
                 seats: `${c.seats || 5} Seats`,
                 quantity: carCount,
                 availableCount: carCount,
@@ -156,6 +160,10 @@ export const Hero = ({ onOpenQuickBook }) => {
             });
             setDbBikes(bikes);
             setSelectedBikeId(bikes[0].id);
+          }
+
+          if (driversRes.status === 'fulfilled' && driversRes.value?.data?.length > 0) {
+            setDbDrivers(driversRes.value.data);
           }
 
           if (toursRes.status === 'fulfilled' && toursRes.value?.data?.length > 0) {
@@ -233,6 +241,53 @@ export const Hero = ({ onOpenQuickBook }) => {
         return dbCars.find((c) => c.id === selectedCarId) || dbCars[0];
     }
   }, [activeTab, dbCars, dbBikes, dbTours, selectedCarId, selectedChauffeurId, selectedBikeId, selectedTourId, driverSettings?.dailyRate]);
+
+  // Dynamic live service showcase mapped directly from Database & Cloudinary
+  const serviceData = useMemo(() => {
+    const selfDriveCar = dbCars.find((c) => c.isAvailable) || dbCars[0];
+    const chauffeurCar = dbCars.find((c) => (c.category === 'luxury' || c.category === 'sedan') && c.isAvailable) || dbCars[1] || dbCars[0];
+    const driver = dbDrivers[0];
+    const bike = dbBikes[0];
+    const tour = dbTours[0];
+
+    return {
+      'self-drive-car': {
+        image: selfDriveCar?.image || 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792779598/carzodrive/cars/car-main-1792779591435-ee911a8b.jpg',
+        title: selfDriveCar?.name || 'Self-Drive Fleet',
+        tagline: 'Drive Your Way',
+        badge: 'Live Fleet',
+        rate: selfDriveCar?.priceDisplay || (selfDriveCar?.pricePerDay ? `₹${selfDriveCar.pricePerDay}/d` : '₹1,499/d'),
+      },
+      'car-with-driver': {
+        image: chauffeurCar?.image || 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001791/carzodrive/cars/car-main-1793001789245-86ca636d.jpg',
+        title: chauffeurCar?.name || 'Car With Chauffeur',
+        tagline: 'Rent & Ride',
+        badge: 'Executive',
+        rate: chauffeurCar?.priceDisplay || (chauffeurCar?.pricePerDay ? `₹${chauffeurCar.pricePerDay}/d` : '₹1,999/d'),
+      },
+      'driver-only': {
+        image: driver?.photo || driver?.image || 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792572194/carzodrive/drivers/photo-1792572194855-aa556746.jpg',
+        title: driver?.name || 'Verified Commercial Pilot',
+        tagline: 'Professional Drivers',
+        badge: '₹799/Day',
+        rate: driverSettings?.badgeText || `₹${driverSettings?.dailyRate || 799}/Day`,
+      },
+      'self-drive-bike': {
+        image: bike?.image || 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=1200&auto=format&fit=crop',
+        title: bike?.name || 'Cruisers & Sportbikes',
+        tagline: 'Ride the Freedom',
+        badge: 'Coming Soon',
+        rate: bike?.priceDisplay || (bike?.pricePerDay ? `₹${bike.pricePerDay}/d` : '₹499/d'),
+      },
+      'tour-packages': {
+        image: tour?.image || tour?.rawTour?.image || 'https://images.unsplash.com/photo-1596405835955-4532a4e21245?q=80&w=1200&auto=format&fit=crop',
+        title: tour?.name || tour?.title || 'Odisha Heritage & Coast',
+        tagline: 'Explore More',
+        badge: 'Odisha Tours',
+        rate: tour?.startingPrice || 'From ₹5,499',
+      },
+    };
+  }, [dbCars, dbDrivers, dbBikes, dbTours, driverSettings]);
 
   const effectivePickup = pickupLocation;
   const effectiveDrop = dropLocation === 'Same as Pick-up Location' ? pickupLocation : dropLocation;
@@ -322,6 +377,7 @@ export const Hero = ({ onOpenQuickBook }) => {
                 activeTab={activeTab}
                 onTabSelect={handleServiceSelect}
                 serviceMeta={SERVICE_META}
+                serviceData={serviceData}
               />
             </div>
 

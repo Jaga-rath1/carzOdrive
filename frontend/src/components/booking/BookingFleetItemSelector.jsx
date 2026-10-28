@@ -28,18 +28,16 @@ export const BookingFleetItemSelector = ({
   return (
     <div className="space-y-3">
       <div
-        className={`p-3.5 rounded-2xl border space-y-3 transition-all ${
-          !isAvailable
+        className={`p-3.5 rounded-2xl border space-y-3 transition-all ${!isAvailable
             ? 'bg-rose-50/30 border-rose-300 opacity-80'
             : 'bg-slate-50 border-slate-200'
-        }`}
+          }`}
       >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div
-              className={`w-16 h-12 rounded-xl overflow-hidden bg-slate-900 shrink-0 border ${
-                !isAvailable ? 'border-rose-300 opacity-50 grayscale' : 'border-slate-200'
-              }`}
+              className={`w-16 h-12 rounded-xl overflow-hidden bg-slate-900 shrink-0 border ${!isAvailable ? 'border-rose-300 opacity-50 grayscale' : 'border-slate-200'
+                }`}
             >
               <img
                 src={resolveVehicleImageUrl(
@@ -49,17 +47,16 @@ export const BookingFleetItemSelector = ({
                     : '/images/vehicles/swift-2026-grey.jpg'
                 )}
                 alt={currentItemName}
-                className={`w-full h-full object-cover object-center ${
-                  !isAvailable ? 'opacity-40 grayscale' : ''
-                }`}
+                className={`w-full h-full object-cover object-center ${!isAvailable ? 'opacity-40 grayscale' : ''
+                  }`}
                 onError={(e) => {
                   e.currentTarget.onerror = null;
                   e.currentTarget.src =
                     selectedService === 'self-drive-bike'
                       ? '/images/vehicles/royal-enfield.jpg'
                       : selectedService === 'tour-packages'
-                      ? 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'
-                      : '/images/vehicles/swift-2026-grey.jpg';
+                        ? 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'
+                        : '/images/vehicles/swift-2026-grey.jpg';
                 }}
               />
             </div>
@@ -68,8 +65,8 @@ export const BookingFleetItemSelector = ({
                 {selectedService === 'driver-only'
                   ? 'Driver: Provided by Company'
                   : selectedService === 'tour-packages'
-                  ? 'Selected Package'
-                  : 'Selected Fleet'}
+                    ? 'Selected Package'
+                    : 'Selected Fleet'}
               </span>
               <h4 className="text-sm font-bold text-slate-950 truncate">{currentItemName}</h4>
               <div className="text-xs text-slate-500 truncate flex items-center gap-1.5 flex-wrap">
@@ -118,7 +115,7 @@ export const BookingFleetItemSelector = ({
                 </div>
               </div>
               <span className="text-xs font-black text-blue-800 bg-blue-100 px-2 py-0.5 rounded-md shrink-0">
-                {formatCurrency(ratePerDay || selectedDriver?.dailyRate || 799)} / day
+                ₹{selectedItem?.dailyRate || selectedItem?.pricePerDay || 799} / day
               </span>
             </div>
           </div>
