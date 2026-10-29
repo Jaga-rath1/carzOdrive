@@ -10,11 +10,12 @@ import {
   MessageCircle,
   Sparkles
 } from 'lucide-react';
-import { WhatsAppButton } from '../common/WhatsAppButton';
+import { WhatsAppButton, WhatsAppIcon } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { BHUBANESWAR_LOCATIONS } from '../../config/bookingConfig';
 import { getTodayDateString } from '../../utils/formatters';
 import { useDiscount } from '../../hooks/useDiscount';
+import { VehicleWhatsAppModal } from './VehicleWhatsAppModal';
 
 export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
   const count = vehicle.quantity !== undefined ? Number(vehicle.quantity) : (vehicle.availableCount ?? vehicle.count ?? (vehicle.isAvailable !== false ? 1 : 0));
@@ -24,6 +25,7 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
   const [returnDate, setReturnDate] = useState(() => getTodayDateString(3));
   const [pickupLocation, setPickupLocation] = useState('SUM Hospital');
   const [paymentMode, setPaymentMode] = useState('offline'); // Default to offline (WhatsApp)
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
 
   // Calculate day difference
   const daysDiff = Math.max(
@@ -339,13 +341,15 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
           </div>
         )}
 
-        <WhatsAppButton
-          message={getVehicleWhatsAppMessage(vehicle)}
-          label={isAvailable ? "Chat with Us on WhatsApp" : "Inquire Availability on WhatsApp"}
-          size="lg"
-          variant={isAvailable ? "solid" : "outline"}
-          className="w-full rounded-2xl py-3.5 text-sm"
-        />
+        <button
+          type="button"
+          onClick={() => setIsWhatsAppModalOpen(true)}
+          className="w-full rounded-2xl py-3.5 px-4 text-sm font-bold flex items-center justify-center gap-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-300 transition-all cursor-pointer shadow-xs active:scale-98"
+          title="Chat directly with us on WhatsApp"
+        >
+          <WhatsAppIcon className="w-4 h-4 shrink-0" />
+          <span>{isAvailable ? "Chat with Us on WhatsApp" : "Inquire Availability on WhatsApp"}</span>
+        </button>
       </div>
 
       {/* Trust Badges */}
@@ -363,6 +367,18 @@ export const VehicleDetailBookingBox = ({ vehicle, onOpenQuickBook }) => {
           <span>100% verified CARZODRIVE commercial fleet.</span>
         </div>
       </div>
+
+      {/* WhatsApp Inquiry Modal */}
+      <VehicleWhatsAppModal
+        isOpen={isWhatsAppModalOpen}
+        onClose={() => setIsWhatsAppModalOpen(false)}
+        vehicle={vehicle}
+        pickupDate={pickupDate}
+        returnDate={returnDate}
+        pickupLocation={effectiveLocation}
+        daysDiff={daysDiff}
+        estimatedTotal={estimatedTotal}
+      />
     </div>
   );
 };

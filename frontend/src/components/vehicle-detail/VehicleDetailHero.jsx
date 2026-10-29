@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, ChevronRight, MapPin, Share2, ShieldCheck, Sparkles } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { useDiscount } from '../../hooks/useDiscount';
+import { VehicleWhatsAppModal } from './VehicleWhatsAppModal';
 
 export const VehicleDetailHero = ({ vehicle }) => {
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const isBike = vehicle.vehicleType === 'bike';
   const categoryLink = isBike ? '/bike-self-ride' : '/car-self-ride';
   const categoryLabel = isBike ? 'Self-Drive Bikes' : 'Self-Drive Cars';
@@ -129,6 +131,7 @@ export const VehicleDetailHero = ({ vehicle }) => {
             label="Inquire WhatsApp"
             size="md"
             variant="outline"
+            onClick={() => setIsWhatsAppModalOpen(true)}
           />
 
           <button
@@ -141,6 +144,12 @@ export const VehicleDetailHero = ({ vehicle }) => {
           </button>
         </div>
       </div>
+
+      <VehicleWhatsAppModal
+        isOpen={isWhatsAppModalOpen}
+        onClose={() => setIsWhatsAppModalOpen(false)}
+        vehicle={vehicle}
+      />
     </div>
   );
 };
