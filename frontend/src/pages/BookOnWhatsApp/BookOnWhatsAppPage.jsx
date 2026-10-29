@@ -46,11 +46,42 @@ export const BookOnWhatsAppPage = () => {
       }
     }
 
-    const defaultService = SERVICE_OPTIONS[0];
-    return {
-      activeTab: raw?.activeTab || 'self-drive-car',
-      activeService: raw?.activeService || defaultService,
-      currentSelectedItem: raw?.currentSelectedItem || {
+    const activeTab = raw?.activeTab || 'self-drive-car';
+    const defaultService = SERVICE_OPTIONS.find((s) => s.id === activeTab) || SERVICE_OPTIONS[0];
+
+    const getTabDefaultItem = () => {
+      if (activeTab === 'self-drive-bike') {
+        return {
+          id: 'yamaha-mt-15-v2',
+          name: 'Yamaha MT-15 V2',
+          category: 'Sports',
+          vehicleType: 'bike',
+          pricePerDay: 1199,
+          priceDisplay: '₹1,199/day',
+          deposit: '₹0 (Zero Deposit)',
+          image: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=1200&auto=format&fit=crop',
+        };
+      }
+      if (activeTab === 'driver-only') {
+        return {
+          id: 'driver-company',
+          name: 'Verified Driver (Provided by Company)',
+          dailyRate: 799,
+          priceDisplay: '₹799/day',
+          deposit: '₹0 (Zero Deposit)',
+          image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop',
+        };
+      }
+      if (activeTab === 'tour-packages') {
+        return {
+          id: 'bhubaneswar-heritage',
+          name: 'Bhubaneswar Heritage & Puri Tour',
+          priceDisplay: 'From ₹5,499',
+          deposit: '₹0 (Zero Deposit)',
+          image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop',
+        };
+      }
+      return {
         id: 'swift-2026',
         name: 'Swift 2026 New Model',
         color: 'Magma Grey',
@@ -59,7 +90,13 @@ export const BookOnWhatsAppPage = () => {
         seats: '5 Seats',
         deposit: '₹0 (Zero Deposit)',
         image: '/images/vehicles/swift-2026-grey.jpg',
-      },
+      };
+    };
+
+    return {
+      activeTab,
+      activeService: raw?.activeService || defaultService,
+      currentSelectedItem: raw?.currentSelectedItem || getTabDefaultItem(),
       pickupLocation: raw?.pickupLocation || BHUBANESWAR_LOCATIONS[0] || 'SUM Hospital',
       dropLocation: raw?.dropLocation || 'Same as Pick-up Location',
       pickupDate: raw?.pickupDate || getTodayDateString(0),

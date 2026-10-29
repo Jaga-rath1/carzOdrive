@@ -1,5 +1,5 @@
 import React from 'react';
-import { Car, AlertCircle } from 'lucide-react';
+import { Car, Bike, AlertCircle } from 'lucide-react';
 import { SelfDriveCarIcon } from './HeroServiceIcons';
 
 export const HeroFleetSelector = ({
@@ -29,7 +29,7 @@ export const HeroFleetSelector = ({
       : activeTab === 'car-with-driver'
       ? dbCars.find((c) => c.id === withDriverId)
       : activeTab === 'self-drive-bike'
-      ? dbBikes.find((b) => (b.id || b.name) === selectedBikeId)
+      ? (dbBikes.find((b) => (b.id || b.name) === selectedBikeId) || dbBikes[0])
       : null;
 
   const isSelectedUnavailable = selectedCarObj && selectedCarObj.isAvailable === false;
@@ -46,6 +46,8 @@ export const HeroFleetSelector = ({
         <span className="flex items-center gap-1.5 truncate">
           {activeTab === 'self-drive-car' ? (
             <SelfDriveCarIcon className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+          ) : activeTab === 'self-drive-bike' ? (
+            <Bike className="w-3.5 h-3.5 text-blue-600 shrink-0" />
           ) : (
             <Car className="w-3.5 h-3.5 text-blue-600 shrink-0" />
           )}

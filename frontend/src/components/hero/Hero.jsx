@@ -73,6 +73,13 @@ const FALLBACK_CARS = [
   { id: 'fortuner-suv', name: 'Toyota Fortuner', category: 'luxury', color: 'Super White', pricePerDay: 4499, priceDisplay: '₹4,499', seats: '7 Seats', quantity: 4, availableCount: 4, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792779598/carzodrive/cars/car-main-1792779591435-ee911a8b.jpg' },
 ];
 
+const FALLBACK_BIKES = [
+  { id: 'yamaha-mt-15-v2', name: 'Yamaha MT-15 V2', category: 'sports', pricePerDay: 1199, priceDisplay: '₹1,199', isAvailable: true, availableCount: 8, quantity: 8, image: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=1200&auto=format&fit=crop' },
+  { id: 'honda-activa-6g', name: 'Honda Activa 6G Premium', category: 'scooter', pricePerDay: 549, priceDisplay: '₹549', isAvailable: true, availableCount: 15, quantity: 15, image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' },
+  { id: 'ktm-duke-250', name: 'KTM Duke 250', category: 'sports', pricePerDay: 1499, priceDisplay: '₹1,499', isAvailable: true, availableCount: 7, quantity: 7, image: 'https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?q=80&w=1200&auto=format&fit=crop' },
+  { id: 'hero-splendor-plus', name: 'Hero Splendor Plus XTEC', category: 'commuter', pricePerDay: 499, priceDisplay: '₹499', isAvailable: true, availableCount: 20, quantity: 20, image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' },
+];
+
 export const Hero = ({ onOpenQuickBook }) => {
   const navigate = useNavigate();
   const { isAuthenticated, openAuthModal } = useAuth();
@@ -100,13 +107,13 @@ export const Hero = ({ onOpenQuickBook }) => {
 
   // 2. Dynamic Database Fleet State with instant Cloudinary fallbacks
   const [dbCars, setDbCars] = useState(FALLBACK_CARS);
-  const [dbBikes, setDbBikes] = useState([]);
+  const [dbBikes, setDbBikes] = useState(FALLBACK_BIKES);
   const [dbTours, setDbTours] = useState([]);
   const [dbDrivers, setDbDrivers] = useState([]);
 
   const [selectedCarId, setSelectedCarId] = useState(FALLBACK_CARS[0].id);
   const [selectedChauffeurId, setSelectedChauffeurId] = useState(FALLBACK_CARS[0].id);
-  const [selectedBikeId, setSelectedBikeId] = useState('');
+  const [selectedBikeId, setSelectedBikeId] = useState(FALLBACK_BIKES[0].id);
   const [selectedTourId, setSelectedTourId] = useState('');
 
   useEffect(() => {
@@ -243,7 +250,7 @@ export const Hero = ({ onOpenQuickBook }) => {
         };
       }
       case 'self-drive-bike':
-        return dbBikes.find((b) => b.id === selectedBikeId) || dbBikes[0];
+        return dbBikes.find((b) => b.id === selectedBikeId) || dbBikes[0] || FALLBACK_BIKES[0];
       case 'tour-packages':
         return dbTours.find((t) => t.id === selectedTourId) || dbTours[0];
       case 'self-drive-car':
@@ -256,7 +263,7 @@ export const Hero = ({ onOpenQuickBook }) => {
   const serviceData = useMemo(() => {
     const selfDriveCar = dbCars.find((c) => c.isAvailable) || dbCars[0];
     const chauffeurCar = dbCars.find((c) => (c.category === 'luxury' || c.category === 'sedan') && c.isAvailable) || dbCars[1] || dbCars[0];
-    const bike = dbBikes[0];
+    const bike = dbBikes.find((b) => b.isAvailable) || dbBikes[0] || FALLBACK_BIKES[0];
     const tour = dbTours[0];
 
     return {
@@ -285,10 +292,10 @@ export const Hero = ({ onOpenQuickBook }) => {
       },
       'self-drive-bike': {
         image: '/images/services/self-drive-bike.png',
-        vehiclePhoto: bike?.image,
+        vehiclePhoto: bike?.image || FALLBACK_BIKES[0].image,
         title: bike?.name || 'Cruisers & Sportbikes',
         tagline: 'Ride the Freedom',
-        badge: 'Coming Soon',
+        badge: 'Live Fleet',
         rate: bike?.priceDisplay || (bike?.pricePerDay ? `₹${bike.pricePerDay}/d` : '₹499/d'),
       },
       'tour-packages': {

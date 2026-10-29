@@ -9,7 +9,9 @@ export const normalizeServiceType = (rawService, item = null) => {
   if (s === 'self-drive-car' || s.includes('self-drive') || s.includes('car')) return 'self-drive-car';
 
   if (item) {
-    if (item.bikeType || item.vehicleType === 'BIKE' || item.category === 'bike') return 'self-drive-bike';
+    const vType = String(item.vehicleType || '').toLowerCase();
+    const cat = String(item.category || '').toLowerCase();
+    if (item.bikeType || vType === 'bike' || cat === 'bike' || cat === 'scooter' || cat === 'sports' || cat === 'commuter') return 'self-drive-bike';
     if (item.durationDays || item.itinerary || item.startingPrice) return 'tour-packages';
     if (item.dailyRate || item.experienceYears) return 'driver-only';
   }

@@ -78,8 +78,8 @@ async function listBikes(query) {
   return cache.wrap(cacheKey, 60, async () => {
     const { page, limit, skip } = getPagination(query);
     const filter = {
-      status: 'APPROVED',
-      isPublished: true,
+      $or: [{ status: 'APPROVED' }, { status: { $exists: false } }],
+      isPublished: { $ne: false },
     };
 
     if (query.isAvailable !== undefined) {
