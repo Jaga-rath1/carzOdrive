@@ -84,18 +84,19 @@ export const ResetPasswordForm = ({
         <div className="flex items-center justify-between">
           <label htmlFor="reset-email" className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
             <Mail className="w-3.5 h-3.5 text-blue-600" />
-            <span>Account Email or Mobile</span>
+            <span>Registered Gmail / Email Address</span>
           </label>
         </div>
         <input
           id="reset-email"
           name="email"
           type="email"
+          inputMode="email"
           required
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@example.com"
+          placeholder="e.g. yourname@gmail.com"
           className="w-full bg-slate-50/90 hover:bg-white focus:bg-white border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 transition-all focus:outline-none font-medium shadow-xs"
         />
       </div>

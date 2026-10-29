@@ -58,6 +58,14 @@ export const ResetPasswordPage = () => {
             initialMode="reset-password"
             initialEmail={email}
             initialToken=""
+            initialStatusMessage={
+              location.state?.otpSent
+                ? {
+                    type: 'success',
+                    text: `A 6-digit OTP verification code has been dispatched to ${email || 'your Gmail'}. Please check your Gmail inbox and Spam folder.`,
+                  }
+                : null
+            }
             onBackToLogin={() => navigate('/login')}
             onResetSuccess={(savedEmail) => {
               const userEmail = savedEmail || email;

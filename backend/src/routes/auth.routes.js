@@ -62,7 +62,11 @@ router.post('/logout', authenticate, controller.logout);
 router.post(
   '/forgot-password',
   validate([
-    body('email').trim().notEmpty().withMessage('Please enter your registered email address or mobile number'),
+    body('email')
+      .trim()
+      .notEmpty().withMessage('Please enter your registered Gmail or email address')
+      .isEmail().withMessage('Please enter a valid registered Gmail or email address (e.g. name@gmail.com)')
+      .normalizeEmail(),
   ]),
   controller.forgotPassword
 );

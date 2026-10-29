@@ -98,17 +98,18 @@ export const AuthCard = ({
   };
 
   const handleResendOtp = async () => {
-    if (!email || resendTimer > 0 || resendLoading) return;
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    if (!cleanEmail || resendTimer > 0 || resendLoading) return;
     setResendLoading(true);
     setStatusMessage(null);
     try {
-      await authAPI.forgotPassword(email);
+      await authAPI.forgotPassword(cleanEmail);
       // Clean token state so user enters fresh OTP manually
       setResetToken('');
-      setResendTimer(30);
+      setResendTimer(45);
       setStatusMessage({
         type: 'success',
-        text: `A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox and spam folder.`,
+        text: `A fresh 6-digit verification code has been dispatched to ${cleanEmail}. Please check your Gmail inbox and Spam folder.`,
       });
     } catch (err) {
       setStatusMessage({
@@ -206,8 +207,18 @@ export const AuthCard = ({
         }
 
       } else if (mode === 'forgot-password') {
-        const res = await authAPI.forgotPassword(email);
-        const targetEmail = res?.data?.email || email;
+        const cleanEmail = String(email || '').trim().toLowerCase();
+        if (!cleanEmail || !cleanEmail.includes('@')) {
+          setStatusMessage({
+            type: 'error',
+            text: 'Please enter a valid registered Gmail or email address (e.g. name@gmail.com).',
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        const res = await authAPI.forgotPassword(cleanEmail);
+        const targetEmail = res?.data?.email || cleanEmail;
         setEmail(targetEmail);
         // Wipe password and token states so NO autofill or old data carries over
         setResetToken('');
@@ -216,7 +227,7 @@ export const AuthCard = ({
 
         setStatusMessage({
           type: 'success',
-          text: `Security OTP dispatched to ${targetEmail}. Please check your inbox and spam folder.`,
+          text: `A 6-digit security OTP code has been dispatched to ${targetEmail}. Please check your Gmail inbox and spam folder.`,
         });
 
         if (onOtpSent) {
@@ -226,18 +237,18 @@ export const AuthCard = ({
             state: { email: targetEmail, otpSent: true },
           });
         } else {
-          setResendTimer(30);
+          setResendTimer(45);
           switchMode('reset-password');
         }
 
       } else if (mode === 'reset-password') {
         if (!email) {
-          setStatusMessage({ type: 'error', text: 'Please enter your account email address.' });
+          setStatusMessage({ type: 'error', text: 'Please enter your registered Gmail or email address.' });
           setIsLoading(false);
           return;
         }
         if (!resetToken || resetToken.length < 4) {
-          setStatusMessage({ type: 'error', text: 'Please enter the 6-digit OTP verification code received on your email.' });
+          setStatusMessage({ type: 'error', text: 'Please enter the 6-digit OTP verification code received in your Gmail inbox.' });
           setIsLoading(false);
           return;
         }
@@ -349,8 +360,8 @@ export const AuthCard = ({
               <p className="text-xs sm:text-[13px] text-slate-500 font-medium max-w-xs mx-auto">
                 {mode === 'login' && 'Sign in to access your bookings & exclusive fleet rates.'}
                 {mode === 'signup' && 'Unlock instant self-drive bookings with zero security deposit.'}
-                {mode === 'forgot-password' && 'Enter your registered details to receive a 6-digit recovery OTP.'}
-                {mode === 'reset-password' && 'Enter the 6-digit verification code sent to your email.'}
+                {mode === 'forgot-password' && 'Enter your registered Gmail address to receive a secure 6-digit recovery code.'}
+                {mode === 'reset-password' && 'Enter the 6-digit verification code sent to your Gmail inbox.'}
               </p>
             </motion.div>
           </AnimatePresence>

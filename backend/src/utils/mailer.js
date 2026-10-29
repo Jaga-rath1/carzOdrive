@@ -114,9 +114,9 @@ async function sendPasswordResetOtp({ email, name = 'Customer', otp }) {
   const rawUser = process.env.SMTP_USER || process.env.EMAIL_USER || '';
   const user = rawUser.trim();
   const from = getFormattedFrom();
-  const subject = `CARZODRIVE Verification Code: ${otp}`;
+  const subject = `CARZODRIVE Password Reset Verification Code: ${otp}`;
 
-  const textContent = `Hello ${name},\n\nYour 6-digit verification code to reset your CARZODRIVE password is:\n\n${otp}\n\nThis OTP is valid for 15 minutes. If you did not request this, please ignore this email or contact support.\n\nWarm regards,\nCARZODRIVE Odisha Mobility Team`;
+  const textContent = `Hello ${name},\n\nYour 6-digit verification code to reset your CARZODRIVE password is:\n\n${otp}\n\nThis OTP is valid for 15 minutes.\n\nPlease enter this code on the verification screen to set your new password.\nIf you did not request this, please ignore this email or contact support at ${user || 'support@carzodrive.com'}.\n\nWarm regards,\nCARZODRIVE Odisha Mobility Team`;
 
   const htmlContent = `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 560px; margin: 0 auto; background-color: #0b1120; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden; color: #f8fafc;">
@@ -131,17 +131,19 @@ async function sendPasswordResetOtp({ email, name = 'Customer', otp }) {
           We received a request to reset your CARZODRIVE account password. Use the verification code below to complete the reset:
         </p>
         
-        <div style="background-color: #0f172a; border: 2px dashed #38bdf8; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0;">
-          <span style="font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #38bdf8; font-family: monospace;">${otp}</span>
-          <p style="margin: 8px 0 0 0; color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 600;">Valid for 15 minutes only</p>
+        <div style="background-color: #0f172a; border: 2px dashed #38bdf8; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
+          <span style="font-size: 34px; font-weight: 900; letter-spacing: 8px; color: #38bdf8; font-family: monospace;">${otp}</span>
+          <p style="margin: 8px 0 0 0; color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: 600;">Valid for 15 minutes only</p>
         </div>
 
         <p style="margin: 0 0 16px 0; color: #94a3b8; font-size: 13px; line-height: 1.5;">
           If you did not make this request, you can safely ignore this email. Your password will remain unchanged.
         </p>
-        <p style="margin: 16px 0 0 0; color: #64748b; font-size: 12px; border-top: 1px solid #1e293b; padding-top: 12px;">
-          💡 <em>Tip: If this email landed in your Spam/Junk folder, please click "Report Not Spam" to ensure future booking confirmations reach your Primary Inbox.</em>
-        </p>
+        <div style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 12px; margin-top: 16px;">
+          <p style="margin: 0; color: #94a3b8; font-size: 12px; line-height: 1.5;">
+            💡 <em>Gmail Tip: If you do not see this in your Primary inbox, please check your <strong>Spam</strong> or <strong>Promotions</strong> folder and click "Report Not Spam" to ensure seamless delivery.</em>
+          </p>
+        </div>
       </div>
       <div style="background-color: #020617; padding: 16px 24px; text-align: center; border-top: 1px solid #1e293b;">
         <p style="margin: 0; color: #64748b; font-size: 11px;">
@@ -167,12 +169,6 @@ async function sendPasswordResetOtp({ email, name = 'Customer', otp }) {
       subject,
       text: textContent,
       html: htmlContent,
-      priority: 'high',
-      headers: {
-        'X-Priority': '1 (Highest)',
-        'X-MSMail-Priority': 'High',
-        Importance: 'High',
-      },
     });
     logger.success(`✓ Password reset OTP sent successfully to: ${email} [MessageId: ${info.messageId}]`);
     return { success: true, messageId: info.messageId, otp };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, ArrowRight, RefreshCw, ShieldCheck, KeyRound, ArrowLeft, PhoneCall } from 'lucide-react';
+import { Mail, ArrowRight, RefreshCw, ShieldCheck, KeyRound, ArrowLeft } from 'lucide-react';
 
 export const ForgotPasswordForm = ({
   email,
@@ -13,56 +13,57 @@ export const ForgotPasswordForm = ({
       <div className="flex items-center justify-between py-1 px-3 rounded-xl bg-blue-50/80 border border-blue-100 text-blue-800 text-[11px] font-bold">
         <span className="flex items-center gap-1.5">
           <KeyRound className="w-3.5 h-3.5 text-blue-600" />
-          <span>Step 1 of 2 • Identity Verification</span>
+          <span>Step 1 of 2 • Email Verification</span>
         </span>
         <span className="text-[10px] uppercase font-extrabold tracking-wider bg-white px-2 py-0.5 rounded-md border border-blue-200 text-blue-700 shadow-xs">
-          Secure OTP
+          Gmail OTP
         </span>
       </div>
 
-      {/* Email / Mobile Field */}
+      {/* Registered Gmail / Email Field */}
       <div className="space-y-1.5">
         <label
-          htmlFor="recovery-identifier"
+          htmlFor="recovery-email"
           className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center justify-between"
         >
           <span className="flex items-center gap-1.5">
             <Mail className="w-4 h-4 text-blue-600" />
-            <span>Registered Email or Mobile</span>
+            <span>Registered Gmail / Email Address</span>
           </span>
-          <span className="text-[11px] font-normal normal-case text-slate-500">
-            10-digit mobile or email
+          <span className="text-[11px] font-semibold text-blue-600">
+            Inbox Delivery
           </span>
         </label>
         <div className="relative">
           <input
-            id="recovery-identifier"
-            name="recovery_identifier"
-            type="text"
+            id="recovery-email"
+            name="email"
+            type="email"
+            inputMode="email"
             required
-            autoComplete="off"
+            autoComplete="email"
             autoCapitalize="none"
             spellCheck="false"
             autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="e.g. name@example.com or 9876543210"
+            placeholder="e.g. yourname@gmail.com"
             className="w-full bg-slate-50/90 hover:bg-white focus:bg-white border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 transition-all focus:outline-none font-medium shadow-xs"
           />
         </div>
         <p className="text-[11px] text-slate-500 flex items-center gap-1 pt-0.5">
-          <span>We'll send a 6-digit one-time code to verify your identity.</span>
+          <span>We'll send a 6-digit verification code directly to your registered Gmail inbox.</span>
         </p>
       </div>
 
       {/* Security Protection Assurance Banner */}
-      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-slate-50 border border-blue-200/70 text-xs text-slate-700 space-y-1 shadow-xs">
+      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-slate-50 border border-blue-200/70 text-xs text-slate-700 space-y-1.5 shadow-xs">
         <div className="flex items-center gap-2 font-bold text-blue-900">
           <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-          <span>Account Security Guarantee</span>
+          <span>Direct Gmail OTP Verification</span>
         </div>
         <p className="text-[11px] text-slate-600 pl-6 leading-relaxed">
-          Your active reservations, loyalty tier, and identity documents stay protected with 256-bit encryption during recovery.
+          The code is dispatched instantly to your Gmail address. If not found in your Primary inbox within 30 seconds, please check your <strong className="text-slate-800">Spam</strong> or <strong className="text-slate-800">Promotions</strong> tab.
         </p>
       </div>
 
@@ -79,7 +80,7 @@ export const ForgotPasswordForm = ({
           </>
         ) : (
           <>
-            <span>Send 6-Digit OTP Code</span>
+            <span>Send 6-Digit Gmail OTP</span>
             <ArrowRight className="w-4 h-4" />
           </>
         )}

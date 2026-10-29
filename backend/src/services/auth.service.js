@@ -146,29 +146,22 @@ async function logout(userId) {
 
 async function initiatePasswordReset(identifier) {
   const raw = String(identifier || '').trim();
-  if (!raw) {
-    const err = new Error('Please enter your registered email address or mobile number.');
+  if (!raw || !raw.includes('@')) {
+    const err = new Error('Please enter your registered Gmail or email address (e.g. name@gmail.com). Password reset codes are delivered exclusively to your Gmail inbox.');
     err.statusCode = 400;
     throw err;
   }
 
   const cleanEmail = raw.toLowerCase();
-  const digitsOnly = raw.replace(/[^0-9]/g, '');
 
   const queryOr = [
     { email: cleanEmail },
     { email: new RegExp(`^${cleanEmail.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') },
   ];
 
-  if (digitsOnly.length >= 10) {
-    const last10 = digitsOnly.slice(-10);
-    queryOr.push({ phone: last10 });
-    queryOr.push({ phone: `+91${last10}` });
-  }
-
   const user = await User.findOne({ $or: queryOr });
   if (!user) {
-    const err = new Error(`No registered account found with "${raw}". Please check the details or create a new account.`);
+    const err = new Error(`No registered account found with Gmail address "${cleanEmail}". Please check your email or register a new account.`);
     err.statusCode = 404;
     throw err;
   }
@@ -194,22 +187,25 @@ async function initiatePasswordReset(identifier) {
   });
 
   if (!mailResult.success) {
-    logger.warn(`Password reset OTP email dispatch returned error for ${user.email}: ${mailResult.error}`);
-  } else {
-    logger.success(`✓ Password reset OTP successfully dispatched via Nodemailer to ${user.email} [MessageId: ${mailResult.messageId}]`);
+    logger.error(`✗ Password reset OTP email dispatch failed for ${user.email}: ${mailResult.error}`);
+    const err = new Error(`Unable to deliver OTP email to ${user.email} (${mailResult.error || 'SMTP delivery issue'}). Please try again or contact support.`);
+    err.statusCode = 502;
+    throw err;
   }
+
+  logger.success(`✓ Password reset OTP successfully dispatched via Nodemailer to ${user.email} [MessageId: ${mailResult.messageId}]`);
 
   return {
     otp,
     email: user.email,
-    emailSent: Boolean(mailResult?.success),
-    mailError: mailResult?.error || null,
+    emailSent: true,
+    messageId: mailResult.messageId,
   };
 }
 
 async function resetPassword({ token, email, password }) {
   if (!token) {
-    const err = new Error('Verification OTP is required');
+    const err = new Error('Verification OTP code is required');
     err.statusCode = 400;
     throw err;
   }
@@ -224,16 +220,10 @@ async function resetPassword({ token, email, password }) {
 
   if (email) {
     const clean = String(email).toLowerCase().trim();
-    const digitsOnly = clean.replace(/[^0-9]/g, '');
-    if (digitsOnly.length >= 10 && !clean.includes('@')) {
-      const last10 = digitsOnly.slice(-10);
-      query.$or = [{ phone: last10 }, { phone: `+91${last10}` }];
-    } else {
-      query.$or = [
-        { email: clean },
-        { email: new RegExp(`^${clean.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') },
-      ];
-    }
+    query.$or = [
+      { email: clean },
+      { email: new RegExp(`^${clean.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') },
+    ];
   }
 
   const user = await User.findOne(query).select('+password');
