@@ -378,26 +378,26 @@ export const Hero = ({ onOpenQuickBook }) => {
       />
 
       {/* HERO SECTION WITH BOLD 3D CARZODRIVE PNG EMBLEM & BOOKING CONSOLE */}
-      <section className="relative z-10 w-full pt-[78px] xs:pt-[84px] sm:pt-[100px] md:pt-[114px] pb-6 sm:pb-12 border-b border-slate-200/80">
+      <section className="relative z-10 w-full pt-[66px] xs:pt-[72px] sm:pt-[96px] md:pt-[110px] pb-5 sm:pb-12 border-b border-slate-200/80">
         <Container>
           <div className="w-full max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center text-center">
             {/* 1. SCROLL-TRIGGERED CARZODRIVE BRAND BILLBOARD BANNER POSTER */}
-            <div className="w-full flex items-center justify-center pt-1 pb-2 sm:pt-2 sm:pb-3 overflow-visible">
+            <div className="w-full flex items-center justify-center pt-0.5 pb-2 sm:pt-1 sm:pb-3 px-0.5 sm:px-0 overflow-visible">
               <motion.div
                 style={{ scale: logoScale, y: logoY, opacity: logoOpacity }}
-                className="w-full max-w-5xl xl:max-w-6xl rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_16px_45px_rgba(2,132,199,0.22)] border border-slate-200/90 bg-white will-change-transform"
+                className="w-full max-w-5xl xl:max-w-6xl rounded-xl sm:rounded-3xl overflow-hidden shadow-[0_8px_25px_rgba(2,132,199,0.16)] sm:shadow-[0_16px_45px_rgba(2,132,199,0.22)] border border-slate-200/90 bg-white will-change-transform"
               >
                 <img
                   src={carzodriveBanner}
                   alt="CARZODRIVE — Your Journey Our Priority • Drive, Explore, Experience"
-                  className="w-full h-auto object-contain select-none block"
+                  className="w-full h-auto object-cover sm:object-contain select-none block"
                   loading="eager"
                 />
               </motion.div>
             </div>
 
             {/* 2. THE 5 SERVICE OPTIONS TABS (ALIGNED DIRECTLY UNDER LOGO) */}
-            <div className="w-full mt-1.5 sm:mt-2 mb-2 sm:mb-3">
+            <div className="w-full mt-1 sm:mt-2 mb-1.5 sm:mb-3">
               <HeroServiceTabs
                 activeTab={activeTab}
                 onTabSelect={handleServiceSelect}

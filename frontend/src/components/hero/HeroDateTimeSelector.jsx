@@ -100,7 +100,7 @@ export const HeroDateTimeSelector = ({
         <select
           value={dropLocation}
           onChange={(e) => setDropLocation(e.target.value)}
-          className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer py-0.5"
+          className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
         >
           <option value="Same as Pick-up Location" className="bg-white text-slate-900 font-medium">🔄 Same as Pick-up Location</option>
           {BHUBANESWAR_LOCATIONS.map((loc) => (
@@ -128,7 +128,7 @@ export const HeroDateTimeSelector = ({
             min={today}
             value={pickupDate}
             onChange={(e) => handlePickupDateChange(e.target.value)}
-            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer [color-scheme:light] py-0.5"
+            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer [color-scheme:light] py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
           />
           <input
             type="time"
@@ -136,7 +136,7 @@ export const HeroDateTimeSelector = ({
             value={pickupTime}
             onChange={(e) => handlePickupTimeChange(e.target.value)}
             title={pickupDate === today ? `Cannot select past time (Current: ${nowTime})` : 'Select pick-up time'}
-            className="w-[74px] sm:w-20 shrink-0 bg-slate-100 hover:bg-white px-1 py-0.5 rounded text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer [color-scheme:light] border border-slate-200/90 focus:border-blue-600"
+            className="w-[84px] xs:w-24 sm:w-20 shrink-0 bg-slate-100 hover:bg-white px-1.5 sm:px-1 py-1 sm:py-0.5 rounded text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer [color-scheme:light] border border-slate-200/90 focus:border-blue-600 min-h-[38px] sm:min-h-0"
           />
         </div>
       </div>
@@ -153,14 +153,14 @@ export const HeroDateTimeSelector = ({
             min={pickupDate || today}
             value={returnDate}
             onChange={(e) => handleReturnDateChange(e.target.value)}
-            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer [color-scheme:light] py-0.5"
+            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer [color-scheme:light] py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
           />
           <input
             type="time"
             min={returnDate === pickupDate ? pickupTime : undefined}
             value={returnTime}
             onChange={(e) => handleReturnTimeChange(e.target.value)}
-            className="w-[74px] sm:w-20 shrink-0 bg-slate-100 hover:bg-white px-1 py-0.5 rounded text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer [color-scheme:light] border border-slate-200/90 focus:border-blue-600"
+            className="w-[84px] xs:w-24 sm:w-20 shrink-0 bg-slate-100 hover:bg-white px-1.5 sm:px-1 py-1 sm:py-0.5 rounded text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer [color-scheme:light] border border-slate-200/90 focus:border-blue-600 min-h-[38px] sm:min-h-0"
           />
         </div>
       </div>

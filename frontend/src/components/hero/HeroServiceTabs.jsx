@@ -34,7 +34,7 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
                 onClick={handleCardClick}
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.98 }}
-                className={`group relative flex flex-col justify-between p-2 sm:p-2.5 rounded-xl transition-all duration-200 cursor-pointer select-none text-center min-w-[120px] xs:min-w-[130px] sm:min-w-0 flex-1 snap-start shrink-0 ${
+                className={`group relative flex flex-col justify-between p-1.5 xs:p-2 sm:p-2.5 rounded-xl transition-all duration-200 cursor-pointer select-none text-center min-w-[105px] xs:min-w-[115px] sm:min-w-0 flex-1 snap-start shrink-0 ${
                   isActive
                     ? 'bg-gradient-to-b from-blue-600 via-blue-700 to-indigo-700 text-white shadow-[0_10px_28px_rgba(37,99,235,0.38)] ring-2 ring-blue-400/50 border border-blue-400'
                     : 'bg-slate-50/80 hover:bg-white text-slate-800 hover:text-blue-700 border border-slate-200/80 hover:border-blue-300 shadow-xs hover:shadow-md'
@@ -42,14 +42,14 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
               >
                 {/* Active Floating Pill */}
                 {isActive && (
-                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full text-[8.5px] font-black uppercase tracking-wider bg-white text-blue-700 shadow-md flex items-center gap-1 z-10">
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[8px] sm:text-[8.5px] font-black uppercase tracking-wider bg-white text-blue-700 shadow-md flex items-center gap-1 z-10 whitespace-nowrap">
                     <Sparkles className="w-2.5 h-2.5 text-blue-600" />
                     <span>Selected</span>
                   </span>
                 )}
 
                 {!isActive && meta.badge === 'Coming Soon' && (
-                  <span className="absolute -top-2 right-2 px-1.5 py-0.2 rounded-full text-[7.5px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 shadow-xs z-10">
+                  <span className="absolute -top-2 right-1.5 sm:right-2 px-1.5 py-0.2 rounded-full text-[7px] sm:text-[7.5px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 shadow-xs z-10">
                     Soon
                   </span>
                 )}
@@ -57,9 +57,9 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
                 {/* 1. The 3D Service App Tile directly from user's image */}
                 <div className="w-full flex items-center justify-center pt-0.5">
                   <div
-                    className={`relative w-[68px] h-[68px] xs:w-[76px] xs:h-[76px] sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden transition-all duration-300 flex items-center justify-center ${
+                    className={`relative w-[54px] h-[54px] xs:w-[62px] xs:h-[62px] sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 flex items-center justify-center ${
                       isActive
-                        ? 'ring-2 ring-white/90 shadow-[0_8px_25px_rgba(0,0,0,0.45)] scale-[1.05]'
+                        ? 'ring-2 ring-white/90 shadow-[0_8px_25px_rgba(0,0,0,0.45)] scale-[1.04]'
                         : 'border border-slate-700/60 shadow-lg group-hover:scale-105 group-hover:shadow-2xl'
                     }`}
                   >
@@ -74,7 +74,7 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
 
                 {/* 2. Service Label */}
                 <span
-                  className={`text-[12px] sm:text-[13.5px] font-black tracking-wide leading-tight mt-2 line-clamp-1 ${
+                  className={`text-[11px] xs:text-[12px] sm:text-[13.5px] font-black tracking-wide leading-tight mt-1.5 sm:mt-2 line-clamp-1 ${
                     isActive ? 'text-white' : 'text-slate-900 group-hover:text-blue-700'
                   }`}
                 >
@@ -84,7 +84,7 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
                 {/* 3. Billboard Tagline */}
                 <div className="flex flex-col items-center justify-center mt-0.5">
                   <span
-                    className={`text-[9px] sm:text-[10.5px] font-bold line-clamp-1 ${
+                    className={`text-[8.5px] xs:text-[9px] sm:text-[10.5px] font-bold line-clamp-1 ${
                       isActive ? 'text-blue-100' : 'text-slate-500 group-hover:text-blue-600'
                     }`}
                   >
@@ -94,18 +94,33 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
 
                 {/* 4. Book Now CTA Pill */}
                 <div
-                  className={`mt-2 w-full py-1 sm:py-1.5 px-2 rounded-lg text-[9px] sm:text-[10px] font-black tracking-wider uppercase flex items-center justify-center gap-1 transition-all ${
+                  className={`mt-1.5 sm:mt-2 w-full py-0.5 sm:py-1.5 px-1.5 sm:px-2 rounded-lg text-[8.5px] sm:text-[10px] font-black tracking-wider uppercase flex items-center justify-center gap-1 transition-all ${
                     isActive
                       ? 'bg-white text-blue-700 hover:bg-slate-50 shadow-sm'
                       : 'bg-slate-100/90 group-hover:bg-blue-600 text-slate-700 group-hover:text-white border border-slate-200/80 group-hover:border-blue-600 shadow-xs'
                   }`}
                 >
-                  <span>Book Now</span>
+                  <span>Book</span>
                   <ArrowRight className="w-2.5 h-2.5 transition-transform group-hover:translate-x-0.5" />
                 </div>
               </motion.div>
             );
           })}
+        </div>
+
+        {/* Mobile Swipe / Active Indicator Dots */}
+        <div className="flex items-center justify-center gap-1.5 pt-2 pb-0.5 lg:hidden">
+          {SERVICE_OPTIONS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onTabSelect(item.id)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                activeTab === item.id ? 'w-6 bg-blue-600' : 'w-1.5 bg-slate-300 hover:bg-slate-400'
+              }`}
+              aria-label={`Select ${item.label}`}
+            />
+          ))}
         </div>
       </div>
     </motion.div>

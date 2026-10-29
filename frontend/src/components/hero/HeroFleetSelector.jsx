@@ -76,7 +76,7 @@ export const HeroFleetSelector = ({
         <select
           value={selectedCarId}
           onChange={(e) => setSelectedCarId(e.target.value)}
-          className={`w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-0.5 ${
+          className={`w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-1 sm:py-0.5 min-h-[38px] sm:min-h-0 ${
             isSelectedUnavailable ? 'text-rose-600 opacity-60' : ''
           }`}
         >
@@ -107,7 +107,7 @@ export const HeroFleetSelector = ({
         <select
           value={withDriverId}
           onChange={(e) => setWithDriverId(e.target.value)}
-          className={`w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-0.5 ${
+          className={`w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-1 sm:py-0.5 min-h-[38px] sm:min-h-0 ${
             isSelectedUnavailable ? 'text-rose-600 opacity-60' : ''
           }`}
         >
@@ -138,7 +138,7 @@ export const HeroFleetSelector = ({
         <select
           value="provided-by-company"
           disabled
-          className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-default truncate py-0.5"
+          className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-default truncate py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
         >
           <option value="provided-by-company" className="text-slate-900 bg-white font-semibold">
             🟢 Verified Commercial Driver (₹{driverDailyRate}/day) • Available
@@ -150,7 +150,7 @@ export const HeroFleetSelector = ({
         <select
           value={selectedBikeId}
           onChange={(e) => setSelectedBikeId(e.target.value)}
-          className={`w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-0.5 ${
+          className={`w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-1 sm:py-0.5 min-h-[38px] sm:min-h-0 ${
             isSelectedUnavailable ? 'text-rose-600 opacity-60' : ''
           }`}
         >
@@ -181,7 +181,7 @@ export const HeroFleetSelector = ({
         <select
           value={selectedTourId}
           onChange={(e) => setSelectedTourId(e.target.value)}
-          className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-0.5"
+          className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
         >
           {dbTours.map((t) => (
             <option key={t.id} value={t.id} className="text-slate-900 bg-white font-semibold py-1">

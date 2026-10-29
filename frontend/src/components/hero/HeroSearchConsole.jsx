@@ -100,13 +100,13 @@ export const HeroSearchConsole = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.15 }}
-      className="w-full bg-white/95 backdrop-blur-3xl border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-[0_25px_60px_rgba(15,23,42,0.08),0_4px_16px_rgba(15,23,42,0.04)] text-left relative overflow-hidden"
+      className="w-full bg-white/95 backdrop-blur-3xl border border-slate-200/90 rounded-2xl sm:rounded-3xl p-2.5 xs:p-3 sm:p-5 shadow-[0_25px_60px_rgba(15,23,42,0.08),0_4px_16px_rgba(15,23,42,0.04)] text-left relative overflow-hidden"
     >
       {/* Ambient Royal Blue Top Accent Line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-600 to-transparent shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
 
       {/* Console Header with View Details Action (Auth Guarded) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-200/80 gap-2">
+      <div className="flex items-center justify-between pb-2 sm:pb-2.5 border-b border-slate-200/80 gap-2">
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
@@ -120,10 +120,10 @@ export const HeroSearchConsole = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             to={activeMeta.route}
-            className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-blue-700 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200/80 px-2.5 py-1 rounded-xl transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-[10.5px] sm:text-xs font-bold text-blue-700 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200/80 px-2.5 py-1 rounded-xl transition-all shadow-xs cursor-pointer"
             title={`Explore all ${activeService.label} models`}
           >
             <span>All Fleet →</span>
@@ -132,7 +132,7 @@ export const HeroSearchConsole = ({
       </div>
 
       {/* SEARCH FORM */}
-      <form onSubmit={handleOnlineBookingSubmit} className="space-y-2.5 sm:space-y-3 pt-2">
+      <form onSubmit={handleOnlineBookingSubmit} className="space-y-2 sm:space-y-3 pt-2">
         {/* ROW 1: Contextual Model Selector + Pick-up Hub */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
           <HeroFleetSelector
@@ -160,7 +160,7 @@ export const HeroSearchConsole = ({
             <select
               value={pickupLocation}
               onChange={(e) => setPickupLocation(e.target.value)}
-              className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer py-0.5"
+              className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
             >
               {BHUBANESWAR_LOCATIONS.map((loc) => (
                 <option key={loc} value={loc} className="bg-white text-slate-900 font-medium">
@@ -214,7 +214,7 @@ export const HeroSearchConsole = ({
             <button
               type="button"
               onClick={handleBookOnWhatsApp}
-              className="w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-500 shadow-[0_4px_16px_rgba(16,185,129,0.35)] hover:shadow-[0_6px_24px_rgba(16,185,129,0.5)] transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-2 group shrink-0"
+              className="w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-500 shadow-[0_4px_16px_rgba(16,185,129,0.35)] hover:shadow-[0_6px_24px_rgba(16,185,129,0.5)] transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-2 group shrink-0 min-h-[44px]"
               title="Book directly on WhatsApp with pre-filled details"
             >
               <MessageCircle className="w-4 h-4 text-white transition-colors" />
@@ -226,7 +226,7 @@ export const HeroSearchConsole = ({
               <button
                 type="button"
                 onClick={handleBookOnWhatsApp}
-                className="w-full sm:w-auto px-6 py-3 rounded-xl font-black text-xs sm:text-sm text-white bg-amber-600 border border-amber-500 hover:bg-amber-700 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 sm:py-2.5 rounded-xl font-black text-xs sm:text-sm text-white bg-amber-600 border border-amber-500 hover:bg-amber-700 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
               >
                 <span>Pre-Book Bike Online</span>
                 <ArrowRight className="w-4 h-4" />
@@ -235,7 +235,7 @@ export const HeroSearchConsole = ({
               <button
                 type="submit"
                 disabled={currentSelectedItem?.isAvailable === false}
-                className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl font-black text-xs sm:text-sm border transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 group relative overflow-hidden ${
+                className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-2.5 rounded-xl font-black text-xs sm:text-sm border transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 group relative overflow-hidden min-h-[44px] ${
                   currentSelectedItem?.isAvailable === false
                     ? 'bg-slate-200 text-slate-500 border-slate-300 cursor-not-allowed opacity-75'
                     : 'text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:via-indigo-500 hover:to-blue-600 shadow-[0_6px_22px_rgba(37,99,235,0.4)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.55)] border-blue-400/30 cursor-pointer'
