@@ -14,12 +14,16 @@ const ADMINS = [
 ];
 
 // ─── Discount Settings (Default 5%) ─────────────────────────────────────────
-// Public / client-side route to fetch active discount
+// Public / client-side route to fetch active discount (supports both singular and plural aliases)
 router.get('/discount', optionalAuth, controller.getDiscountSettings);
+router.get('/discounts', optionalAuth, controller.getDiscountSettings);
 router.get('/discount/public', controller.getDiscountSettings);
+router.get('/discounts/public', controller.getDiscountSettings);
+router.get('/', optionalAuth, controller.getDiscountSettings);
 
 // Admin-only route to update discount percentage & settings
 router.put('/discount', authenticate, authorize(...ADMINS, 'manage_settings'), controller.updateDiscountSettings);
+router.put('/discounts', authenticate, authorize(...ADMINS, 'manage_settings'), controller.updateDiscountSettings);
 
 // ─── Driver Pricing & Registration Settings (Default ₹799) ──────────────────
 // Public / client-side route to fetch driver rates and registration fee

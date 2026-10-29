@@ -2,8 +2,8 @@ require('./setup');
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../src/app');
-const { User } = require('../src/modules/auth/auth.model');
-const Vendor = require('../src/modules/vendors/vendors.model');
+const { User } = require('../src/models/user.model');
+const { PartnerCarSubmission: Vendor } = require('../src/models/partner.model');
 
 let customerToken, adminToken, customerId;
 

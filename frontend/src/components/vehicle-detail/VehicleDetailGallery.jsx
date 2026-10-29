@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, Sparkles } from 'lucide-react';
+import { DEFAULT_CAR_IMAGE, DEFAULT_BIKE_IMAGE } from '../../utils/documentUtils';
 
-export const VehicleDetailGallery = ({ vehicle }) => {
-  const images = (vehicle.gallery && vehicle.gallery.length > 0)
+export const VehicleDetailGallery = ({ vehicle = {} }) => {
+  const fallback = vehicle?.vehicleType === 'bike' ? DEFAULT_BIKE_IMAGE : DEFAULT_CAR_IMAGE;
+  const rawImages = (Array.isArray(vehicle?.gallery) && vehicle.gallery.length > 0)
     ? vehicle.gallery
-    : [vehicle.image];
+    : [vehicle?.image || fallback];
+  const images = rawImages.filter(Boolean).length > 0 ? rawImages.filter(Boolean) : [fallback];
 
-  const [activeImage, setActiveImage] = useState(images[0]);
+  const [activeImage, setActiveImage] = useState(images[0] || fallback);
+
+  useEffect(() => {
+    setActiveImage(images[0] || fallback);
+  }, [vehicle]);
 
   return (
     <div className="space-y-4">
@@ -25,7 +32,7 @@ export const VehicleDetailGallery = ({ vehicle }) => {
             className="w-full h-full object-cover object-center"
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = vehicle.vehicleType === 'bike' ? 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' : '/images/vehicles/swift-2026-grey.jpg';
+              e.currentTarget.src = vehicle.vehicleType === 'bike' ? DEFAULT_BIKE_IMAGE : DEFAULT_CAR_IMAGE;
             }}
           />
         </AnimatePresence>

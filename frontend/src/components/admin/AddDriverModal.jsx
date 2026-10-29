@@ -111,8 +111,8 @@ export const AddDriverModal = ({ isOpen, onClose, onDriverAdded }) => {
         hourlyRate: Number(formData.hourlyRate) || 120,
         languages: formData.languages.split(',').map((s) => s.trim()).filter(Boolean),
         serviceArea: formData.serviceArea.split(',').map((s) => s.trim()).filter(Boolean),
-        photo: formData.photo || '/images/drivers/driver-placeholder.jpg',
-        avatar: formData.photo || '/images/drivers/driver-placeholder.jpg',
+        photo: formData.photo || undefined,
+        avatar: formData.photo || undefined,
         drivingLicenseDoc: formData.drivingLicenseDoc || undefined,
         idProofDoc: formData.idProofDoc || undefined,
       };

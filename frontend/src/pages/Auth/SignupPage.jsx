@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck, Lock, Sparkles } from 'lucide-react';
 import { AuthCard } from '../../components/auth/AuthCard';
 import { DrivoraLogo } from '../../components/navbar/DrivoraLogo';
-import heroBgImage from '../../assets/carzodrive-hero-bg.jpg';
 
 export const SignupPage = () => {
   const navigate = useNavigate();

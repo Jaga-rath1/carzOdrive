@@ -44,7 +44,7 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
           quantity: v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0)),
           availableCount: v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0)),
           isAvailable: v.isAvailable !== false && (v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? 1)) > 0 && v.availabilityStatus !== 'UNAVAILABLE' && v.availabilityStatus !== 'Currently Unavailable',
-          image: resolveVehicleImageUrl((v.images && v.images[0]) || v.image, '/images/vehicles/swift-2026-grey.jpg'),
+          image: resolveVehicleImageUrl((v.images && v.images[0]) || v.image),
           seats: `${v.seats || 5} Seats`,
           fuel: v.fuelType ? v.fuelType.charAt(0).toUpperCase() + v.fuelType.slice(1) : 'Petrol',
           transmission: v.transmission ? v.transmission.charAt(0).toUpperCase() + v.transmission.slice(1) : 'Manual / AMT',

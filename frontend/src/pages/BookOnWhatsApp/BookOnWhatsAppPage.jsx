@@ -27,6 +27,7 @@ import { getCurrentUser } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { getTodayDateString, getCurrentTimeString } from '../../utils/formatters';
 import { BHUBANESWAR_LOCATIONS, SERVICE_OPTIONS } from '../../config/bookingConfig';
+import { DEFAULT_CAR_IMAGE, DEFAULT_BIKE_IMAGE } from '../../utils/documentUtils';
 
 export const BookOnWhatsAppPage = () => {
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ export const BookOnWhatsAppPage = () => {
           pricePerDay: 499,
           priceDisplay: '₹499/day',
           deposit: '₹1,500',
-          image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop',
+          image: DEFAULT_BIKE_IMAGE,
         };
       }
       if (activeTab === 'driver-only') {
@@ -89,7 +90,7 @@ export const BookOnWhatsAppPage = () => {
         priceDisplay: '₹1,499/day',
         seats: '5 Seats',
         deposit: '₹0 (Zero Deposit)',
-        image: '/images/vehicles/swift-2026-grey.jpg',
+        image: DEFAULT_CAR_IMAGE,
       };
     };
 
@@ -346,7 +347,7 @@ export const BookOnWhatsAppPage = () => {
                       alt={bookingData.currentSelectedItem.name || 'Vehicle'}
                       className="w-24 h-16 object-cover rounded-xl border border-slate-200 bg-white shrink-0"
                       onError={(e) => {
-                        e.currentTarget.src = '/images/vehicles/swift-2026-grey.jpg';
+                        e.currentTarget.src = bookingData.activeTab === 'self-drive-bike' ? DEFAULT_BIKE_IMAGE : DEFAULT_CAR_IMAGE;
                       }}
                     />
                   ) : (

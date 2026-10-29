@@ -14,6 +14,7 @@ import {
   FileText
 } from 'lucide-react';
 import { vehiclesAPI, uploadsAPI } from '../../services/api';
+import { DEFAULT_CAR_IMAGE } from '../../utils/documentUtils';
 import { VehicleGeneralTab } from './vehicle-modal/VehicleGeneralTab';
 import { VehiclePricingTab } from './vehicle-modal/VehiclePricingTab';
 import { VehicleSpecsTab } from './vehicle-modal/VehicleSpecsTab';
@@ -100,7 +101,7 @@ export const AddVehicleModal = ({ isOpen, onClose, onVehicleAdded, vehicleToEdit
   useEffect(() => {
     if (vehicleToEdit) {
       const v = vehicleToEdit;
-      const primaryImg = (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg';
+      const primaryImg = (v.images && v.images[0]) || v.image || DEFAULT_CAR_IMAGE;
       const galleryImgs = Array.isArray(v.images) && v.images.length > 0
         ? v.images
         : Array.isArray(v.secondaryImages) && v.secondaryImages.length > 0

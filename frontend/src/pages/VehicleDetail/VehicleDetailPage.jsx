@@ -3,7 +3,7 @@ import { useParams, useOutletContext, Link } from 'react-router-dom';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { Container } from '../../components/common/Container';
 import { vehiclesAPI, bikesAPI } from '../../services/api';
-import { resolveVehicleImageUrl } from '../../utils/documentUtils';
+import { resolveVehicleImageUrl, DEFAULT_CAR_IMAGE, DEFAULT_BIKE_IMAGE } from '../../utils/documentUtils';
 import { VehicleDetailHero } from '../../components/vehicle-detail/VehicleDetailHero';
 import { VehicleDetailGallery } from '../../components/vehicle-detail/VehicleDetailGallery';
 import { VehicleDetailSpecs } from '../../components/vehicle-detail/VehicleDetailSpecs';
@@ -41,7 +41,7 @@ export const VehicleDetailPage = () => {
 
         if (res?.data && isMounted) {
           const raw = res.data;
-          const fallbackImg = isBike ? 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' : '/images/vehicles/swift-2026-grey.jpg';
+          const fallbackImg = isBike ? DEFAULT_BIKE_IMAGE : DEFAULT_CAR_IMAGE;
           const rawImg = (raw.images && raw.images[0]) || raw.image || fallbackImg;
           const primaryImage = resolveVehicleImageUrl(rawImg, fallbackImg);
           const allImages = (raw.images && raw.images.length > 0)

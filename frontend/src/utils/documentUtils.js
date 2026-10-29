@@ -17,25 +17,34 @@ const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
 // Base server origin (e.g., http://localhost:5000 or https://carzodrive-1.onrender.com)
 export const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
 
+export const DEFAULT_CAR_IMAGE = 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001791/carzodrive/cars/car-main-1793001789245-86ca636d.jpg';
+export const DEFAULT_BIKE_IMAGE = 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg';
+
 /**
- * Contextual fallback image based on vehicle brand/model so different cars don't all show Swift
+ * Contextual fallback image based on vehicle brand/model using real Cloudinary fleet assets
  */
-export function getVehicleFallbackImage(vehicleOrName, defaultFallback = '/images/vehicles/swift-2026-grey.jpg') {
+export function getVehicleFallbackImage(vehicleOrName, defaultFallback = DEFAULT_CAR_IMAGE) {
   const name = typeof vehicleOrName === 'string' ? vehicleOrName.toLowerCase() : (vehicleOrName?.name || '').toLowerCase();
   if (name.includes('creta') || name.includes('hyundai')) {
-    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792670282/carzodrive/vehicles/viphzd6gsxqnvqsyw95g.png';
+    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001791/carzodrive/cars/car-main-1793001789245-86ca636d.jpg';
   }
-  if (name.includes('sonet') || name.includes('kia')) {
-    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792670286/carzodrive/vehicles/lljl1ithdbbjfmpvntvk.png';
+  if (name.includes('sonet') || name.includes('seltos') || name.includes('kia')) {
+    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001904/carzodrive/cars/car-main-1793001901616-cda93cca.jpg';
   }
-  if (name.includes('innova') || name.includes('toyota')) {
-    return '/images/vehicles/toyota-innova.jpg';
+  if (name.includes('fortuner') || name.includes('toyota')) {
+    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792779598/carzodrive/cars/car-main-1792779591435-ee911a8b.jpg';
   }
   if (name.includes('scorpio') || name.includes('mahindra') || name.includes('thar')) {
     return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792772183/carzodrive/cars/car-main-1792772159781-4249df0c.jpg';
   }
+  if (name.includes('punch') || name.includes('tata')) {
+    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001842/carzodrive/cars/car-main-1793001834294-0ebc139b.jpg';
+  }
+  if (name.includes('swift') || name.includes('maruti')) {
+    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001974/carzodrive/cars/car-main-1793001972073-6c682a6c.jpg';
+  }
   if (name.includes('splendor') || name.includes('hero')) {
-    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg';
+    return DEFAULT_BIKE_IMAGE;
   }
   if (name.includes('activa') || name.includes('honda') || name.includes('scooty') || name.includes('bike')) {
     return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262145/carzodrive/bikes/bike-main-1793262144481-2bbb612b.jpg';
@@ -47,7 +56,7 @@ export function getVehicleFallbackImage(vehicleOrName, defaultFallback = '/image
  * Universal resolver for car, bike, and package vehicle images.
  * Handles Cloudinary CDN URLs, local /uploads paths from backend, and high-res defaults.
  */
-export function resolveVehicleImageUrl(url, fallback = '/images/vehicles/swift-2026-grey.jpg') {
+export function resolveVehicleImageUrl(url, fallback = DEFAULT_CAR_IMAGE) {
   if (!url || typeof url !== 'string') return fallback;
   const trimmed = url.trim();
   if (!trimmed) return fallback;

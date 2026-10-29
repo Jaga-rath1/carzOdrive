@@ -40,8 +40,6 @@ const PRESET_LOCATIONS = [
 ];
 
 export const AdminCreateBookingModal = ({ isOpen, onClose, onSuccess }) => {
-  if (!isOpen || typeof document === 'undefined') return null;
-
   // Form State
   const [customerType, setCustomerType] = useState('walkin'); // 'walkin' | 'registered'
   const [registeredUsers, setRegisteredUsers] = useState([]);
@@ -100,6 +98,7 @@ export const AdminCreateBookingModal = ({ isOpen, onClose, onSuccess }) => {
 
   // 1. Fetch Registered Users
   useEffect(() => {
+    if (!isOpen) return;
     let isMounted = true;
     const fetchUsers = async () => {
       setIsLoadingUsers(true);
@@ -116,10 +115,11 @@ export const AdminCreateBookingModal = ({ isOpen, onClose, onSuccess }) => {
     };
     fetchUsers();
     return () => { isMounted = false; };
-  }, []);
+  }, [isOpen]);
 
   // 2. Fetch Assets for Fleet
   useEffect(() => {
+    if (!isOpen) return;
     let isMounted = true;
     const fetchAssets = async () => {
       setIsLoadingAssets(true);
@@ -144,7 +144,7 @@ export const AdminCreateBookingModal = ({ isOpen, onClose, onSuccess }) => {
     };
     fetchAssets();
     return () => { isMounted = false; };
-  }, []);
+  }, [isOpen]);
 
   // Calculate duration whenever dates change
   useEffect(() => {
@@ -349,6 +349,8 @@ export const AdminCreateBookingModal = ({ isOpen, onClose, onSuccess }) => {
       (u.email || '').toLowerCase().includes(q)
     );
   });
+
+  if (!isOpen || typeof document === 'undefined') return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto animate-in fade-in">

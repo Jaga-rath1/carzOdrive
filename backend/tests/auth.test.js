@@ -2,7 +2,7 @@ require('./setup');
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../src/app');
-const { User } = require('../src/modules/auth/auth.model');
+const { User } = require('../src/models/user.model');
 
 beforeAll(async () => {
   await mongoose.connect(process.env.MONGODB_URI);

@@ -21,7 +21,8 @@ import {
 } from 'lucide-react';
 import { Container } from '../../components/common/Container';
 import { InvoiceModal } from '../../components/common/InvoiceModal';
-import { bookingsAPI, getCurrentUser } from '../../services/api';
+import { bookingsAPI, getCurrentUser, getAccessToken } from '../../services/api';
+import { DEFAULT_CAR_IMAGE } from '../../utils/documentUtils';
 
 export const MyBookingsPage = () => {
   const location = useLocation();
@@ -107,7 +108,11 @@ export const MyBookingsPage = () => {
       setSearchQuery(phoneParam);
       executeLookup(phoneParam);
     } else if (currentUser) {
-      loadMyBookings();
+      if (getAccessToken()) {
+        loadMyBookings();
+      } else if (currentUser.phone || currentUser.email) {
+        executeLookup(currentUser.phone || currentUser.email);
+      }
     }
   }, [location.state, searchParams]);
 
@@ -242,7 +247,7 @@ export const MyBookingsPage = () => {
                           alt={b.vehicleName || 'Vehicle'}
                           className="w-20 h-16 object-cover rounded-2xl border border-slate-200 shrink-0 shadow-xs"
                           onError={(e) => {
-                            e.target.src = '/images/vehicles/mahindra-thar.jpg';
+                            e.target.src = DEFAULT_CAR_IMAGE;
                           }}
                         />
                       ) : (

@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, Lock, Mail, Eye, EyeOff, Loader2, ArrowRight, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { authAPI, clearAuthSession } from '../../services/api';
 import { DrivoraLogo } from '../../components/navbar/DrivoraLogo';
-import heroBgImage from '../../assets/carzodrive-hero-bg.jpg';
 
 export const AdminLoginPage = () => {
   const navigate = useNavigate();

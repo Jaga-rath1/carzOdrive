@@ -4,7 +4,6 @@ import { ArrowLeft, ShieldCheck, Lock, Sparkles, UserCheck, LogOut } from 'lucid
 import { AuthCard } from '../../components/auth/AuthCard';
 import { DrivoraLogo } from '../../components/navbar/DrivoraLogo';
 import { getCurrentUser, clearAuthSession } from '../../services/api';
-import heroBgImage from '../../assets/carzodrive-hero-bg.jpg';
 
 export const LoginPage = () => {
   const navigate = useNavigate();

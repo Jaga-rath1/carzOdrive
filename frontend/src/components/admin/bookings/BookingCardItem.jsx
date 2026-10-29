@@ -18,6 +18,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { STATUS_COLORS, PAYMENT_STATUS_COLORS } from './bookingConstants';
+import { DEFAULT_CAR_IMAGE } from '../../../utils/documentUtils';
 
 export const BookingCardItem = ({
   b,
@@ -163,7 +164,7 @@ export const BookingCardItem = ({
               alt={b.vehicleName || 'Vehicle'}
               className="w-16 h-12 object-cover rounded-xl border border-zinc-200 shrink-0 shadow-2xs"
               onError={(e) => {
-                e.target.src = '/images/vehicles/mahindra-thar.jpg';
+                e.target.src = DEFAULT_CAR_IMAGE;
               }}
             />
           ) : (

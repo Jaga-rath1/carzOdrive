@@ -5,6 +5,7 @@ import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { vehiclesAPI, bikesAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
+import { DEFAULT_CAR_IMAGE, DEFAULT_BIKE_IMAGE } from '../../utils/documentUtils';
 
 export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
   const { isAuthenticated, openAuthModal } = useAuth();
@@ -23,7 +24,7 @@ export const VehicleDetailSimilar = ({ currentVehicle, onOpenQuickBook }) => {
             .slice(0, 3)
             .map((v) => {
               const price = v.pricing?.dailyRate || v.pricePerDay || (isBike ? 499 : 1499);
-              const image = (v.images && v.images[0]) || v.image || (isBike ? 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' : '/images/vehicles/swift-2026-grey.jpg');
+              const image = (v.images && v.images[0]) || v.image || (isBike ? DEFAULT_BIKE_IMAGE : DEFAULT_CAR_IMAGE);
               const count = v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0));
               const isAvail = v.isAvailable !== false && count > 0 && v.availabilityStatus !== 'UNAVAILABLE' && v.availabilityStatus !== 'Currently Unavailable';
 

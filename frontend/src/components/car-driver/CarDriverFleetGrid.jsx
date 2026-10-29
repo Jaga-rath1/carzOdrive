@@ -4,6 +4,7 @@ import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { vehiclesAPI } from '../../services/api';
 import { useDriverSettings } from '../../hooks/useDriverSettings';
+import { resolveVehicleImageUrl, DEFAULT_CAR_IMAGE } from '../../utils/documentUtils';
 
 export const CarDriverFleetGrid = ({ onSelectCar }) => {
   const { driverSettings } = useDriverSettings();
@@ -20,7 +21,8 @@ export const CarDriverFleetGrid = ({ onSelectCar }) => {
           const mapped = res.data.map((v) => {
             const baseRate = v.pricing?.dailyRate || v.pricePerDay || 1499;
             const withDriverRate = v.pricing?.dailyRateWithFuel || (baseRate + driverFee);
-            const image = (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg';
+            const rawImg = (v.images && v.images[0]) || v.image;
+            const image = resolveVehicleImageUrl(rawImg, DEFAULT_CAR_IMAGE);
 
             const stockCount = v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? (v.isAvailable !== false ? 1 : 0));
             const isAvail = v.isAvailable !== false && stockCount > 0 && v.availabilityStatus !== 'Currently Unavailable';

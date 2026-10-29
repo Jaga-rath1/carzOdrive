@@ -10,9 +10,10 @@ import {
   Cog,
   Sparkles
 } from 'lucide-react';
+import { DEFAULT_CAR_IMAGE } from '../../../utils/documentUtils';
 
 export const AdminVehicleCard = ({ car, onView, onEdit, onDelete }) => {
-  const primaryImg = (car.images && car.images[0]) || car.image || '/images/vehicles/placeholder.jpg';
+  const primaryImg = (car.images && car.images[0]) || car.image || DEFAULT_CAR_IMAGE;
   const price = car.pricing?.dailyRate || car.pricePerDay || car.priceNumeric || 1999;
   const stockCount = car.quantity !== undefined ? car.quantity : (car.availableCount ?? (car.isAvailable !== false ? 1 : 0));
   const isAvailable = car.isAvailable !== false && stockCount > 0 && car.availabilityStatus !== 'Currently Unavailable';

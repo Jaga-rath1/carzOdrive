@@ -14,6 +14,7 @@ import {
   FileText
 } from 'lucide-react';
 import { bikesAPI, uploadsAPI } from '../../services/api';
+import { DEFAULT_BIKE_IMAGE } from '../../utils/documentUtils';
 import { BikeGeneralTab } from './bike-modal/BikeGeneralTab';
 import { BikePricingTab } from './bike-modal/BikePricingTab';
 import { BikeSpecsTab } from './bike-modal/BikeSpecsTab';
@@ -97,7 +98,7 @@ export const AddBikeModal = ({ isOpen, onClose, onBikeAdded, bikeToEdit = null }
   useEffect(() => {
     if (bikeToEdit) {
       const b = bikeToEdit;
-      const primaryImg = (b.images && b.images[0]) || b.image || '/images/vehicles/re-classic-350.jpg';
+      const primaryImg = (b.images && b.images[0]) || b.image || DEFAULT_BIKE_IMAGE;
       const galleryImgs = Array.isArray(b.images) && b.images.length > 0
         ? b.images
         : Array.isArray(b.secondaryImages) && b.secondaryImages.length > 0

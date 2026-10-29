@@ -23,7 +23,7 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
         if (isMounted && res?.data && res.data.length > 0) {
           const mapped = res.data.map((v) => {
             const price = v.pricing?.dailyRate || v.pricePerDay || v.priceNumeric || 1499;
-            const rawImage = (v.images && v.images[0]) || v.image || '/images/vehicles/swift-2026-grey.jpg';
+            const rawImage = (v.images && v.images[0]) || v.image;
             const image = resolveVehicleImageUrl(rawImage);
 
             return {

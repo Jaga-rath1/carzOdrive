@@ -26,7 +26,7 @@ import { AddBikeModal } from '../../components/admin/AddBikeModal';
 import { DriverVerifyModal } from '../../components/admin/DriverVerifyModal';
 import { DocumentViewerModal } from '../../components/common/DocumentViewerModal';
 import { vehiclesAPI, bikesAPI, driversAPI, bookingsAPI } from '../../services/api';
-import { resolveDocumentUrl, getDocumentPreviewUrl } from '../../utils/documentUtils';
+import { resolveDocumentUrl, getDocumentPreviewUrl, DEFAULT_CAR_IMAGE, DEFAULT_BIKE_IMAGE } from '../../utils/documentUtils';
 import { useDiscount } from '../../hooks/useDiscount';
 
 export const AdminDashboardPage = () => {
@@ -505,11 +505,11 @@ export const AdminDashboardPage = () => {
                   <div className="flex items-center gap-3.5">
                     <div className="w-16 h-12 rounded-xl overflow-hidden bg-white border border-zinc-200 shrink-0 p-0.5 shadow-2xs">
                       <img
-                        src={car.image || '/images/vehicles/swift-2026-grey.jpg'}
+                        src={car.image || DEFAULT_CAR_IMAGE}
                         alt={car.name}
                         className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
-                          e.target.src = '/images/vehicles/swift-2026-grey.jpg';
+                          e.target.src = DEFAULT_CAR_IMAGE;
                         }}
                       />
                     </div>
@@ -537,11 +537,11 @@ export const AdminDashboardPage = () => {
                   <div className="flex items-center gap-3.5">
                     <div className="w-16 h-12 rounded-xl overflow-hidden bg-white border border-zinc-200 shrink-0 p-0.5 shadow-2xs">
                       <img
-                        src={bike.image || '/images/vehicles/re-classic-350.jpg'}
+                        src={bike.image || DEFAULT_BIKE_IMAGE}
                         alt={bike.name}
                         className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
-                          e.target.src = '/images/vehicles/re-classic-350.jpg';
+                          e.target.src = DEFAULT_BIKE_IMAGE;
                         }}
                       />
                     </div>

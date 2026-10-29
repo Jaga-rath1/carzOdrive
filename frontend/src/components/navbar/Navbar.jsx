@@ -53,7 +53,8 @@ export const Navbar = ({ onOpenQuickBook, onOpenAuth }) => {
           }
         })
         .catch(() => {
-          // Token invalid or network issue
+          // Token invalid or expired, clear session to prevent repeat 401s
+          clearAuthSession();
         });
     }
   }, [currentUser]);

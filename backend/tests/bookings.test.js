@@ -2,8 +2,8 @@ require('./setup');
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../src/app');
-const { User } = require('../src/modules/auth/auth.model');
-const { Booking } = require('../src/modules/bookings/bookings.model');
+const { User } = require('../src/models/user.model');
+const { Booking } = require('../src/models/booking.model');
 
 let customerToken, adminToken, customerId;
 
