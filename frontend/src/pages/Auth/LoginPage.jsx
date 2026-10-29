@@ -116,6 +116,9 @@ export const LoginPage = () => {
             initialMode="login"
             initialEmail={prefilledEmail}
             initialStatusMessage={resetSuccessMsg ? { type: 'success', text: resetSuccessMsg } : null}
+            onForgotPassword={() => {
+              navigate('/forgot-password');
+            }}
             onSuccess={(data) => {
               if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('carzodrive-auth-change', { detail: { user: data?.user || data } }));

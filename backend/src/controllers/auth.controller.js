@@ -44,8 +44,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
     {
       email: result.email,
       emailSent: result.emailSent,
-      otp: result.otp,
-      devOtp: result.otp,
     },
     message
   );

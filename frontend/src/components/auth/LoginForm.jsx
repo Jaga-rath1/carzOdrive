@@ -44,7 +44,14 @@ export const LoginForm = ({
           </label>
           <button
             type="button"
-            onClick={onForgotPassword}
+            tabIndex={-1}
+            onClick={(e) => {
+              e.preventDefault();
+              if (typeof document !== 'undefined' && document.activeElement) {
+                document.activeElement.blur();
+              }
+              onForgotPassword();
+            }}
             className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer"
           >
             Forgot Password?

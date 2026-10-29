@@ -19,23 +19,15 @@ export const AuthCard = ({
   onClose,
   onOtpSent,
   onBackToLogin,
+  onForgotPassword,
   isModal = false,
 }) => {
   const navigate = useNavigate();
   const [mode, setMode] = useState(initialMode);
 
-  const handleBackToLogin = () => {
-    switchMode('login');
-    if (onBackToLogin) {
-      onBackToLogin();
-    } else if (!isModal && window.location.pathname !== '/login') {
-      navigate('/login');
-    }
-  };
-
   // Form Fields
   const [name, setName] = useState('');
-  const [email, setEmail] = useState(() => initialEmail || '');
+  const [email, setEmail] = useState(() => (initialMode === 'forgot-password' ? '' : (initialEmail || '')));
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -51,10 +43,10 @@ export const AuthCard = ({
   const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
-    if (initialEmail && !email) setEmail(initialEmail);
+    if (mode !== 'forgot-password' && initialEmail && !email) setEmail(initialEmail);
     if (initialToken) setResetToken(initialToken);
     if (initialStatusMessage && !statusMessage) setStatusMessage(initialStatusMessage);
-  }, [initialEmail, initialToken, initialStatusMessage]);
+  }, [initialEmail, initialToken, initialStatusMessage, mode]);
 
   useEffect(() => {
     let interval = null;
@@ -66,20 +58,57 @@ export const AuthCard = ({
     return () => clearInterval(interval);
   }, [resendTimer]);
 
+  const switchMode = (newMode) => {
+    setStatusMessage(null);
+    // Explicitly wipe passwords, OTP codes, and active focus to prevent browser autofill spillover
+    setPassword('');
+    setConfirmPassword('');
+    setResetToken('');
+    setShowPassword(false);
+    if (newMode === 'forgot-password') {
+      setEmail('');
+    }
+    if (typeof document !== 'undefined' && document.activeElement) {
+      document.activeElement.blur();
+    }
+    setMode(newMode);
+  };
+
+  const handleBackToLogin = () => {
+    switchMode('login');
+    if (onBackToLogin) {
+      onBackToLogin();
+    } else if (!isModal && window.location.pathname !== '/login') {
+      navigate('/login');
+    }
+  };
+
+  const handleForgotPasswordClick = () => {
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setResetToken('');
+    if (onForgotPassword) {
+      onForgotPassword();
+    } else if (!isModal && window.location.pathname === '/login') {
+      navigate('/forgot-password');
+    } else {
+      switchMode('forgot-password');
+    }
+  };
+
   const handleResendOtp = async () => {
     if (!email || resendTimer > 0 || resendLoading) return;
     setResendLoading(true);
     setStatusMessage(null);
     try {
-      const res = await authAPI.forgotPassword(email);
-      const devOtp = res?.data?.devOtp || res?.data?.otp;
-      if (devOtp) setResetToken(devOtp);
+      await authAPI.forgotPassword(email);
+      // Clean token state so user enters fresh OTP manually
+      setResetToken('');
       setResendTimer(30);
       setStatusMessage({
         type: 'success',
-        text: devOtp
-          ? `Fresh verification code generated! (Code: ${devOtp}). Check inbox or spam.`
-          : `A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox and spam folder.`,
+        text: `A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox and spam folder.`,
       });
     } catch (err) {
       setStatusMessage({
@@ -178,28 +207,27 @@ export const AuthCard = ({
 
       } else if (mode === 'forgot-password') {
         const res = await authAPI.forgotPassword(email);
-        const devOtp = res?.data?.devOtp || res?.data?.otp;
         const targetEmail = res?.data?.email || email;
         setEmail(targetEmail);
-        if (devOtp) {
-          setResetToken(devOtp);
-        }
+        // Wipe password and token states so NO autofill or old data carries over
+        setResetToken('');
+        setPassword('');
+        setConfirmPassword('');
+
         setStatusMessage({
           type: 'success',
-          text: devOtp
-            ? `Security OTP dispatched! (Verification Code: ${devOtp}) Please check inbox/spam or proceed below.`
-            : `Security OTP dispatched to ${targetEmail}. Please check your inbox and spam folder.`,
+          text: `Security OTP dispatched to ${targetEmail}. Please check your inbox and spam folder.`,
         });
 
         if (onOtpSent) {
-          onOtpSent(targetEmail, devOtp);
+          onOtpSent(targetEmail);
         } else if (!isModal) {
-          navigate(`/reset-password?email=${encodeURIComponent(targetEmail)}${devOtp ? `&otp=${devOtp}` : ''}`, {
-            state: { email: targetEmail, otpSent: true, devOtp, token: devOtp },
+          navigate(`/reset-password?email=${encodeURIComponent(targetEmail)}`, {
+            state: { email: targetEmail, otpSent: true },
           });
         } else {
           setResendTimer(30);
-          setMode('reset-password');
+          switchMode('reset-password');
         }
 
       } else if (mode === 'reset-password') {
@@ -209,7 +237,7 @@ export const AuthCard = ({
           return;
         }
         if (!resetToken || resetToken.length < 4) {
-          setStatusMessage({ type: 'error', text: 'Please enter the 6-digit OTP verification code.' });
+          setStatusMessage({ type: 'error', text: 'Please enter the 6-digit OTP verification code received on your email.' });
           setIsLoading(false);
           return;
         }
@@ -242,14 +270,14 @@ export const AuthCard = ({
 
         setTimeout(() => {
           if (isModal) {
-            setMode('login');
+            switchMode('login');
             setStatusMessage({
               type: 'success',
               text: 'Password reset successful! Please log in with your new password.',
             });
           } else {
             if (window.location.pathname === '/login') {
-              setMode('login');
+              switchMode('login');
               setStatusMessage({
                 type: 'success',
                 text: 'Password reset successful! Please log in with your new password.',
@@ -284,13 +312,8 @@ export const AuthCard = ({
     }
   };
 
-  const switchMode = (newMode) => {
-    setStatusMessage(null);
-    setMode(newMode);
-  };
-
   return (
-    <div className="relative w-full max-w-md mx-auto rounded-3xl bg-white/95 backdrop-blur-3xl border border-slate-200/90 p-5 sm:p-7 shadow-[0_25px_60px_rgba(15,23,42,0.08),0_4px_16px_rgba(15,23,42,0.04)] text-slate-900 overflow-hidden">
+    <div className="relative w-full max-w-md mx-auto rounded-3xl bg-white/95 backdrop-blur-3xl border border-slate-200/90 p-5 sm:p-7 shadow-[0_25px_60px_rgba(15,23,42,0.08),0_4px_16px_rgba(15,23,42,0.04)] text-slate-900 overflow-hidden transition-all duration-300">
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-600 to-transparent shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
 
       {isModal && onClose && (
@@ -305,9 +328,9 @@ export const AuthCard = ({
       )}
 
       {/* Header */}
-      <div className="flex flex-col items-center text-center space-y-2 mb-6">
+      <div className="flex flex-col items-center text-center space-y-2 mb-5">
         <DrivoraLogo isLight={true} />
-        <div className="pt-1">
+        <div className="pt-1 w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={mode}
@@ -326,8 +349,8 @@ export const AuthCard = ({
               <p className="text-xs sm:text-[13px] text-slate-500 font-medium max-w-xs mx-auto">
                 {mode === 'login' && 'Sign in to access your bookings & exclusive fleet rates.'}
                 {mode === 'signup' && 'Unlock instant self-drive bookings with zero security deposit.'}
-                {mode === 'forgot-password' && 'Enter your email to receive a 6-digit verification code.'}
-                {mode === 'reset-password' && 'Enter the 6-digit OTP sent to your email & create a new password.'}
+                {mode === 'forgot-password' && 'Enter your registered details to receive a 6-digit recovery OTP.'}
+                {mode === 'reset-password' && 'Enter the 6-digit verification code sent to your email.'}
               </p>
             </motion.div>
           </AnimatePresence>
@@ -382,8 +405,14 @@ export const AuthCard = ({
         </motion.div>
       )}
 
-      {/* Sub Forms */}
-      <form onSubmit={handleSubmit} className="space-y-3.5">
+      {/* Keyed Form per Mode: Prevents Chromium password manager cross-talk & autofill bugs */}
+      <form
+        key={mode}
+        id={`auth-form-${mode}`}
+        autoComplete="off"
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
         {mode === 'login' && (
           <LoginForm
             email={email}
@@ -395,7 +424,7 @@ export const AuthCard = ({
             rememberMe={rememberMe}
             setRememberMe={setRememberMe}
             isLoading={isLoading}
-            onForgotPassword={() => switchMode('forgot-password')}
+            onForgotPassword={handleForgotPasswordClick}
           />
         )}
 
