@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
 import { Container } from '../common/Container';
 import carzodriveLogo from '../../assets/carzodrive-logo.png';
+import carzodriveBanner from '../../assets/carzodrive-hero-banner.jpg';
 import { BHUBANESWAR_LOCATIONS, SERVICE_OPTIONS } from '../../config/bookingConfig';
 import { vehiclesAPI, bikesAPI, packagesAPI, driversAPI } from '../../services/api';
 import { getTodayDateString, getCurrentTimeString } from '../../utils/formatters';
@@ -380,16 +381,16 @@ export const Hero = ({ onOpenQuickBook }) => {
       <section className="relative z-10 w-full pt-[78px] xs:pt-[84px] sm:pt-[100px] md:pt-[114px] pb-6 sm:pb-12 border-b border-slate-200/80">
         <Container>
           <div className="w-full max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center text-center">
-            {/* 1. SCROLL-TRIGGERED 3D METALLIC CARZODRIVE PNG EMBLEM */}
-            <div className="w-full flex items-center justify-center pt-1 pb-1 sm:pt-2 sm:pb-2 overflow-visible">
+            {/* 1. SCROLL-TRIGGERED CARZODRIVE BRAND BILLBOARD BANNER POSTER */}
+            <div className="w-full flex items-center justify-center pt-1 pb-2 sm:pt-2 sm:pb-3 overflow-visible">
               <motion.div
                 style={{ scale: logoScale, y: logoY, opacity: logoOpacity }}
-                className="w-full max-w-xl sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex items-center justify-center will-change-transform"
+                className="w-full max-w-5xl xl:max-w-6xl rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_16px_45px_rgba(2,132,199,0.22)] border border-slate-200/90 bg-white will-change-transform"
               >
                 <img
-                  src={carzodriveLogo}
-                  alt="CARZODRIVE — Drive Your World"
-                  className="w-auto h-auto max-h-[140px] xs:max-h-[180px] sm:max-h-[260px] md:max-h-[340px] lg:max-h-[420px] xl:max-h-[460px] max-w-[94vw] sm:max-w-full scale-x-[1.04] sm:scale-x-[1.12] object-contain drop-shadow-[0_16px_36px_rgba(2,132,199,0.25)] sm:drop-shadow-[0_24px_50px_rgba(2,132,199,0.3)] filter brightness-[1.02] contrast-[1.05] select-none block origin-center transition-all"
+                  src={carzodriveBanner}
+                  alt="CARZODRIVE — Your Journey Our Priority • Drive, Explore, Experience"
+                  className="w-full h-auto object-contain select-none block"
                   loading="eager"
                 />
               </motion.div>
