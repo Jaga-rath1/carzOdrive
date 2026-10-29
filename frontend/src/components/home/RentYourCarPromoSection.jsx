@@ -78,8 +78,8 @@ export const RentYourCarPromoSection = () => {
             <div className="lg:col-span-5 relative">
               <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-slate-100">
                 <img
-                  src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1000&auto=format&fit=crop"
-                  alt="Luxury vehicle earning passive income"
+                  src="https://res.cloudinary.com/gjjtie9o/image/upload/v1792779598/carzodrive/cars/car-main-1792779591435-ee911a8b.jpg"
+                  alt="CARZODRIVE vehicle earning passive income"
                   className="w-full h-80 sm:h-96 object-cover"
                   loading="lazy"
                 />

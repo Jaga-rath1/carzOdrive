@@ -75,8 +75,8 @@ const FALLBACK_CARS = [
 ];
 
 const FALLBACK_BIKES = [
-  { id: 'hero-splendor-plus', name: 'Hero Splendor Plus XTEC', category: 'commuter', pricePerDay: 499, priceDisplay: '₹499', isAvailable: true, availableCount: 20, quantity: 20, badge: 'Coming Soon', image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' },
-  { id: 'honda-activa-6g', name: 'Honda Activa 6G Scooty', category: 'scooter', pricePerDay: 549, priceDisplay: '₹549', isAvailable: true, availableCount: 15, quantity: 15, badge: 'Coming Soon', image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' },
+  { id: 'hero-splendor-plus', name: 'Hero Splendor Plus XTEC', category: 'commuter', pricePerDay: 499, priceDisplay: '₹499', isAvailable: true, availableCount: 20, quantity: 20, badge: 'Coming Soon', image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg' },
+  { id: 'honda-activa-6g', name: 'Honda Activa 6G Scooty', category: 'scooter', pricePerDay: 549, priceDisplay: '₹549', isAvailable: true, availableCount: 15, quantity: 15, badge: 'Coming Soon', image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262145/carzodrive/bikes/bike-main-1793262144481-2bbb612b.jpg' },
 ];
 
 export const Hero = ({ onOpenQuickBook }) => {
@@ -378,7 +378,7 @@ export const Hero = ({ onOpenQuickBook }) => {
       />
 
       {/* HERO SECTION WITH BOLD 3D CARZODRIVE PNG EMBLEM & BOOKING CONSOLE */}
-      <section className="relative z-10 w-full pt-[66px] xs:pt-[72px] sm:pt-[96px] md:pt-[110px] pb-5 sm:pb-12 border-b border-slate-200/80">
+      <section className="relative z-10 w-full pt-[116px] xs:pt-[124px] sm:pt-[132px] md:pt-[140px] pb-5 sm:pb-12 border-b border-slate-200/80">
         <Container>
           <div className="w-full max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center text-center">
             {/* 1. SCROLL-TRIGGERED CARZODRIVE BRAND BILLBOARD BANNER POSTER */}
@@ -390,7 +390,7 @@ export const Hero = ({ onOpenQuickBook }) => {
                 <img
                   src={carzodriveBanner}
                   alt="CARZODRIVE — Your Journey Our Priority • Drive, Explore, Experience"
-                  className="w-full h-auto object-cover sm:object-contain select-none block"
+                  className="w-full h-auto object-contain select-none block"
                   loading="eager"
                 />
               </motion.div>

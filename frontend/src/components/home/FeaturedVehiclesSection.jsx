@@ -68,7 +68,7 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
           quantity: b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0)),
           availableCount: b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? (b.isAvailable !== false ? 1 : 0)),
           isAvailable: b.isAvailable !== false && (b.quantity !== undefined ? Number(b.quantity) : (b.availableCount ?? b.count ?? 1)) > 0 && b.availabilityStatus !== 'UNAVAILABLE' && b.availabilityStatus !== 'Currently Unavailable',
-          image: resolveVehicleImageUrl((b.images && b.images[0]) || b.image, 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop'),
+          image: resolveVehicleImageUrl((b.images && b.images[0]) || b.image, 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg'),
           seats: '2 Seats',
           fuel: 'Petrol',
           transmission: b.transmission || 'Manual',

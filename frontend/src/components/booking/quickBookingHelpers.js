@@ -42,7 +42,7 @@ export const resolveBookingItemDetails = ({
       const fallbackPrice = car?.priceNumeric ? car.priceNumeric + 700 : 3499;
       return {
         currentItemName: car?.name ? `${car.name} (with Driver)` : 'Executive Car (with Driver)',
-        currentItemImage: resolveVehicleImageUrl(car?.image, '/images/vehicles/toyota-innova.jpg'),
+        currentItemImage: resolveVehicleImageUrl(car?.image, 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792779598/carzodrive/cars/car-main-1792779591435-ee911a8b.jpg'),
         ratePerDay: rawPricing || fallbackPrice,
         deposit: '₹0 (Zero Deposit)',
         isAvailable: car?.isAvailable !== false && (car?.availableCount ?? car?.quantity ?? 1) > 0 && car?.availabilityStatus !== 'UNAVAILABLE' && car?.availabilityStatus !== 'Currently Unavailable',
@@ -65,7 +65,7 @@ export const resolveBookingItemDetails = ({
         : parseInt(String(bike?.pricePerDay || '1299').replace(/[^0-9]/g, ''), 10) || 1299;
       return {
         currentItemName: bike?.name || 'Self-Drive Two-Wheeler',
-        currentItemImage: resolveVehicleImageUrl(bike?.image, '/images/vehicles/royal-enfield.jpg'),
+        currentItemImage: resolveVehicleImageUrl(bike?.image, 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg'),
         ratePerDay: parsed,
         deposit: bike?.deposit || '₹2,000',
         isAvailable: bike?.isAvailable !== false && (bike?.availableCount ?? bike?.quantity ?? 1) > 0 && bike?.availabilityStatus !== 'UNAVAILABLE' && bike?.availabilityStatus !== 'Currently Unavailable',
@@ -98,7 +98,7 @@ export const resolveBookingItemDetails = ({
       }
       return {
         currentItemName: car?.name || 'Swift 2026',
-        currentItemImage: resolveVehicleImageUrl(car?.image, '/images/vehicles/swift-2026-grey.jpg'),
+        currentItemImage: resolveVehicleImageUrl(car?.image, 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001974/carzodrive/cars/car-main-1793001972073-6c682a6c.jpg'),
         ratePerDay: rate,
         deposit: car?.depositNumeric ? `₹${car.depositNumeric}` : (car?.deposit || '₹5,000'),
         isAvailable: car?.isAvailable !== false && (car?.availableCount ?? car?.quantity ?? 1) > 0 && car?.availabilityStatus !== 'UNAVAILABLE' && car?.availabilityStatus !== 'Currently Unavailable',

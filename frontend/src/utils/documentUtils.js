@@ -32,10 +32,13 @@ export function getVehicleFallbackImage(vehicleOrName, defaultFallback = '/image
     return '/images/vehicles/toyota-innova.jpg';
   }
   if (name.includes('scorpio') || name.includes('mahindra') || name.includes('thar')) {
-    return '/images/vehicles/mahindra-thar.jpg';
+    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792772183/carzodrive/cars/car-main-1792772159781-4249df0c.jpg';
   }
-  if (name.includes('bullet') || name.includes('enfield') || name.includes('classic')) {
-    return '/images/vehicles/royal-enfield.jpg';
+  if (name.includes('splendor') || name.includes('hero')) {
+    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg';
+  }
+  if (name.includes('activa') || name.includes('honda') || name.includes('scooty') || name.includes('bike')) {
+    return 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262145/carzodrive/bikes/bike-main-1793262144481-2bbb612b.jpg';
   }
   return defaultFallback;
 }

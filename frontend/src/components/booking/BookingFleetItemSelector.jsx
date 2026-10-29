@@ -43,8 +43,8 @@ export const BookingFleetItemSelector = ({
                 src={resolveVehicleImageUrl(
                   currentItemImage,
                   selectedService === 'self-drive-bike'
-                    ? '/images/vehicles/royal-enfield.jpg'
-                    : '/images/vehicles/swift-2026-grey.jpg'
+                    ? 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg'
+                    : 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001974/carzodrive/cars/car-main-1793001972073-6c682a6c.jpg'
                 )}
                 alt={currentItemName}
                 className={`w-full h-full object-cover object-center ${!isAvailable ? 'opacity-40 grayscale' : ''
@@ -53,10 +53,10 @@ export const BookingFleetItemSelector = ({
                   e.currentTarget.onerror = null;
                   e.currentTarget.src =
                     selectedService === 'self-drive-bike'
-                      ? '/images/vehicles/royal-enfield.jpg'
+                      ? 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg'
                       : selectedService === 'tour-packages'
                         ? 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'
-                        : '/images/vehicles/swift-2026-grey.jpg';
+                        : 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001974/carzodrive/cars/car-main-1793001972073-6c682a6c.jpg';
                 }}
               />
             </div>

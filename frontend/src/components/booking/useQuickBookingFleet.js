@@ -38,7 +38,7 @@ export const useQuickBookingFleet = (isOpen) => {
               quantity: carCount,
               availableCount: carCount,
               availabilityStatus: isAvail ? 'Available' : 'Currently Unavailable',
-              image: resolveVehicleImageUrl((v.images && v.images[0]) || v.image, '/images/vehicles/swift-2026-grey.jpg'),
+              image: resolveVehicleImageUrl((v.images && v.images[0]) || v.image, 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001974/carzodrive/cars/car-main-1793001972073-6c682a6c.jpg'),
               seats: `${v.seats || 5} Seats`,
               priceNumeric: v.pricing?.selfDrive?.daily || v.pricing?.dailyRate || v.pricePerDay || 1499,
               pricePerDay: v.pricing?.selfDrive?.daily || v.pricing?.dailyRate || v.pricePerDay || 1499,
@@ -67,7 +67,7 @@ export const useQuickBookingFleet = (isOpen) => {
               quantity: bikeCount,
               availableCount: bikeCount,
               availabilityStatus: isAvail ? 'Available' : 'Currently Unavailable',
-              image: resolveVehicleImageUrl((b.images && b.images[0]) || b.image, '/images/vehicles/royal-enfield.jpg'),
+              image: resolveVehicleImageUrl((b.images && b.images[0]) || b.image, 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg'),
               rawBike: b,
             };
           });
