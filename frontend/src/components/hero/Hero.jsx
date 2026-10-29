@@ -42,7 +42,7 @@ const SERVICE_META = {
     image: '/images/services/driver-only.png',
     route: '/driver-only',
     ctaText: 'Hire Verified Driver',
-    badge: '₹799/Day',
+    badge: 'Verified Pilot',
     tagline: 'Verified Drivers',
   },
   'self-drive-bike': {
@@ -280,7 +280,7 @@ export const Hero = ({ onOpenQuickBook }) => {
         image: '/images/services/driver-only.png',
         title: 'Verified Commercial Pilot',
         tagline: 'Verified Drivers',
-        badge: '₹799/Day',
+        badge: 'Verified Pilot',
         rate: driverSettings?.badgeText || `₹${driverSettings?.dailyRate || 799}/Day`,
       },
       'self-drive-bike': {

@@ -81,21 +81,14 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
                   {item.label}
                 </span>
 
-                {/* 3. Billboard Tagline & Live Rate */}
+                {/* 3. Billboard Tagline */}
                 <div className="flex flex-col items-center justify-center mt-0.5">
                   <span
-                    className={`text-[8.5px] sm:text-[9.5px] font-bold line-clamp-1 ${
+                    className={`text-[9px] sm:text-[10.5px] font-bold line-clamp-1 ${
                       isActive ? 'text-blue-100' : 'text-slate-500 group-hover:text-blue-600'
                     }`}
                   >
-                    {data.tagline || meta.tagline || meta.badge}
-                  </span>
-                  <span
-                    className={`text-[9.5px] sm:text-[10.5px] font-black mt-0.5 ${
-                      isActive ? 'text-cyan-200' : 'text-blue-600'
-                    }`}
-                  >
-                    {data.rate || meta.badge}
+                    {data.tagline || meta.tagline || 'Drive Your Way'}
                   </span>
                 </div>
 
