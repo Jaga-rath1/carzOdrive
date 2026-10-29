@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getTourWhatsAppMessage } from '../../utils/whatsapp';
+import { getTodayDateString } from '../../utils/formatters';
 
 export const TourQuickModal = ({ tour, isOpen, onClose, onOpenQuickBook }) => {
   if (!isOpen || !tour || typeof document === 'undefined') return null;
@@ -21,6 +22,16 @@ export const TourQuickModal = ({ tour, isOpen, onClose, onOpenQuickBook }) => {
 
   const handleBook = () => {
     onClose();
+    let durDays = 2;
+    if (tour?.durationDays && Number(tour.durationDays) > 0) {
+      durDays = Number(tour.durationDays);
+    } else if (typeof tour?.duration === 'string') {
+      const match = tour.duration.match(/(\d+)\s*Day/i);
+      if (match) durDays = parseInt(match[1], 10);
+    }
+    const today = getTodayDateString(1);
+    const returnDay = getTodayDateString(1 + Math.max(1, durDays));
+
     onOpenQuickBook?.({
       serviceType: 'tour-packages',
       vehicle: tour,
@@ -28,7 +39,8 @@ export const TourQuickModal = ({ tour, isOpen, onClose, onOpenQuickBook }) => {
       name: tour.title || tour.name,
       location: tour.destination,
       price: tour.startingPrice,
-      pickupDate: tour.pickupDate,
+      pickupDate: today,
+      returnDate: returnDay,
     });
   };
 

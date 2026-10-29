@@ -8,9 +8,54 @@ import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { bikesAPI } from '../../services/api';
 import { BikeRideCard } from './BikeRideCard';
 
+const FALLBACK_BIKES = [
+  {
+    id: 'hero-splendor-plus',
+    rawId: 'hero-splendor-plus',
+    bikeId: 'hero-splendor-plus',
+    name: 'Hero Splendor Plus XTEC',
+    brand: 'Hero',
+    category: 'Commuter',
+    engine: '97.2 cc',
+    mileage: '65 km/l',
+    transmission: '4-Speed Manual',
+    pricePerDay: '₹499',
+    priceNumeric: 499,
+    deposit: '₹1,500',
+    depositNumeric: 1500,
+    image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop',
+    badge: 'Coming Soon - Pre-Book',
+    isAvailable: true,
+    availableCount: 20,
+    availabilityStatus: 'Available',
+    vehicleType: 'bike',
+  },
+  {
+    id: 'honda-activa-6g',
+    rawId: 'honda-activa-6g',
+    bikeId: 'honda-activa-6g',
+    name: 'Honda Activa 6G Scooty',
+    brand: 'Honda',
+    category: 'Scooter',
+    engine: '109.5 cc',
+    mileage: '55 km/l',
+    transmission: 'Automatic CVT',
+    pricePerDay: '₹549',
+    priceNumeric: 549,
+    deposit: '₹1,500',
+    depositNumeric: 1500,
+    image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop',
+    badge: 'Coming Soon - Pre-Book',
+    isAvailable: true,
+    availableCount: 15,
+    availabilityStatus: 'Available',
+    vehicleType: 'bike',
+  },
+];
+
 export const BikeRideGrid = ({ onOpenQuickBook }) => {
   const [activeCategory, setActiveCategory] = useState('Available Now');
-  const [fleetBikes, setFleetBikes] = useState([]);
+  const [fleetBikes, setFleetBikes] = useState(FALLBACK_BIKES);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,11 +114,13 @@ export const BikeRideGrid = ({ onOpenQuickBook }) => {
           setFleetBikes(sorted);
           setLoading(false);
         } else {
+          setFleetBikes(FALLBACK_BIKES);
           setLoading(false);
         }
       })
       .catch((err) => {
         console.error('Failed to load bikes from DB:', err);
+        setFleetBikes(FALLBACK_BIKES);
         setLoading(false);
       });
 

@@ -216,7 +216,7 @@ export const buildCheckoutPayload = ({
     dropoffLocation: effectiveDropoffLocation,
     pickupDate,
     returnDate,
-    days: isTour ? 1 : days,
+    days: days,
     includeProtection,
     paymentMode,
     onlineMethod: paymentMode === 'offline' ? 'whatsapp' : onlineMethod,

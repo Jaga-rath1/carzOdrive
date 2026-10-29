@@ -83,10 +83,11 @@ router.get('/', authenticate, controller.listBookings);
 router.get('/:id', authenticate, controller.getBooking);
 router.get('/:id/invoice', optionalAuth, controller.getBookingInvoice);
 
-// Status management
+// Status management (Admin / Staff)
 router.patch(
   '/:id/status',
   authenticate,
+  authorize(...ADMINS, 'manage_bookings'),
   validate([body('status').notEmpty().withMessage('status is required')]),
   controller.updateStatus
 );
@@ -131,7 +132,13 @@ router.post(
   controller.assignDriver
 );
 
-router.post('/:id/pickup-inspection', authenticate, controller.pickupInspection);
+router.post(
+  '/:id/pickup-inspection',
+  authenticate,
+  authorize(...ADMINS, 'manage_bookings', 'DRIVER'),
+  controller.pickupInspection
+);
+
 router.post(
   '/:id/return-inspection',
   authenticate,

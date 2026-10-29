@@ -150,7 +150,7 @@ export const BookingStepServiceItem = ({
       <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-slate-600 font-medium">
-            Rental Rate ({selectedService === 'tour-packages' ? 'Package' : `${days} ${days === 1 ? 'Day' : 'Days'}`}):
+            Rental Rate ({days} {days === 1 ? 'Day' : 'Days'} × {formatCurrency(ratePerDay)}/day):
           </span>
           <span className="font-bold text-slate-900">{formatCurrency(subtotal || (ratePerDay * days))}</span>
         </div>

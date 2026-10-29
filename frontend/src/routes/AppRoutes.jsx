@@ -21,8 +21,9 @@ import { ResetPasswordPage } from '../pages/Auth/ResetPasswordPage';
 import { MyBookingsPage } from '../pages/MyBookings/MyBookingsPage';
 import { BookOnWhatsAppPage } from '../pages/BookOnWhatsApp/BookOnWhatsAppPage';
 
-// Admin Portal Pages
+// Admin Portal Pages & Guards
 import { AdminLayout } from '../pages/Admin/AdminLayout';
+import { AdminPermissionGuard } from '../components/admin/AdminPermissionGuard';
 import { AdminDashboardPage } from '../pages/Admin/AdminDashboardPage';
 import { AdminVehiclesPage } from '../pages/Admin/AdminVehiclesPage';
 import { AdminBikesPage } from '../pages/Admin/AdminBikesPage';
@@ -98,21 +99,77 @@ export const AppRoutes = () => {
           <Route path="*" element={<HomePage />} />
         </Route>
 
-        {/* Dedicated Admin Portal Routes */}
+        {/* Dedicated Admin Portal Routes with Granular RBAC Guards */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboardPage />} />
-          <Route path="bookings" element={<AdminBookingsPage />} />
-          <Route path="vehicles" element={<AdminVehiclesPage />} />
-          <Route path="bikes" element={<AdminBikesPage />} />
-          <Route path="packages" element={<AdminPackagesPage />} />
+          <Route
+            path="bookings"
+            element={
+              <AdminPermissionGuard requiredPermission="manage_bookings">
+                <AdminBookingsPage />
+              </AdminPermissionGuard>
+            }
+          />
+          <Route
+            path="vehicles"
+            element={
+              <AdminPermissionGuard requiredPermission="manage_cars">
+                <AdminVehiclesPage />
+              </AdminPermissionGuard>
+            }
+          />
+          <Route
+            path="bikes"
+            element={
+              <AdminPermissionGuard requiredPermission="manage_bikes">
+                <AdminBikesPage />
+              </AdminPermissionGuard>
+            }
+          />
+          <Route
+            path="packages"
+            element={
+              <AdminPermissionGuard requiredPermission="manage_packages">
+                <AdminPackagesPage />
+              </AdminPermissionGuard>
+            }
+          />
           <Route path="tours" element={<Navigate to="/admin/packages" replace />} />
-          <Route path="drivers" element={<AdminDriversPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-          <Route path="discounts" element={<AdminDiscountsPage />} />
+          <Route
+            path="drivers"
+            element={
+              <AdminPermissionGuard requiredPermission="manage_drivers">
+                <AdminDriversPage />
+              </AdminPermissionGuard>
+            }
+          />
+          <Route
+            path="users"
+            element={
+              <AdminPermissionGuard requiredPermission="manage_staff">
+                <AdminUsersPage />
+              </AdminPermissionGuard>
+            }
+          />
+          <Route
+            path="discounts"
+            element={
+              <AdminPermissionGuard requiredPermission="manage_rates">
+                <AdminDiscountsPage />
+              </AdminPermissionGuard>
+            }
+          />
           <Route path="offers" element={<Navigate to="/admin/discounts" replace />} />
-          <Route path="vendor-fleet" element={<AdminVendorFleetPage />} />
+          <Route
+            path="vendor-fleet"
+            element={
+              <AdminPermissionGuard requiredPermission="manage_cars">
+                <AdminVendorFleetPage />
+              </AdminPermissionGuard>
+            }
+          />
           <Route path="staff" element={<Navigate to="/admin/users" replace />} />
         </Route>
 

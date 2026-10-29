@@ -5,6 +5,7 @@ import { Clock, MapPin, ArrowRight, CheckCircle2, Sparkles, Eye } from 'lucide-r
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getTourWhatsAppMessage } from '../../utils/whatsapp';
 import { useAuth } from '../../hooks/useAuth';
+import { getTodayDateString } from '../../utils/formatters';
 
 export const TourPackageCard = ({ tour, onOpenQuickBook, onQuickLook }) => {
   const { isAuthenticated, openAuthModal } = useAuth();
@@ -12,6 +13,16 @@ export const TourPackageCard = ({ tour, onOpenQuickBook, onQuickLook }) => {
 
   const handleBookNow = (e) => {
     e.stopPropagation();
+    let durDays = 2;
+    if (tour?.durationDays && Number(tour.durationDays) > 0) {
+      durDays = Number(tour.durationDays);
+    } else if (typeof tour?.duration === 'string') {
+      const match = tour.duration.match(/(\d+)\s*Day/i);
+      if (match) durDays = parseInt(match[1], 10);
+    }
+    const today = getTodayDateString(1);
+    const returnDay = getTodayDateString(1 + Math.max(1, durDays));
+
     onOpenQuickBook?.({
       serviceType: 'tour-packages',
       vehicle: tour,
@@ -19,7 +30,8 @@ export const TourPackageCard = ({ tour, onOpenQuickBook, onQuickLook }) => {
       name: tour.title || tour.name,
       location: tour.destination,
       price: tour.startingPrice,
-      pickupDate: tour.pickupDate,
+      pickupDate: today,
+      returnDate: returnDay,
     });
   };
 

@@ -15,6 +15,17 @@ export const TourDetailBookingBox = ({ tour, onOpenQuickBook }) => {
       setDepartureDate(today);
       return;
     }
+    let durDays = 2;
+    if (tour?.durationDays && Number(tour.durationDays) > 0) {
+      durDays = Number(tour.durationDays);
+    } else if (typeof tour?.duration === 'string') {
+      const match = tour.duration.match(/(\d+)\s*Day/i);
+      if (match) durDays = parseInt(match[1], 10);
+    }
+    const d = new Date(departureDate);
+    d.setDate(d.getDate() + Math.max(1, durDays));
+    const retDate = d.toISOString().split('T')[0];
+
     onOpenQuickBook?.({
       serviceType: 'tour-packages',
       vehicle: tour,
@@ -23,6 +34,7 @@ export const TourDetailBookingBox = ({ tour, onOpenQuickBook }) => {
       name: tour.title || tour.name,
       location: tour.destination,
       pickupDate: departureDate,
+      returnDate: retDate,
       departureDate,
       travelers,
       price: tour.startingPrice,

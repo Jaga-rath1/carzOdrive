@@ -182,7 +182,7 @@ export const QuickBookingModal = ({
     });
   }, [selectedService, selectedCar, selectedChauffeurCar, selectedDriver, selectedBike, selectedTour, dbCars, dbDrivers, dbBikes, dbTours]);
 
-  const subtotal = ratePerDay * (selectedService === 'tour-packages' ? 1 : days);
+  const subtotal = ratePerDay * days;
   const discountCalculation = useMemo(() => {
     return calculateDiscount(subtotal, selectedService);
   }, [calculateDiscount, subtotal, selectedService]);
@@ -217,7 +217,7 @@ export const QuickBookingModal = ({
       setPickupDate(today);
       return;
     }
-    if (selectedService !== 'tour-packages' && returnDate && returnDate < pickupDate) {
+    if (returnDate && returnDate < pickupDate) {
       setStep1Error('Return date cannot be earlier than pick-up date.');
       setReturnDate(pickupDate);
       return;
@@ -367,7 +367,7 @@ export const QuickBookingModal = ({
           userCarModel,
           pickupDate,
           returnDate,
-          days: selectedService === 'tour-packages' ? 1 : days,
+          days: days,
           location: effectivePickupLocation,
           dropLocation: effectiveDropoffLocation,
           protection: includeProtection ? 'Zero-Excess Damage Waiver' : 'Standard / None',

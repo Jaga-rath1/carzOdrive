@@ -57,7 +57,7 @@ export const BookingStepConfirmation = ({
     dropoffLocation: effectiveDropoffLocation,
     pickupDate,
     returnDate,
-    days: selectedService === 'tour-packages' ? 1 : days,
+    days: days,
     includeProtection,
     totalAmount: total,
     paidAmount: amountDueNow,
@@ -145,9 +145,7 @@ export const BookingStepConfirmation = ({
         <div className="flex items-center justify-between pb-2 border-b border-slate-200">
           <span className="text-slate-500 font-medium">Schedule:</span>
           <span className="font-semibold text-slate-900">
-            {pickupDate} to {returnDate} (
-            {selectedService === 'tour-packages' ? 'Package' : `${days} ${days === 1 ? 'Day' : 'Days'}`}
-            )
+            {pickupDate} to {returnDate} ({days} {days === 1 ? 'Day' : 'Days'})
           </span>
         </div>
         <div className="flex items-center justify-between pb-2 border-b border-slate-200">
@@ -241,7 +239,7 @@ export const BookingStepConfirmation = ({
             userCarModel,
             pickupDate,
             returnDate,
-            days: selectedService === 'tour-packages' ? 1 : days,
+            days: days,
             location: effectivePickupLocation,
             dropLocation: effectiveDropoffLocation,
             protection: includeProtection ? 'Zero-Excess Damage Waiver' : 'Standard / None',

@@ -74,10 +74,8 @@ const FALLBACK_CARS = [
 ];
 
 const FALLBACK_BIKES = [
-  { id: 'yamaha-mt-15-v2', name: 'Yamaha MT-15 V2', category: 'sports', pricePerDay: 1199, priceDisplay: '₹1,199', isAvailable: true, availableCount: 8, quantity: 8, image: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=1200&auto=format&fit=crop' },
-  { id: 'honda-activa-6g', name: 'Honda Activa 6G Premium', category: 'scooter', pricePerDay: 549, priceDisplay: '₹549', isAvailable: true, availableCount: 15, quantity: 15, image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' },
-  { id: 'ktm-duke-250', name: 'KTM Duke 250', category: 'sports', pricePerDay: 1499, priceDisplay: '₹1,499', isAvailable: true, availableCount: 7, quantity: 7, image: 'https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?q=80&w=1200&auto=format&fit=crop' },
-  { id: 'hero-splendor-plus', name: 'Hero Splendor Plus XTEC', category: 'commuter', pricePerDay: 499, priceDisplay: '₹499', isAvailable: true, availableCount: 20, quantity: 20, image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' },
+  { id: 'hero-splendor-plus', name: 'Hero Splendor Plus XTEC', category: 'commuter', pricePerDay: 499, priceDisplay: '₹499', isAvailable: true, availableCount: 20, quantity: 20, badge: 'Coming Soon', image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' },
+  { id: 'honda-activa-6g', name: 'Honda Activa 6G Scooty', category: 'scooter', pricePerDay: 549, priceDisplay: '₹549', isAvailable: true, availableCount: 15, quantity: 15, badge: 'Coming Soon', image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop' },
 ];
 
 export const Hero = ({ onOpenQuickBook }) => {
@@ -184,19 +182,25 @@ export const Hero = ({ onOpenQuickBook }) => {
           }
 
           if (toursRes.status === 'fulfilled' && toursRes.value?.data?.length > 0) {
-            const tours = toursRes.value.data.map((p) => ({
-              id: p.slug || p._id || p.id,
-              _id: p._id,
-              rawId: p._id,
-              packageId: p._id,
-              name: p.name,
-              destination: p.destination,
-              startingPrice: `₹${(p.pricing?.adultPrice || 5499).toLocaleString('en-IN')}`,
-              duration: typeof p.duration === 'object' ? `${p.duration.days || 2}D / ${p.duration.nights || 1}N` : p.duration,
-              isAvailable: true,
-              availableCount: 10,
-              rawTour: p,
-            }));
+            const tours = toursRes.value.data.map((p) => {
+              const rateNum = p.pricing?.adultPrice || (typeof p.priceNumeric === 'number' ? p.priceNumeric : 4999);
+              return {
+                id: p.slug || p._id || p.id,
+                _id: p._id,
+                rawId: p._id,
+                packageId: p._id,
+                name: p.name,
+                destination: p.destination,
+                priceNumeric: rateNum,
+                pricePerDay: rateNum,
+                priceDisplay: `₹${rateNum.toLocaleString('en-IN')}/day`,
+                startingPrice: `₹${rateNum.toLocaleString('en-IN')}`,
+                duration: typeof p.duration === 'object' ? `${p.duration.days || 2}D / ${p.duration.nights || 1}N` : p.duration,
+                isAvailable: true,
+                availableCount: 10,
+                rawTour: p,
+              };
+            });
             setDbTours(tours);
             setSelectedTourId(tours[0].id);
           }
@@ -293,18 +297,18 @@ export const Hero = ({ onOpenQuickBook }) => {
       'self-drive-bike': {
         image: '/images/services/self-drive-bike.png',
         vehiclePhoto: bike?.image || FALLBACK_BIKES[0].image,
-        title: bike?.name || 'Cruisers & Sportbikes',
-        tagline: 'Ride the Freedom',
-        badge: 'Live Fleet',
+        title: bike?.name || 'Splendor & Activa Scooty',
+        tagline: 'Coming Soon • Pre-Book via WhatsApp',
+        badge: 'Coming Soon',
         rate: bike?.priceDisplay || (bike?.pricePerDay ? `₹${bike.pricePerDay}/d` : '₹499/d'),
       },
       'tour-packages': {
         image: '/images/services/tour-packages.png',
         vehiclePhoto: tour?.image || tour?.rawTour?.image,
         title: tour?.name || tour?.title || 'Odisha Heritage & Coast',
-        tagline: 'Explore More',
+        tagline: 'Custom Daily & Multi-Day Escapes',
         badge: 'Odisha Tours',
-        rate: tour?.startingPrice || 'From ₹5,499',
+        rate: tour?.priceDisplay || tour?.startingPrice || 'From ₹4,999/day',
       },
     };
   }, [dbCars, dbBikes, dbTours, driverSettings]);

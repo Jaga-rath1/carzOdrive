@@ -53,17 +53,32 @@ export const HeroWhatsAppModal = ({
     const effectivePickup = pickupLocation;
     const effectiveDrop = dropLocation === 'Same as Pick-up Location' ? pickupLocation : dropLocation;
     const itemName = currentSelectedItem?.name || (activeTab === 'driver-only' ? 'Verified Driver (Provided by Company)' : 'Selected Fleet Vehicle');
-    const priceRate = currentSelectedItem?.priceDisplay || (currentSelectedItem?.pricePerDay ? `₹${currentSelectedItem.pricePerDay}/day` : '');
+
+    const numericRate =
+      currentSelectedItem?.priceNumeric ||
+      currentSelectedItem?.pricePerDay ||
+      (typeof currentSelectedItem?.priceDisplay === 'string'
+        ? parseInt(currentSelectedItem.priceDisplay.replace(/[^0-9]/g, ''), 10)
+        : 0) ||
+      (typeof currentSelectedItem?.startingPrice === 'string'
+        ? parseInt(currentSelectedItem.startingPrice.replace(/[^0-9]/g, ''), 10)
+        : 0) ||
+      0;
+
+    const scaledTotal =
+      numericRate > 0
+        ? `₹${(numericRate * tripDays).toLocaleString('en-IN')} (₹${numericRate.toLocaleString('en-IN')}/day × ${tripDays} ${tripDays === 1 ? 'Day' : 'Days'})`
+        : currentSelectedItem?.priceDisplay || '';
 
     const message = getQuickBookingWhatsAppMessage({
       serviceName: activeService?.label || 'Rental Service',
       vehicleName: itemName,
       pickupDate: `${pickupDate} (${pickupTime})`,
       returnDate: `${returnDate} (${returnTime})`,
-      days: activeTab === 'tour-packages' ? 1 : tripDays,
+      days: tripDays,
       location: effectivePickup,
       dropLocation: effectiveDrop,
-      total: priceRate ? `${priceRate} (Trip: ${tripDays} ${tripDays === 1 ? 'Day' : 'Days'})` : '',
+      total: scaledTotal,
       deposit: currentSelectedItem?.deposit || '₹0 (Zero Deposit)',
       guestName: waName.trim(),
       guestPhone: cleanPhone,

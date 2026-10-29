@@ -52,14 +52,14 @@ export const BookOnWhatsAppPage = () => {
     const getTabDefaultItem = () => {
       if (activeTab === 'self-drive-bike') {
         return {
-          id: 'yamaha-mt-15-v2',
-          name: 'Yamaha MT-15 V2',
-          category: 'Sports',
+          id: 'hero-splendor-plus',
+          name: 'Hero Splendor Plus XTEC',
+          category: 'Commuter (Coming Soon)',
           vehicleType: 'bike',
-          pricePerDay: 1199,
-          priceDisplay: '₹1,199/day',
-          deposit: '₹0 (Zero Deposit)',
-          image: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=1200&auto=format&fit=crop',
+          pricePerDay: 499,
+          priceDisplay: '₹499/day',
+          deposit: '₹1,500',
+          image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1200&auto=format&fit=crop',
         };
       }
       if (activeTab === 'driver-only') {
@@ -177,23 +177,31 @@ export const BookOnWhatsAppPage = () => {
         ? 'Verified Commercial Driver (Provided by Company)'
         : 'Selected Fleet Vehicle');
 
-    const priceRate =
-      bookingData.currentSelectedItem?.priceDisplay ||
-      (bookingData.currentSelectedItem?.pricePerDay
-        ? `₹${bookingData.currentSelectedItem.pricePerDay}/day`
-        : '');
+    const numericRate =
+      bookingData.currentSelectedItem?.priceNumeric ||
+      bookingData.currentSelectedItem?.pricePerDay ||
+      (typeof bookingData.currentSelectedItem?.priceDisplay === 'string'
+        ? parseInt(bookingData.currentSelectedItem.priceDisplay.replace(/[^0-9]/g, ''), 10)
+        : 0) ||
+      (typeof bookingData.currentSelectedItem?.startingPrice === 'string'
+        ? parseInt(bookingData.currentSelectedItem.startingPrice.replace(/[^0-9]/g, ''), 10)
+        : 0) ||
+      0;
+
+    const scaledTotal =
+      numericRate > 0
+        ? `₹${(numericRate * bookingData.tripDays).toLocaleString('en-IN')} (₹${numericRate.toLocaleString('en-IN')}/day × ${bookingData.tripDays} ${bookingData.tripDays === 1 ? 'Day' : 'Days'})`
+        : bookingData.currentSelectedItem?.priceDisplay || '';
 
     const message = getQuickBookingWhatsAppMessage({
       serviceName: bookingData.activeService?.label || 'Car Rental Service',
       vehicleName: itemName,
       pickupDate: `${bookingData.pickupDate} (${bookingData.pickupTime})`,
       returnDate: `${bookingData.returnDate} (${bookingData.returnTime})`,
-      days: bookingData.activeTab === 'tour-packages' ? 1 : bookingData.tripDays,
+      days: bookingData.tripDays,
       location: effectivePickup,
       dropLocation: effectiveDrop,
-      total: priceRate
-        ? `${priceRate} (Estimated for ${bookingData.tripDays} ${bookingData.tripDays === 1 ? 'Day' : 'Days'})`
-        : '',
+      total: scaledTotal,
       deposit: bookingData.currentSelectedItem?.deposit || '₹0 (Zero Security Deposit)',
       guestName: name.trim(),
       guestPhone: cleanPhone,
@@ -423,6 +431,30 @@ export const BookOnWhatsAppPage = () => {
                     {bookingData.tripDays} {bookingData.tripDays === 1 ? 'Day' : 'Days'}
                   </span>
                 </div>
+
+                {(() => {
+                  const rate =
+                    bookingData.currentSelectedItem?.priceNumeric ||
+                    bookingData.currentSelectedItem?.pricePerDay ||
+                    (typeof bookingData.currentSelectedItem?.priceDisplay === 'string'
+                      ? parseInt(bookingData.currentSelectedItem.priceDisplay.replace(/[^0-9]/g, ''), 10)
+                      : 0) ||
+                    (typeof bookingData.currentSelectedItem?.startingPrice === 'string'
+                      ? parseInt(bookingData.currentSelectedItem.startingPrice.replace(/[^0-9]/g, ''), 10)
+                      : 0) ||
+                    0;
+                  if (rate <= 0) return null;
+                  return (
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+                      <span className="text-emerald-800 font-semibold">
+                        Estimated Total ({bookingData.tripDays} {bookingData.tripDays === 1 ? 'Day' : 'Days'}):
+                      </span>
+                      <span className="font-black text-emerald-700 text-sm">
+                        ₹{(rate * bookingData.tripDays).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* CHANGE CAR / DATES ACTION */}
