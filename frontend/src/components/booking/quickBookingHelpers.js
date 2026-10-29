@@ -127,7 +127,7 @@ export const getActiveVehicleId = ({
     return selectedTour?._id || selectedTour?.rawId || selectedTour?.packageId || selectedTour?.id;
   }
   if (selectedService === 'driver-only') {
-    return selectedDriver?._id || selectedDriver?.rawId || selectedDriver?.id;
+    return selectedDriver?._id || selectedDriver?.rawId || selectedDriver?.id || initialVehicle?._id || initialVehicle?.rawId || initialVehicle?.id || 'driver-company';
   }
   return selectedCar?._id || selectedCar?.rawId || selectedCar?.id || initialVehicle?._id || initialVehicle?.rawId || initialVehicle?.id;
 };
