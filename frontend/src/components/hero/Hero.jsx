@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
 import { Container } from '../common/Container';
-import carzodriveLogo from '../../assets/carzodrive-logo.png';
+import heroBanner from '../../assets/carzodrive-hero-banner.jpg';
 import { BHUBANESWAR_LOCATIONS, SERVICE_OPTIONS } from '../../config/bookingConfig';
 import { vehiclesAPI, bikesAPI, packagesAPI, driversAPI } from '../../services/api';
 import { getTodayDateString, getCurrentTimeString } from '../../utils/formatters';
@@ -380,17 +380,18 @@ export const Hero = ({ onOpenQuickBook }) => {
       <section className="relative z-10 w-full pt-[116px] xs:pt-[124px] sm:pt-[132px] md:pt-[140px] pb-5 sm:pb-12 border-b border-slate-200/80">
         <Container>
           <div className="w-full max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center text-center">
-            {/* 1. SCROLL-TRIGGERED 3D METALLIC CARZODRIVE EMBLEM SHOWCASE */}
-            <div className="w-full flex items-center justify-center pt-2 pb-2 sm:pt-4 sm:pb-4 px-2 sm:px-4 overflow-visible">
+            {/* 1. SCROLL-TRIGGERED CARZODRIVE BRAND BILLBOARD BANNER POSTER */}
+            <div className="w-full flex items-center justify-center pt-0.5 pb-2 sm:pt-1 sm:pb-3 px-0.5 sm:px-0 overflow-visible">
               <motion.div
                 style={{ scale: logoScale, y: logoY, opacity: logoOpacity }}
-                className="w-full max-w-xl sm:max-w-2xl md:max-w-3xl xl:max-w-4xl flex items-center justify-center will-change-transform"
+                className="w-full max-w-5xl xl:max-w-6xl rounded-xl sm:rounded-3xl overflow-hidden shadow-[0_8px_25px_rgba(2,132,199,0.18)] sm:shadow-[0_16px_45px_rgba(2,132,199,0.25)] border border-slate-200/90 bg-black will-change-transform"
               >
                 <img
-                  src={carzodriveLogo}
+                  src={heroBanner}
                   alt="CARZODRIVE — DRIVE YOUR WORLD"
-                  className="w-full max-w-[340px] xs:max-w-[440px] sm:max-w-[560px] md:max-w-[660px] lg:max-w-[760px] h-auto object-contain select-none filter drop-shadow-[0_12px_30px_rgba(2,132,199,0.28)] hover:scale-[1.02] transition-transform duration-300"
+                  className="w-full h-auto object-contain select-none block"
                   loading="eager"
+                  fetchPriority="high"
                 />
               </motion.div>
             </div>
