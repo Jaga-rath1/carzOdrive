@@ -127,9 +127,43 @@ export const InvoiceModal = ({ isOpen, onClose, booking, bookingIdOrCode }) => {
 
   if (!b) return null;
 
-  const total = Number(b.totalAmount || b.priceBreakdown?.totalAmount || 0);
-  const paid = Number(b.paidAmount || (b.paymentStatus === 'PAID' ? total : 0));
-  const balance = b.balanceAmount !== undefined ? Number(b.balanceAmount) : Math.max(0, total - paid);
+  const total = Math.max(0, Number(b.totalAmount || b.priceBreakdown?.totalAmount || 0));
+
+  const isOffline =
+    b.paymentMode === 'offline' ||
+    b.paymentStatus === 'OFFLINE_PENDING' ||
+    b.transactionId === 'PAY_ON_PICKUP';
+  const isExplicitlyPaid = b.paymentStatus === 'PAID';
+  const isPartiallyPaid = b.paymentStatus === 'PARTIALLY_PAID' || b.paymentMode === 'partial';
+
+  let paid = 0;
+  if (isOffline && !isExplicitlyPaid) {
+    paid = 0;
+  } else if (b.paidAmount !== undefined && b.paidAmount !== null && !isNaN(Number(b.paidAmount))) {
+    paid = Math.max(0, Number(b.paidAmount));
+    if (paid === 0 && isExplicitlyPaid && !isOffline) {
+      paid = total;
+    }
+  } else if (isExplicitlyPaid && !isOffline) {
+    paid = total;
+  } else if (isPartiallyPaid && !isOffline) {
+    paid = Math.max(0, Number(b.paidAmount || Math.round(total * 0.25)));
+  } else {
+    paid = 0;
+  }
+
+  if (total > 0 && paid > total) {
+    paid = total;
+  }
+
+  let balance = 0;
+  if (b.balanceAmount !== undefined && b.balanceAmount !== null && !isNaN(Number(b.balanceAmount))) {
+    const rawBalance = Number(b.balanceAmount);
+    balance = (isOffline && !isExplicitlyPaid && rawBalance === 0 && total > 0) ? total : Math.max(0, rawBalance);
+  } else {
+    balance = Math.max(0, total - paid);
+  }
+
   const deposit = Number(b.securityDeposit || b.priceBreakdown?.securityDeposit || 0);
 
   const isTour =
@@ -492,26 +526,36 @@ export const InvoiceModal = ({ isOpen, onClose, booking, bookingIdOrCode }) => {
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Payment Status:</span>
                     <span className={`font-black uppercase text-[10px] px-2 py-0.5 rounded ${
-                      b.paymentStatus === 'PAID'
+                      paid >= total && total > 0
                         ? 'bg-emerald-100 text-emerald-800'
-                        : b.paymentStatus === 'PARTIALLY_PAID'
+                        : paid > 0
                         ? 'bg-amber-100 text-amber-800'
+                        : isOffline
+                        ? 'bg-amber-50 text-amber-900 border border-amber-300'
                         : 'bg-zinc-200 text-zinc-800'
                     }`}>
-                      {b.paymentStatus?.replace('_', ' ') || 'PAID'}
+                      {paid >= total && total > 0
+                        ? 'PAID'
+                        : paid > 0
+                        ? 'PARTIALLY PAID'
+                        : isOffline
+                        ? 'PAY ON PICKUP (PENDING)'
+                        : (b.paymentStatus?.replace('_', ' ') || 'PENDING')}
                     </span>
                   </div>
                   <div className="flex justify-between font-mono text-[11px]">
                     <span className="text-zinc-500">Receipt Ref:</span>
-                    <span className="font-bold text-zinc-900">{b.paymentId?.paymentNumber || 'PAY-OFFLINE'}</span>
+                    <span className="font-bold text-zinc-900">{b.paymentId?.paymentNumber || (isOffline ? 'PAY-ON-PICKUP' : 'PAY-ONLINE')}</span>
                   </div>
                   <div className="flex justify-between font-mono text-[11px]">
                     <span className="text-zinc-500">Transaction ID:</span>
-                    <span className="font-bold text-zinc-900 truncate max-w-[150px]">{b.transactionId || 'ONLINE_GATEWAY'}</span>
+                    <span className="font-bold text-zinc-900 truncate max-w-[150px]">{b.transactionId || (isOffline ? 'PAY_ON_PICKUP' : 'ONLINE_GATEWAY')}</span>
                   </div>
                   <div className="flex justify-between text-[11px]">
                     <span className="text-zinc-500">Payment Mode:</span>
-                    <span className="font-bold uppercase text-zinc-800">{b.paymentMode || '100% Online'}</span>
+                    <span className="font-bold uppercase text-zinc-800">
+                      {b.paymentMode === 'offline' ? 'Pay on Pickup' : b.paymentMode === 'partial' ? '25% Partial Advance' : (b.paymentMode || '100% Online')}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -665,13 +709,13 @@ export const InvoiceModal = ({ isOpen, onClose, booking, bookingIdOrCode }) => {
                   <span>₹{total.toLocaleString('en-IN')}</span>
                 </div>
 
-                <div className="flex justify-between text-emerald-700 font-bold border-t border-zinc-200 pt-1 text-[11px]">
+                <div className={`flex justify-between font-bold border-t border-zinc-200 pt-1 text-[11px] ${paid > 0 ? 'text-emerald-700' : 'text-zinc-500'}`}>
                   <span>Advance Received:</span>
                   <span>₹{paid.toLocaleString('en-IN')}</span>
                 </div>
 
-                <div className="flex justify-between text-amber-700 font-bold text-[11px]">
-                  <span>Balance Payable:</span>
+                <div className={`flex justify-between font-bold text-[11px] ${balance > 0 ? 'text-amber-700' : 'text-zinc-500'}`}>
+                  <span>Balance Payable at Handover:</span>
                   <span>₹{balance.toLocaleString('en-IN')}</span>
                 </div>
               </div>

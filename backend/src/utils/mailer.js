@@ -194,6 +194,50 @@ const COMPANY_INVOICE_META = {
 };
 
 /**
+ * Resiliently compute total, paid, and balance amounts for email templates
+ */
+function resolveBookingLedger(booking) {
+  const total = Math.max(0, Number(booking?.totalAmount || booking?.priceBreakdown?.totalAmount || 0));
+
+  const isOffline =
+    booking?.paymentMode === 'offline' ||
+    booking?.paymentStatus === 'OFFLINE_PENDING' ||
+    booking?.transactionId === 'PAY_ON_PICKUP';
+  const isExplicitlyPaid = booking?.paymentStatus === 'PAID';
+  const isPartiallyPaid = booking?.paymentStatus === 'PARTIALLY_PAID' || booking?.paymentMode === 'partial';
+
+  let paid = 0;
+  if (isOffline && !isExplicitlyPaid) {
+    paid = 0;
+  } else if (booking?.paidAmount !== undefined && booking?.paidAmount !== null && !isNaN(Number(booking?.paidAmount))) {
+    paid = Math.max(0, Number(booking.paidAmount));
+    if (paid === 0 && isExplicitlyPaid && !isOffline) {
+      paid = total;
+    }
+  } else if (isExplicitlyPaid && !isOffline) {
+    paid = total;
+  } else if (isPartiallyPaid && !isOffline) {
+    paid = Math.max(0, Number(booking?.paidAmount || Math.round(total * 0.25)));
+  } else {
+    paid = 0;
+  }
+
+  if (total > 0 && paid > total) {
+    paid = total;
+  }
+
+  let balance = 0;
+  if (booking?.balanceAmount !== undefined && booking?.balanceAmount !== null && !isNaN(Number(booking?.balanceAmount))) {
+    const rawBalance = Number(booking.balanceAmount);
+    balance = (isOffline && !isExplicitlyPaid && rawBalance === 0 && total > 0) ? total : Math.max(0, rawBalance);
+  } else {
+    balance = Math.max(0, total - paid);
+  }
+
+  return { total, paid, balance, isOffline, isExplicitlyPaid, isPartiallyPaid };
+}
+
+/**
  * Send official GST Tax Invoice & Travel Voucher email to Customer with PDF Attachment
  */
 async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', booking, pdfBuffer = null }) {
@@ -225,10 +269,26 @@ async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', book
   const sacCode = isTour ? COMPANY_INVOICE_META.sacTourOperator : COMPANY_INVOICE_META.sacCarRental;
   const gstRate = isTour ? 5 : 18;
 
-  const total = Number(booking.totalAmount || booking.priceBreakdown?.totalAmount || 0);
-  const paid = Number(booking.paidAmount || (booking.paymentStatus === 'PAID' ? total : 0));
-  const balance = booking.balanceAmount !== undefined ? Number(booking.balanceAmount) : Math.max(0, total - paid);
+  const { total, paid, balance, isOffline, isExplicitlyPaid } = resolveBookingLedger(booking);
   const deposit = Number(booking.securityDeposit || booking.priceBreakdown?.securityDeposit || 0);
+
+  const displayPaymentMode =
+    booking.paymentMode === 'offline'
+      ? 'Pay on Pickup (Cash / UPI)'
+      : booking.paymentMode === 'partial'
+      ? 'Partial Advance (25%)'
+      : booking.paymentMode === 'full'
+      ? '100% Online'
+      : (booking.paymentMode?.toUpperCase() || 'Online');
+
+  const displayPaymentStatus =
+    paid >= total && total > 0
+      ? 'PAID (CONFIRMED)'
+      : paid > 0
+      ? 'PARTIALLY PAID'
+      : isOffline
+      ? 'PAY ON PICKUP (PENDING)'
+      : (booking.paymentStatus || 'PENDING');
 
   const baseRate = Math.round(total / (1 + gstRate / 100));
   const gstAmount = Math.max(0, total - baseRate);
@@ -400,8 +460,8 @@ async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', book
                     <tr>
                       <td width="55%" style="vertical-align: top; padding-right: 16px; font-size: 12px; color: #94a3b8;">
                         <p style="margin: 0 0 6px 0; font-weight: 700; color: #cbd5e1;">Payment Mode & Ledger</p>
-                        <p style="margin: 0 0 4px 0;">Payment Mode: <strong style="color: #ffffff; text-transform: uppercase;">${booking.paymentMode || '100% Online'}</strong></p>
-                        <p style="margin: 0 0 4px 0;">Payment Status: <strong style="color: #34d399;">${booking.paymentStatus || 'CONFIRMED'}</strong></p>
+                        <p style="margin: 0 0 4px 0;">Payment Mode: <strong style="color: #ffffff; text-transform: uppercase;">${displayPaymentMode}</strong></p>
+                        <p style="margin: 0 0 4px 0;">Payment Status: <strong style="color: ${paid >= total && total > 0 ? '#34d399' : '#f59e0b'};">${displayPaymentStatus}</strong></p>
                         ${booking.transactionId ? `<p style="margin: 0 0 4px 0; font-family: monospace; font-size: 11px;">TXN: ${booking.transactionId}</p>` : ''}
                         <p style="margin: 10px 0 0 0; font-size: 11px; color: #64748b;">• GST Reverse Charge: NO • Computer-Generated Tax Invoice</p>
                       </td>
@@ -424,12 +484,12 @@ async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', book
                             <td align="right" style="padding-top: 8px; color: #38bdf8; font-weight: 900; font-size: 15px;">₹${total.toLocaleString('en-IN')}</td>
                           </tr>
                           <tr>
-                            <td style="color: #34d399; font-weight: 700;">Advance Paid:</td>
-                            <td align="right" style="color: #34d399; font-weight: 700;">₹${paid.toLocaleString('en-IN')}</td>
+                            <td style="color: ${paid > 0 ? '#34d399' : '#94a3b8'}; font-weight: 700;">Advance Paid:</td>
+                            <td align="right" style="color: ${paid > 0 ? '#34d399' : '#94a3b8'}; font-weight: 700;">₹${paid.toLocaleString('en-IN')}</td>
                           </tr>
                           <tr>
-                            <td style="color: #f59e0b; font-weight: 700;">Balance Due at Pickup:</td>
-                            <td align="right" style="color: #f59e0b; font-weight: 700;">₹${balance.toLocaleString('en-IN')}</td>
+                            <td style="color: ${balance > 0 ? '#f59e0b' : '#34d399'}; font-weight: 700;">Balance Due at Pickup:</td>
+                            <td align="right" style="color: ${balance > 0 ? '#f59e0b' : '#34d399'}; font-weight: 700;">₹${balance.toLocaleString('en-IN')}</td>
                           </tr>
                         </table>
                       </td>
@@ -543,9 +603,7 @@ async function sendBookingAlertToAdmin({ booking, adminEmail, pdfBuffer = null }
   const from = process.env.EMAIL_FROM || (user ? `CARZODRIVE Dispatch <${user}>` : 'CARZODRIVE Dispatch <no-reply@carzodrive.com>');
   const bookingNumber = booking.bookingNumber || booking._id;
   const invoiceNumber = booking.invoiceNumber || `INV-${String(bookingNumber).replace(/^CZ-/, '')}`;
-  const total = Number(booking.totalAmount || booking.priceBreakdown?.totalAmount || 0);
-  const paid = Number(booking.paidAmount || (booking.paymentStatus === 'PAID' ? total : 0));
-  const balance = booking.balanceAmount !== undefined ? Number(booking.balanceAmount) : Math.max(0, total - paid);
+  const { total, paid, balance, isOffline } = resolveBookingLedger(booking);
   const customerName = booking.guestName || booking.customerId?.name || 'Guest User';
   const customerPhone = booking.guestPhone || booking.customerId?.phone || 'Not provided';
   const customerEmail = booking.guestEmail || booking.customerId?.email || 'Not provided';
@@ -722,12 +780,12 @@ async function sendBookingAlertToAdmin({ booking, adminEmail, pdfBuffer = null }
                       <td align="right" style="color: #ffffff; font-weight: 800; font-size: 13px;">₹${total.toLocaleString('en-IN')}</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #1e293b;">
-                      <td style="color: #34d399;">Advance Paid Online:</td>
-                      <td align="right" style="color: #34d399; font-weight: 800;">₹${paid.toLocaleString('en-IN')}</td>
+                      <td style="color: ${paid > 0 ? '#34d399' : '#94a3b8'};">Advance Paid Online:</td>
+                      <td align="right" style="color: ${paid > 0 ? '#34d399' : '#94a3b8'}; font-weight: 800;">₹${paid.toLocaleString('en-IN')}</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #1e293b;">
-                      <td style="color: #f59e0b;">Balance to Collect at Pickup:</td>
-                      <td align="right" style="color: #f59e0b; font-weight: 800; font-size: 13px;">₹${balance.toLocaleString('en-IN')}</td>
+                      <td style="color: ${balance > 0 ? '#f59e0b' : '#34d399'};">Balance to Collect at Pickup:</td>
+                      <td align="right" style="color: ${balance > 0 ? '#f59e0b' : '#34d399'}; font-weight: 800; font-size: 13px;">₹${balance.toLocaleString('en-IN')}</td>
                     </tr>
                     <tr>
                       <td style="color: #64748b;">Transaction Ref:</td>

@@ -22,24 +22,26 @@ async function createOrSyncPaymentForBooking(booking) {
   const total = Number(booking.totalAmount || booking.priceBreakdown?.totalAmount || 0);
 
   // Preserve explicit paidAmount and balanceAmount if already provided (e.g. from admin or online payment)
-  let paid =
-    booking.paidAmount !== undefined && booking.paidAmount !== null && booking.paidAmount !== ''
-      ? Number(booking.paidAmount)
-      : booking.paymentMode === 'full'
-      ? total
-      : 0;
-
-  if (booking.paymentMode === 'partial' && paid === 0) {
+  let paid = 0;
+  if (booking.paymentMode === 'offline' && booking.paymentStatus !== 'PAID') {
+    paid = 0;
+  } else if (booking.paidAmount !== undefined && booking.paidAmount !== null && booking.paidAmount !== '') {
+    paid = Number(booking.paidAmount);
+  } else if (booking.paymentMode === 'full' && booking.paymentStatus === 'PAID') {
+    paid = total;
+  } else if (booking.paymentMode === 'partial') {
     paid = Math.max(499, Math.round(total * 0.25));
+  } else {
+    paid = 0;
   }
 
   let balance =
     booking.balanceAmount !== undefined && booking.balanceAmount !== null && booking.balanceAmount !== ''
-      ? Number(booking.balanceAmount)
+      ? (booking.paymentMode === 'offline' && booking.paymentStatus !== 'PAID' && Number(booking.balanceAmount) === 0 && total > 0 ? total : Number(booking.balanceAmount))
       : Math.max(0, total - paid);
 
   let paymentStatus = booking.paymentStatus;
-  if (!paymentStatus) {
+  if (!paymentStatus || paymentStatus === 'PENDING') {
     if (paid >= total && total > 0) paymentStatus = 'PAID';
     else if (paid > 0 && paid < total) paymentStatus = 'PARTIALLY_PAID';
     else if (booking.paymentMode === 'offline') paymentStatus = 'OFFLINE_PENDING';

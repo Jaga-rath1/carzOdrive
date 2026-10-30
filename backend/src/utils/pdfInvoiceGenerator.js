@@ -51,9 +51,43 @@ function generateInvoicePdfBuffer(booking) {
       const sacCode = isTour ? COMPANY_META.sacTourOperator : COMPANY_META.sacCarRental;
       const gstRate = isTour ? 5 : 18;
 
-      const total = Number(booking.totalAmount || booking.priceBreakdown?.totalAmount || 0);
-      const paid = Number(booking.paidAmount || (booking.paymentStatus === 'PAID' ? total : 0));
-      const balance = booking.balanceAmount !== undefined ? Number(booking.balanceAmount) : Math.max(0, total - paid);
+      const total = Math.max(0, Number(booking.totalAmount || booking.priceBreakdown?.totalAmount || 0));
+
+      const isOffline =
+        booking.paymentMode === 'offline' ||
+        booking.paymentStatus === 'OFFLINE_PENDING' ||
+        booking.transactionId === 'PAY_ON_PICKUP';
+      const isExplicitlyPaid = booking.paymentStatus === 'PAID';
+      const isPartiallyPaid = booking.paymentStatus === 'PARTIALLY_PAID' || booking.paymentMode === 'partial';
+
+      let paid = 0;
+      if (isOffline && !isExplicitlyPaid) {
+        paid = 0;
+      } else if (booking.paidAmount !== undefined && booking.paidAmount !== null && !isNaN(Number(booking.paidAmount))) {
+        paid = Math.max(0, Number(booking.paidAmount));
+        if (paid === 0 && isExplicitlyPaid && !isOffline) {
+          paid = total;
+        }
+      } else if (isExplicitlyPaid && !isOffline) {
+        paid = total;
+      } else if (isPartiallyPaid && !isOffline) {
+        paid = Math.max(0, Number(booking.paidAmount || Math.round(total * 0.25)));
+      } else {
+        paid = 0;
+      }
+
+      if (total > 0 && paid > total) {
+        paid = total;
+      }
+
+      let balance = 0;
+      if (booking.balanceAmount !== undefined && booking.balanceAmount !== null && !isNaN(Number(booking.balanceAmount))) {
+        const rawBalance = Number(booking.balanceAmount);
+        balance = (isOffline && !isExplicitlyPaid && rawBalance === 0 && total > 0) ? total : Math.max(0, rawBalance);
+      } else {
+        balance = Math.max(0, total - paid);
+      }
+
       const deposit = Number(booking.securityDeposit || booking.priceBreakdown?.securityDeposit || 0);
 
       const baseRate = Math.round(total / (1 + gstRate / 100));
@@ -105,10 +139,20 @@ function generateInvoicePdfBuffer(booking) {
       );
 
       // Right Tax Invoice Badge
+      const statusBadgeText =
+        paid >= total && total > 0
+          ? 'PAID'
+          : paid > 0
+          ? 'PARTIALLY PAID'
+          : isOffline
+          ? 'PAY ON PICKUP'
+          : (booking.paymentStatus || 'PENDING');
+      const statusColor = paid >= total && total > 0 ? '#34d399' : paid > 0 ? '#fbbf24' : '#f59e0b';
+
       doc.rect(pageWidth - margin - 150, margin + 14, 136, 46).fill('#1e293b');
       doc.fillColor('#38bdf8').font('Helvetica-Bold').fontSize(11).text('TAX INVOICE', pageWidth - margin - 146, margin + 20, { width: 128, align: 'center' });
       doc.fillColor('#94a3b8').font('Helvetica').fontSize(7.5).text('ORIGINAL FOR RECIPIENT', pageWidth - margin - 146, margin + 34, { width: 128, align: 'center' });
-      doc.fillColor('#34d399').font('Helvetica-Bold').fontSize(8).text(`Status: ${booking.paymentStatus || 'CONFIRMED'}`, pageWidth - margin - 146, margin + 46, { width: 128, align: 'center' });
+      doc.fillColor(statusColor).font('Helvetica-Bold').fontSize(8).text(`Status: ${statusBadgeText}`, pageWidth - margin - 146, margin + 46, { width: 128, align: 'center' });
 
       let cursorY = margin + 85;
 
@@ -210,12 +254,30 @@ function generateInvoicePdfBuffer(booking) {
       const rightX = margin + leftW + 12;
 
       // Left Box: Payment Details & Bank/GST Declarations
+      const paymentModeLabel =
+        booking.paymentMode === 'offline'
+          ? 'PAY ON PICKUP (CASH / UPI)'
+          : booking.paymentMode === 'partial'
+          ? 'PARTIAL ADVANCE (25%)'
+          : booking.paymentMode === 'full'
+          ? 'ONLINE 100%'
+          : (booking.paymentMode?.toUpperCase() || 'ONLINE');
+
+      const paymentStatusLabel =
+        paid >= total && total > 0
+          ? 'PAID (VERIFIED)'
+          : paid > 0
+          ? `PARTIALLY PAID (Bal: Rs. ${balance.toLocaleString('en-IN')})`
+          : isOffline
+          ? 'PAY ON HANDOVER (PENDING)'
+          : (booking.paymentStatus || 'PENDING');
+
       doc.rect(margin, cursorY, leftW, 115).fillAndStroke('#f8fafc', '#e2e8f0');
       doc.fillColor('#0f172a').font('Helvetica-Bold').fontSize(8.5).text('PAYMENT DETAILS & VERIFICATION', margin + 10, cursorY + 10);
       doc.fillColor('#475569').font('Helvetica').fontSize(8);
-      doc.text(`Payment Mode: ${booking.paymentMode?.toUpperCase() || 'ONLINE 100%'}`, margin + 10, cursorY + 25);
-      doc.text(`Payment Status: ${booking.paymentStatus || 'CONFIRMED'}`, margin + 10, cursorY + 38);
-      doc.text(`Transaction Reference: ${booking.transactionId || 'OFFLINE'}`, margin + 10, cursorY + 51);
+      doc.text(`Payment Mode: ${paymentModeLabel}`, margin + 10, cursorY + 25);
+      doc.text(`Payment Status: ${paymentStatusLabel}`, margin + 10, cursorY + 38);
+      doc.text(`Transaction Reference: ${booking.transactionId || (isOffline ? 'PAY_ON_PICKUP' : 'OFFLINE')}`, margin + 10, cursorY + 51);
       doc.text(`GST Reverse Charge Applicable: NO`, margin + 10, cursorY + 64);
 
       doc.fillColor('#64748b').font('Helvetica').fontSize(7.5).text(
@@ -250,8 +312,8 @@ function generateInvoicePdfBuffer(booking) {
       rY += 4;
 
       drawLedgerRow('Total Invoice Value:', `Rs. ${total.toLocaleString('en-IN')}`, true, '#0284c7');
-      drawLedgerRow('Advance Amount Paid:', `Rs. ${paid.toLocaleString('en-IN')}`, true, '#059669');
-      drawLedgerRow('Balance at Handover:', `Rs. ${balance.toLocaleString('en-IN')}`, true, balance > 0 ? '#d97706' : '#64748b');
+      drawLedgerRow('Advance Amount Paid:', `Rs. ${paid.toLocaleString('en-IN')}`, true, paid > 0 ? '#059669' : '#64748b');
+      drawLedgerRow('Balance at Handover:', `Rs. ${balance.toLocaleString('en-IN')}`, true, balance > 0 ? '#d97706' : '#059669');
 
       cursorY += 128;
 

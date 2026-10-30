@@ -120,7 +120,7 @@ const bookingSchema = new mongoose.Schema(
 
     // Statuses
     status: { type: String, default: 'CONFIRMED' },
-    paymentStatus: { type: String, default: 'PAID' },
+    paymentStatus: { type: String, default: 'PENDING' },
 
     // Notes & History
     customerNotes: { type: String },
@@ -170,15 +170,24 @@ bookingSchema.pre('save', function (next) {
     this.endDate = new Date(this.returnDate);
   }
   // Set appropriate paymentStatus according to paymentMode only if not already explicitly specified
-  if (!this.paymentStatus) {
+  if (!this.paymentStatus || this.paymentStatus === 'PENDING') {
     if (this.paymentMode === 'offline') {
       this.paymentStatus = 'OFFLINE_PENDING';
     } else if (this.paymentMode === 'partial') {
-      this.paymentStatus = 'PARTIALLY_PAID';
+      this.paymentStatus = (this.paidAmount && this.paidAmount > 0) ? 'PARTIALLY_PAID' : 'PENDING';
     } else if (this.paymentMode === 'full') {
-      this.paymentStatus = 'PAID';
+      this.paymentStatus = (this.paidAmount && this.paidAmount >= (this.totalAmount || 0) && (this.totalAmount || 0) > 0) ? 'PAID' : 'PENDING';
     } else {
       this.paymentStatus = 'PENDING';
+    }
+  }
+
+  // Ensure paidAmount and balanceAmount reflect offline payment accurately
+  if (this.paymentMode === 'offline' && this.paymentStatus !== 'PAID') {
+    this.paidAmount = 0;
+    this.balanceAmount = this.totalAmount || this.priceBreakdown?.totalAmount || 0;
+    if (!this.transactionId) {
+      this.transactionId = 'PAY_ON_PICKUP';
     }
   }
   next();

@@ -272,7 +272,7 @@ async function createTourPackageBooking(customerId, data) {
     guestEmail: data.guestEmail,
     guestNotes: data.notes || data.guestNotes,
     status: 'CONFIRMED',
-    paymentStatus: data.paymentStatus || 'PAID',
+    paymentStatus: data.paymentStatus || (data.paymentMode === 'offline' ? 'OFFLINE_PENDING' : (data.paidAmount >= totalAmount && totalAmount > 0 ? 'PAID' : 'PENDING')),
     statusHistory: [{ status: 'CONFIRMED', changedBy: customerId || null, changedAt: new Date() }],
   });
   await createOrSyncPaymentForBooking(booking);
@@ -318,14 +318,24 @@ async function createUniversalBooking(customerId, data) {
   let balance = payload.balanceAmount !== undefined ? Number(payload.balanceAmount) : Math.max(0, total - paid);
 
   if (payload.paymentMode === 'full') {
-    paid = total;
-    balance = 0;
+    if (payload.paymentStatus === 'PAID') {
+      paid = total;
+      balance = 0;
+    } else {
+      balance = Math.max(0, total - paid);
+    }
   } else if (payload.paymentMode === 'offline') {
     paid = 0;
     balance = total;
+    if (!payload.paymentStatus || payload.paymentStatus === 'PAID') {
+      payload.paymentStatus = 'OFFLINE_PENDING';
+    }
   } else if (payload.paymentMode === 'partial') {
     if (!paid) paid = Math.max(499, Math.round(total * 0.25));
     balance = Math.max(0, total - paid);
+    if (!payload.paymentStatus) {
+      payload.paymentStatus = 'PARTIALLY_PAID';
+    }
   }
 
   payload.totalAmount = total;
@@ -736,20 +746,22 @@ async function createAdminBooking(adminUser, data) {
 
   // Calculate pricing & payments cleanly
   const total = Number(totalAmount) || 0;
-  let paid =
-    paidAmount !== undefined && paidAmount !== null && paidAmount !== ''
-      ? Number(paidAmount)
-      : paymentMode === 'full'
-      ? total
-      : 0;
-
-  if (paymentMode === 'partial' && paid === 0) {
+  let paid = 0;
+  if (paymentMode === 'offline' && paymentStatus !== 'PAID') {
+    paid = 0;
+  } else if (paidAmount !== undefined && paidAmount !== null && paidAmount !== '') {
+    paid = Number(paidAmount);
+  } else if (paymentMode === 'full') {
+    paid = total;
+  } else if (paymentMode === 'partial') {
     paid = Math.max(499, Math.round(total * 0.25));
+  } else {
+    paid = 0;
   }
 
   const balance =
     balanceAmount !== undefined && balanceAmount !== null && balanceAmount !== ''
-      ? Number(balanceAmount)
+      ? (paymentMode === 'offline' && paymentStatus !== 'PAID' && Number(balanceAmount) === 0 && total > 0 ? total : Number(balanceAmount))
       : Math.max(0, total - paid);
 
   let finalPaymentStatus = paymentStatus;
