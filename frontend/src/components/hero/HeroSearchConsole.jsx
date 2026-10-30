@@ -126,7 +126,7 @@ export const HeroSearchConsole = ({
             className="inline-flex items-center gap-1.5 text-[10.5px] sm:text-xs font-bold text-blue-700 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200/80 px-2.5 py-1 rounded-xl transition-all shadow-xs cursor-pointer"
             title={`Explore all ${activeService.label} models`}
           >
-            <span>All Fleet →</span>
+            <span>Explore Page →</span>
           </Link>
         </div>
       </div>
@@ -253,11 +253,10 @@ export const HeroSearchConsole = ({
               <button
                 type="submit"
                 disabled={currentSelectedItem?.isAvailable === false}
-                className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-2.5 rounded-xl font-black text-xs sm:text-sm border transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 group relative overflow-hidden min-h-[44px] ${
-                  currentSelectedItem?.isAvailable === false
+                className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-2.5 rounded-xl font-black text-xs sm:text-sm border transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 group relative overflow-hidden min-h-[44px] ${currentSelectedItem?.isAvailable === false
                     ? 'bg-slate-200 text-slate-500 border-slate-300 cursor-not-allowed opacity-75'
                     : 'text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:via-indigo-500 hover:to-blue-600 shadow-[0_6px_22px_rgba(37,99,235,0.4)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.55)] border-blue-400/30 cursor-pointer'
-                }`}
+                  }`}
                 title={
                   currentSelectedItem?.isAvailable === false
                     ? 'Selected vehicle is currently out of stock'
