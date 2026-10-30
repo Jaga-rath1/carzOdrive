@@ -4,7 +4,7 @@ const env = {
   port: parseInt(process.env.PORT, 10) || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
   mongodbUri: process.env.MONGODB_URI || '',
-  partnerMongodbUri: process.env.PARTNER_MONGODB_URI || '',
+  partnerMongodbUri: process.env.PARTNER_MONGODB_URI || process.env.MONGODB_URI || '',
   jwt: {
     secret: process.env.JWT_SECRET || '',
     refreshSecret: process.env.JWT_REFRESH_SECRET || '',
@@ -61,8 +61,6 @@ function validateEnv() {
 
   if (env.nodeEnv === 'production') {
     required.push(
-      'PARTNER_MONGODB_URI',
-      'FRONTEND_URL',
       'CLOUDINARY_CLOUD_NAME',
       'CLOUDINARY_API_KEY',
       'CLOUDINARY_API_SECRET'

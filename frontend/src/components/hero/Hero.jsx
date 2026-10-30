@@ -19,6 +19,7 @@ import {
 } from './HeroServiceIcons';
 
 import { useDriverSettings } from '../../hooks/useDriverSettings';
+import { useDiscount } from '../../hooks/useDiscount';
 
 const SERVICE_META = {
   'self-drive-car': {
@@ -82,6 +83,7 @@ export const Hero = ({ onOpenQuickBook }) => {
   const navigate = useNavigate();
   const { isAuthenticated, openAuthModal } = useAuth();
   const { driverSettings } = useDriverSettings();
+  const { calculateDiscount } = useDiscount();
 
   // ScrollTrigger Parallax & Scaling transforms
   const heroRef = useRef(null);
@@ -228,47 +230,114 @@ export const Hero = ({ onOpenQuickBook }) => {
   const activeService = SERVICE_OPTIONS.find((s) => s.id === activeTab) || SERVICE_OPTIONS[0];
   const activeMeta = SERVICE_META[activeTab] || SERVICE_META['self-drive-car'];
 
-  // Resolve currently chosen item object
+  // Resolve currently chosen item object with real live discount applied
   const currentSelectedItem = useMemo(() => {
     switch (activeTab) {
       case 'car-with-driver': {
         const car = dbCars.find((c) => c.id === selectedChauffeurId) || dbCars[0];
+        const baseRate = Number(car?.pricePerDay) || Number(car?.priceNumeric) || 1499;
+        const totalWithDriver = baseRate + Number(driverSettings?.dailyRate || 799);
+        const disc = calculateDiscount(totalWithDriver, 'car-with-driver');
         return {
           ...car,
+          originalPrice: totalWithDriver,
+          discountAmount: disc.discountAmount,
+          pricePerDay: disc.finalAmount,
+          priceNumeric: disc.finalAmount,
+          priceDisplay: `₹${disc.finalAmount.toLocaleString('en-IN')}`,
+          discountBadge: disc.isDiscountActive && disc.discountAmount > 0 ? disc.badgeText : '',
           driver: {
             name: 'Provided by Company',
           },
         };
       }
       case 'driver-only': {
-        const rate = driverSettings?.dailyRate || 799;
+        const rate = Number(driverSettings?.dailyRate || 799);
+        const disc = calculateDiscount(rate, 'driver-only');
         return {
           id: 'driver-company',
           name: 'Verified Driver (Provided by Company)',
           brand: 'Carzodrive Verified',
-          dailyRate: rate,
-          priceDisplay: `₹${rate}`,
+          originalPrice: rate,
+          discountAmount: disc.discountAmount,
+          dailyRate: disc.finalAmount,
+          pricePerDay: disc.finalAmount,
+          priceNumeric: disc.finalAmount,
+          priceDisplay: `₹${disc.finalAmount}`,
+          discountBadge: disc.isDiscountActive && disc.discountAmount > 0 ? disc.badgeText : '',
           badge: 'Commercial Pilot',
           status: 'Provided by Company',
           experienceYears: 10,
         };
       }
-      case 'self-drive-bike':
-        return dbBikes.find((b) => b.id === selectedBikeId) || dbBikes[0] || FALLBACK_BIKES[0];
-      case 'tour-packages':
-        return dbTours.find((t) => t.id === selectedTourId) || dbTours[0];
+      case 'self-drive-bike': {
+        const bike = dbBikes.find((b) => b.id === selectedBikeId) || dbBikes[0] || FALLBACK_BIKES[0];
+        const baseRate = Number(bike?.pricePerDay) || Number(bike?.priceNumeric) || 499;
+        const disc = calculateDiscount(baseRate, 'self-drive-bike');
+        return {
+          ...bike,
+          originalPrice: baseRate,
+          discountAmount: disc.discountAmount,
+          pricePerDay: disc.finalAmount,
+          priceNumeric: disc.finalAmount,
+          priceDisplay: `₹${disc.finalAmount.toLocaleString('en-IN')}`,
+          discountBadge: disc.isDiscountActive && disc.discountAmount > 0 ? disc.badgeText : '',
+        };
+      }
+      case 'tour-packages': {
+        const tour = dbTours.find((t) => t.id === selectedTourId) || dbTours[0];
+        const baseRate = Number(tour?.priceNumeric) || Number(tour?.pricePerDay) || 4999;
+        const disc = calculateDiscount(baseRate, 'tour-packages');
+        return {
+          ...tour,
+          originalPrice: baseRate,
+          discountAmount: disc.discountAmount,
+          pricePerDay: disc.finalAmount,
+          priceNumeric: disc.finalAmount,
+          startingPrice: `₹${disc.finalAmount.toLocaleString('en-IN')}`,
+          priceDisplay: `₹${disc.finalAmount.toLocaleString('en-IN')}/day`,
+          discountBadge: disc.isDiscountActive && disc.discountAmount > 0 ? disc.badgeText : '',
+        };
+      }
       case 'self-drive-car':
-      default:
-        return dbCars.find((c) => c.id === selectedCarId) || dbCars[0];
+      default: {
+        const car = dbCars.find((c) => c.id === selectedCarId) || dbCars[0];
+        const baseRate = Number(car?.pricePerDay) || Number(car?.priceNumeric) || 1499;
+        const disc = calculateDiscount(baseRate, 'self-drive-car');
+        return {
+          ...car,
+          originalPrice: baseRate,
+          discountAmount: disc.discountAmount,
+          pricePerDay: disc.finalAmount,
+          priceNumeric: disc.finalAmount,
+          priceDisplay: `₹${disc.finalAmount.toLocaleString('en-IN')}`,
+          discountBadge: disc.isDiscountActive && disc.discountAmount > 0 ? disc.badgeText : '',
+        };
+      }
     }
-  }, [activeTab, dbCars, dbBikes, dbTours, selectedCarId, selectedChauffeurId, selectedBikeId, selectedTourId, driverSettings?.dailyRate]);
+  }, [activeTab, dbCars, dbBikes, dbTours, selectedCarId, selectedChauffeurId, selectedBikeId, selectedTourId, driverSettings?.dailyRate, calculateDiscount]);
 
-  // Dynamic live service showcase mapped directly from Database & Cloudinary
+  // Dynamic live service showcase mapped directly from Database & Cloudinary with real discount
   const serviceData = useMemo(() => {
     const selfDriveCar = dbCars.find((c) => c.isAvailable) || dbCars[0];
     const chauffeurCar = dbCars.find((c) => (c.category === 'luxury' || c.category === 'sedan') && c.isAvailable) || dbCars[1] || dbCars[0];
     const bike = dbBikes.find((b) => b.isAvailable) || dbBikes[0] || FALLBACK_BIKES[0];
     const tour = dbTours[0];
+
+    const carRate = Number(selfDriveCar?.pricePerDay) || 1499;
+    const carDisc = calculateDiscount(carRate, 'self-drive-car');
+
+    const chBase = (Number(chauffeurCar?.pricePerDay) || 1499) + Number(driverSettings?.dailyRate || 799);
+    const chDisc = calculateDiscount(chBase, 'car-with-driver');
+
+    const driverRate = Number(driverSettings?.dailyRate || 799);
+    const driverDisc = calculateDiscount(driverRate, 'driver-only');
+
+    const bikeRate = Number(bike?.pricePerDay) || 499;
+    const bikeDisc = calculateDiscount(bikeRate, 'self-drive-bike');
+
+    const tourRate = Number(tour?.priceNumeric) || 4999;
+    const tourDisc = calculateDiscount(tourRate, 'tour-packages');
 
     return {
       'self-drive-car': {
@@ -277,7 +346,7 @@ export const Hero = ({ onOpenQuickBook }) => {
         title: selfDriveCar?.name || 'Self-Drive Fleet',
         tagline: 'Drive Your Way',
         badge: 'Live Fleet',
-        rate: selfDriveCar?.priceDisplay || (selfDriveCar?.pricePerDay ? `₹${selfDriveCar.pricePerDay}/d` : '₹1,499/d'),
+        rate: `₹${carDisc.finalAmount.toLocaleString('en-IN')}/d`,
       },
       'car-with-driver': {
         image: '/images/services/car-with-driver.png',
@@ -285,14 +354,14 @@ export const Hero = ({ onOpenQuickBook }) => {
         title: chauffeurCar?.name || 'Car With Chauffeur',
         tagline: 'Rent & Ride',
         badge: 'Executive',
-        rate: chauffeurCar?.priceDisplay || (chauffeurCar?.pricePerDay ? `₹${chauffeurCar.pricePerDay}/d` : '₹1,999/d'),
+        rate: `₹${chDisc.finalAmount.toLocaleString('en-IN')}/d`,
       },
       'driver-only': {
         image: '/images/services/driver-only.png',
         title: 'Verified Commercial Pilot',
         tagline: 'Verified Drivers',
         badge: 'Verified Pilot',
-        rate: driverSettings?.badgeText || `₹${driverSettings?.dailyRate || 799}/Day`,
+        rate: `₹${driverDisc.finalAmount.toLocaleString('en-IN')}/Day`,
       },
       'self-drive-bike': {
         image: '/images/services/self-drive-bike.png',
@@ -300,7 +369,7 @@ export const Hero = ({ onOpenQuickBook }) => {
         title: bike?.name || 'Splendor & Activa Scooty',
         tagline: 'Coming Soon • Pre-Book via WhatsApp',
         badge: 'Coming Soon',
-        rate: bike?.priceDisplay || (bike?.pricePerDay ? `₹${bike.pricePerDay}/d` : '₹499/d'),
+        rate: `₹${bikeDisc.finalAmount.toLocaleString('en-IN')}/d`,
       },
       'tour-packages': {
         image: '/images/services/tour-packages.png',
@@ -308,10 +377,10 @@ export const Hero = ({ onOpenQuickBook }) => {
         title: tour?.name || tour?.title || 'Odisha Heritage & Coast',
         tagline: 'Custom Daily & Multi-Day Escapes',
         badge: 'Odisha Tours',
-        rate: tour?.priceDisplay || tour?.startingPrice || 'From ₹4,999/day',
+        rate: `From ₹${tourDisc.finalAmount.toLocaleString('en-IN')}/day`,
       },
     };
-  }, [dbCars, dbBikes, dbTours, driverSettings]);
+  }, [dbCars, dbBikes, dbTours, driverSettings, calculateDiscount]);
 
   const effectivePickup = pickupLocation;
   const effectiveDrop = dropLocation === 'Same as Pick-up Location' ? pickupLocation : dropLocation;

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Car, Bike, AlertCircle } from 'lucide-react';
+import { Car, Bike, AlertCircle, Sparkles, Tag } from 'lucide-react';
 import { SelfDriveCarIcon } from './HeroServiceIcons';
+import { useDiscount } from '../../hooks/useDiscount';
 
 export const HeroFleetSelector = ({
   activeTab,
@@ -19,6 +20,7 @@ export const HeroFleetSelector = ({
   setSelectedTourId,
   driverDailyRate = 799,
 }) => {
+  const { calculateDiscount, isDiscountActive, badgeText } = useDiscount();
   const withDriverId = selectedWithDriverCarId || selectedChauffeurId;
   const setWithDriverId = setSelectedWithDriverCarId || setSelectedChauffeurId;
 
@@ -33,6 +35,16 @@ export const HeroFleetSelector = ({
       : null;
 
   const isSelectedUnavailable = selectedCarObj && selectedCarObj.isAvailable === false;
+
+  // Selected item discount calculation for live pill showcase
+  const selectedItemRate =
+    activeTab === 'car-with-driver'
+      ? (Number(selectedCarObj?.pricePerDay) || 1499) + Number(driverDailyRate || 799)
+      : activeTab === 'driver-only'
+      ? Number(driverDailyRate || 799)
+      : (Number(selectedCarObj?.pricePerDay) || Number(selectedCarObj?.priceNumeric) || 1499);
+
+  const selectedDiscount = calculateDiscount(selectedItemRate, activeTab);
 
   return (
     <div
@@ -61,15 +73,23 @@ export const HeroFleetSelector = ({
               : '1. Select Fleet Model'}
           </span>
         </span>
-        <span
-          className={`text-[8px] sm:text-[8.5px] font-bold px-1.5 py-0.2 rounded-full border shrink-0 ${
-            isSelectedUnavailable
-              ? 'text-rose-700 bg-rose-50 border-rose-200'
-              : 'text-emerald-700 bg-emerald-50 border-emerald-200'
-          }`}
-        >
-          {isSelectedUnavailable ? '0 Available' : 'Live Fleet'}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {isDiscountActive && (
+            <span className="text-[7.5px] sm:text-[8px] font-black px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-0.5">
+              <Tag className="w-2 h-2 text-emerald-600" />
+              <span>{badgeText || 'Special Discount'}</span>
+            </span>
+          )}
+          <span
+            className={`text-[8px] sm:text-[8.5px] font-bold px-1.5 py-0.2 rounded-full border shrink-0 ${
+              isSelectedUnavailable
+                ? 'text-rose-700 bg-rose-50 border-rose-200'
+                : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+            }`}
+          >
+            {isSelectedUnavailable ? '0 Available' : 'Live Fleet'}
+          </span>
+        </div>
       </label>
 
       {activeTab === 'self-drive-car' && (
@@ -83,6 +103,11 @@ export const HeroFleetSelector = ({
           {dbCars.map((c) => {
             const count = c.availableCount !== undefined ? c.availableCount : (c.quantity ?? 1);
             const isAvail = c.isAvailable !== false && count > 0;
+            const baseRate = Number(c.pricePerDay) || Number(c.priceNumeric) || 1499;
+            const disc = calculateDiscount(baseRate, 'self-drive-car');
+            const priceText = disc.isDiscountActive && disc.discountAmount > 0
+              ? `₹${disc.finalAmount.toLocaleString('en-IN')}/day (${disc.badgeText} • was ₹${baseRate.toLocaleString('en-IN')})`
+              : `₹${baseRate.toLocaleString('en-IN')}/day`;
             return (
               <option
                 key={c.id}
@@ -95,8 +120,8 @@ export const HeroFleetSelector = ({
                 }
               >
                 {isAvail
-                  ? `🟢 ${c.name} — ${count} Available • ${c.priceDisplay || `₹${c.pricePerDay}`}/day`
-                  : `🔴 ${c.name} — Not Available (0 left) • ${c.priceDisplay || `₹${c.pricePerDay}`}/day`}
+                  ? `🟢 ${c.name} — ${count} Available • ${priceText}`
+                  : `🔴 ${c.name} — Not Available (0 left) • ${priceText}`}
               </option>
             );
           })}
@@ -114,6 +139,12 @@ export const HeroFleetSelector = ({
           {dbCars.map((c) => {
             const count = c.availableCount !== undefined ? c.availableCount : (c.quantity ?? 1);
             const isAvail = c.isAvailable !== false && count > 0;
+            const baseCarRate = Number(c.pricePerDay) || Number(c.priceNumeric) || 1499;
+            const totalWithDriver = baseCarRate + Number(driverDailyRate || 799);
+            const disc = calculateDiscount(totalWithDriver, 'car-with-driver');
+            const priceText = disc.isDiscountActive && disc.discountAmount > 0
+              ? `₹${disc.finalAmount.toLocaleString('en-IN')}/day with Driver (${disc.badgeText} • was ₹${totalWithDriver.toLocaleString('en-IN')})`
+              : `₹${totalWithDriver.toLocaleString('en-IN')}/day with Driver`;
             return (
               <option
                 key={c.id}
@@ -126,25 +157,32 @@ export const HeroFleetSelector = ({
                 }
               >
                 {isAvail
-                  ? `🟢 ${c.name} — ${count} Available • ${c.priceDisplay}/day with Driver`
-                  : `🔴 ${c.name} — Not Available (0 left) • ${c.priceDisplay}/day with Driver`}
+                  ? `🟢 ${c.name} — ${count} Available • ${priceText}`
+                  : `🔴 ${c.name} — Not Available (0 left) • ${priceText}`}
               </option>
             );
           })}
         </select>
       )}
 
-      {activeTab === 'driver-only' && (
-        <select
-          value="provided-by-company"
-          disabled
-          className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-default truncate py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
-        >
-          <option value="provided-by-company" className="text-slate-900 bg-white font-semibold">
-            🟢 Verified Commercial Driver (₹{driverDailyRate}/day) • Available
-          </option>
-        </select>
-      )}
+      {activeTab === 'driver-only' && (() => {
+        const baseRate = Number(driverDailyRate || 799);
+        const disc = calculateDiscount(baseRate, 'driver-only');
+        const driverPriceText = disc.isDiscountActive && disc.discountAmount > 0
+          ? `₹${disc.finalAmount}/day (${disc.badgeText} • was ₹${baseRate})`
+          : `₹${baseRate}/day`;
+        return (
+          <select
+            value="provided-by-company"
+            disabled
+            className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-default truncate py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
+          >
+            <option value="provided-by-company" className="text-slate-900 bg-white font-semibold">
+              🟢 Verified Commercial Driver ({driverPriceText}) • Available
+            </option>
+          </select>
+        );
+      })()}
 
       {activeTab === 'self-drive-bike' && (
         <select
@@ -157,6 +195,11 @@ export const HeroFleetSelector = ({
           {dbBikes.map((b) => {
             const count = b.availableCount !== undefined ? b.availableCount : (b.quantity ?? 1);
             const isAvail = b.isAvailable !== false && count > 0;
+            const baseBikeRate = Number(b.pricePerDay) || Number(b.priceNumeric) || 499;
+            const disc = calculateDiscount(baseBikeRate, 'self-drive-bike');
+            const priceText = disc.isDiscountActive && disc.discountAmount > 0
+              ? `₹${disc.finalAmount.toLocaleString('en-IN')}/day (${disc.badgeText} • was ₹${baseBikeRate.toLocaleString('en-IN')})`
+              : `₹${baseBikeRate.toLocaleString('en-IN')}/day`;
             return (
               <option
                 key={b.id || b.name}
@@ -169,8 +212,8 @@ export const HeroFleetSelector = ({
                 }
               >
                 {isAvail
-                  ? `🟢 ${b.name} — ${count} Available • ${b.priceDisplay || `₹${b.pricePerDay}`}/day`
-                  : `🔴 ${b.name} — Not Available (0 left) • ${b.priceDisplay || `₹${b.pricePerDay}`}/day`}
+                  ? `🟢 ${b.name} — ${count} Available • ${priceText}`
+                  : `🔴 ${b.name} — Not Available (0 left) • ${priceText}`}
               </option>
             );
           })}
@@ -183,17 +226,24 @@ export const HeroFleetSelector = ({
           onChange={(e) => setSelectedTourId(e.target.value)}
           className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
         >
-          {dbTours.map((t) => (
-            <option key={t.id} value={t.id} className="text-slate-900 bg-white font-semibold py-1">
-              🟢 {t.name} ({t.startingPrice}) • {t.duration}
-            </option>
-          ))}
+          {dbTours.map((t) => {
+            const baseTourRate = Number(t.priceNumeric) || Number(t.pricePerDay) || 4999;
+            const disc = calculateDiscount(baseTourRate, 'tour-packages');
+            const priceText = disc.isDiscountActive && disc.discountAmount > 0
+              ? `₹${disc.finalAmount.toLocaleString('en-IN')} (${disc.badgeText} • was ₹${baseTourRate.toLocaleString('en-IN')})`
+              : t.startingPrice || `₹${baseTourRate.toLocaleString('en-IN')}`;
+            return (
+              <option key={t.id} value={t.id} className="text-slate-900 bg-white font-semibold py-1">
+                🟢 {t.name} ({priceText}) • {t.duration}
+              </option>
+            );
+          })}
         </select>
       )}
 
-      {/* Dynamic availability notice */}
+      {/* Dynamic availability notice & Discount Highlight */}
       {selectedCarObj && (
-        <div className="pt-1 flex items-center justify-between gap-2 border-t border-slate-200/60 mt-1">
+        <div className="pt-1.5 flex items-center justify-between gap-2 border-t border-slate-200/60 mt-1 flex-wrap">
           {isSelectedUnavailable ? (
             <div className="text-[10px] font-bold text-rose-600 flex items-center gap-1">
               <AlertCircle className="w-3 h-3 shrink-0 text-rose-600" />
@@ -203,6 +253,16 @@ export const HeroFleetSelector = ({
             <div className="text-[10px] font-semibold text-emerald-700 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
               <span className="truncate">{selectedCarObj.availableCount || 1} available • {selectedCarObj.seats || '5 Seats'}</span>
+            </div>
+          )}
+
+          {selectedDiscount?.isDiscountActive && selectedDiscount?.discountAmount > 0 && !isSelectedUnavailable && (
+            <div className="flex items-center gap-1.5 text-[10px] font-bold">
+              <span className="text-slate-400 line-through">₹{selectedDiscount.originalAmount.toLocaleString('en-IN')}</span>
+              <span className="text-blue-700 font-black">₹{selectedDiscount.finalAmount.toLocaleString('en-IN')}/day</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase">
+                {selectedDiscount.badgeText}
+              </span>
             </div>
           )}
         </div>

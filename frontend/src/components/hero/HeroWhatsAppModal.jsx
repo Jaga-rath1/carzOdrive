@@ -160,9 +160,21 @@ export const HeroWhatsAppModal = ({
           {currentSelectedItem?.priceDisplay && (
             <div className="flex items-center justify-between text-slate-600 border-t border-slate-200/60 pt-1.5">
               <span className="font-medium">Rate / Pricing:</span>
-              <span className="font-black text-emerald-600 text-sm">
-                {currentSelectedItem.priceDisplay}
-              </span>
+              <div className="flex items-center gap-1.5">
+                {currentSelectedItem.originalPrice && currentSelectedItem.originalPrice > (currentSelectedItem.priceNumeric || currentSelectedItem.pricePerDay) && (
+                  <span className="text-xs text-slate-400 line-through">
+                    ₹{currentSelectedItem.originalPrice.toLocaleString('en-IN')}
+                  </span>
+                )}
+                <span className="font-black text-emerald-600 text-sm">
+                  {currentSelectedItem.priceDisplay}
+                </span>
+                {currentSelectedItem.discountBadge && (
+                  <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase">
+                    {currentSelectedItem.discountBadge}
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>

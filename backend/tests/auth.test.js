@@ -136,7 +136,7 @@ describe('Auth — Role-Based Access', () => {
     await User.create({ name: 'RBAC Admin', email: adminEmail, password: 'Password1', role: 'SUPER_ADMIN' });
     await User.create({ name: 'RBAC Customer', email: customerEmail, password: 'Password1', role: 'CUSTOMER' });
 
-    const r1 = await request(app).post('/api/v1/auth/login').send({ email: adminEmail, password: 'Password1' });
+    const r1 = await request(app).post('/api/v1/auth/admin-login').send({ email: adminEmail, password: 'Password1' });
     adminToken = r1.body.data.accessToken;
     const r2 = await request(app).post('/api/v1/auth/login').send({ email: customerEmail, password: 'Password1' });
     customerToken = r2.body.data.accessToken;

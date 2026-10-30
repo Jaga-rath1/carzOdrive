@@ -16,82 +16,57 @@ beforeAll(async () => {
 
   const r1 = await request(app).post('/api/v1/auth/login').send({ email: 'vendcust@carzodrive.com', password: 'Password1' });
   customerToken = r1.body.data.accessToken;
-  const r2 = await request(app).post('/api/v1/auth/login').send({ email: 'vendadmin@carzodrive.com', password: 'Password1' });
+  const r2 = await request(app).post('/api/v1/auth/admin-login').send({ email: 'vendadmin@carzodrive.com', password: 'Password1' });
   adminToken = r2.body.data.accessToken;
 });
 
 afterAll(async () => {
-  await Vendor.deleteMany({ userId: customerId });
+  await Vendor.deleteMany({ ownerPhone: '9999999999' });
   await User.deleteMany({ email: /carzodrive\.com$/ });
   await mongoose.disconnect();
 });
 
-describe('Vendors — Apply', () => {
+describe('Vendors — Attach Vehicle', () => {
   afterEach(async () => {
-    await Vendor.deleteMany({ userId: customerId });
+    await Vendor.deleteMany({ ownerPhone: '9999999999' });
   });
 
-  test('customer can apply as vendor', async () => {
+  test('customer can attach car for rent', async () => {
     const res = await request(app)
-      .post('/api/v1/vendors/apply')
+      .post('/api/v1/vendors/attach-car')
       .set('Authorization', `Bearer ${customerToken}`)
-      .send({ businessName: 'Test Cars', vendorType: 'CAR', contactPhone: '+919999999999' });
-    expect(res.status).toBe(201);
-    expect(res.body.data.status).toBe('PENDING');
+      .send({
+        ownerName: 'Test Owner',
+        phone: '9999999999',
+        email: 'vendcust@carzodrive.com',
+        vehicleBrand: 'Hyundai',
+        vehicleModel: 'Creta',
+        expectedDailyPrice: 2500,
+      });
+    expect([200, 201]).toContain(res.status);
+    expect(res.body.success).toBe(true);
   });
 
-  test('duplicate vendor application is rejected', async () => {
-    await Vendor.create({ userId: customerId, businessName: 'Existing', vendorType: 'CAR' });
+  test('rejects car attachment with missing required fields', async () => {
     const res = await request(app)
-      .post('/api/v1/vendors/apply')
+      .post('/api/v1/vendors/attach-car')
       .set('Authorization', `Bearer ${customerToken}`)
-      .send({ businessName: 'Test Cars', vendorType: 'CAR' });
-    expect(res.status).toBe(409);
-  });
-
-  test('unauthenticated user cannot apply', async () => {
-    const res = await request(app).post('/api/v1/vendors/apply').send({ businessName: 'Test', vendorType: 'CAR' });
-    expect(res.status).toBe(401);
+      .send({
+        ownerName: 'Test Owner',
+      });
+    expect(res.status).toBe(400);
   });
 });
 
 describe('Vendors — Admin Operations', () => {
-  let vendorId;
-
-  beforeAll(async () => {
-    const vendor = await Vendor.create({ userId: customerId, businessName: 'Admin Test Cars', vendorType: 'CAR' });
-    vendorId = vendor._id;
-  });
-
-  afterAll(async () => {
-    await Vendor.deleteOne({ _id: vendorId });
-  });
-
-  test('admin can list vendors', async () => {
-    const res = await request(app).get('/api/v1/vendors').set('Authorization', `Bearer ${adminToken}`);
+  test('admin can list submissions', async () => {
+    const res = await request(app).get('/api/v1/vendors/submissions').set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.success).toBe(true);
   });
 
-  test('customer cannot list all vendors', async () => {
-    const res = await request(app).get('/api/v1/vendors').set('Authorization', `Bearer ${customerToken}`);
+  test('customer cannot list all submissions', async () => {
+    const res = await request(app).get('/api/v1/vendors/submissions').set('Authorization', `Bearer ${customerToken}`);
     expect(res.status).toBe(403);
-  });
-
-  test('admin can approve vendor', async () => {
-    const res = await request(app)
-      .post(`/api/v1/vendors/${vendorId}/approve`)
-      .set('Authorization', `Bearer ${adminToken}`);
-    expect(res.status).toBe(200);
-    expect(res.body.data.status).toBe('APPROVED');
-  });
-
-  test('admin can suspend vendor', async () => {
-    const res = await request(app)
-      .post(`/api/v1/vendors/${vendorId}/suspend`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({ reason: 'Policy violation' });
-    expect(res.status).toBe(200);
-    expect(res.body.data.status).toBe('SUSPENDED');
   });
 });

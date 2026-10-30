@@ -37,8 +37,8 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
             (v.category || '').toLowerCase() === 'suv'
               ? 'SUV'
               : (v.category || '').toLowerCase() === 'luxury'
-              ? 'Luxury'
-              : 'Sedan',
+                ? 'Luxury'
+                : 'Sedan',
           color: v.color || 'Standard',
           year: v.year || 2024,
           quantity: v.quantity !== undefined ? Number(v.quantity) : (v.availableCount ?? v.count ?? (v.isAvailable !== false ? 1 : 0)),
@@ -128,7 +128,7 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
               <span>THE CARZODRIVE FLEET</span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-black text-slate-950 tracking-tight">
-              Featured Machines.{' '}
+              Featured Cars.{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700">
                 Ready to Drive.
               </span>
@@ -164,23 +164,22 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
               key={cat}
               type="button"
               onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap ${
-                activeCategory === cat
+              className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap ${activeCategory === cat
                   ? 'bg-blue-600 text-white shadow-[0_4px_15px_rgba(37,99,235,0.35)]'
                   : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
+                }`}
             >
               {cat === 'All Fleet'
                 ? '⚡ All Fleet'
                 : cat === 'Available Now'
-                ? '🟢 Available Now'
-                : cat === 'Bike'
-                ? '🏍️ Bikes & Scooters'
-                : cat === 'Sedan'
-                ? 'Hatchback & Sedan'
-                : cat === 'Luxury'
-                ? 'Premium & 4x4'
-                : cat}
+                  ? '🟢 Available Now'
+                  : cat === 'Bike'
+                    ? '🏍️ Bikes & Scooters'
+                    : cat === 'Sedan'
+                      ? 'Hatchback & Sedan'
+                      : cat === 'Luxury'
+                        ? 'Premium & 4x4'
+                        : cat}
             </button>
           ))}
         </div>
@@ -339,11 +338,11 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
                             onClick={() =>
                               onQuickBook
                                 ? onQuickBook({
-                                    ...vehicle,
-                                    id: vehicle.catalogId || vehicle.id,
-                                    vehicleId: vehicle.rawId || vehicle.id,
-                                    _id: vehicle.rawId || vehicle.id,
-                                  })
+                                  ...vehicle,
+                                  id: vehicle.catalogId || vehicle.id,
+                                  vehicleId: vehicle.rawId || vehicle.id,
+                                  _id: vehicle.rawId || vehicle.id,
+                                })
                                 : null
                             }
                             className="flex-1 py-2.5 px-3 rounded-xl font-black text-xs text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all shadow-md cursor-pointer text-center"

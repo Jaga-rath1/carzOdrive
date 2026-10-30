@@ -52,6 +52,9 @@ app.use(
       if (/^https:\/\/([a-zA-Z0-9-]+\.)*onrender\.com$/.test(origin)) {
         return callback(null, true);
       }
+      if (/^https?:\/\/([a-zA-Z0-9-]+\.)*carzodrive\.com$/.test(origin)) {
+        return callback(null, true);
+      }
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
