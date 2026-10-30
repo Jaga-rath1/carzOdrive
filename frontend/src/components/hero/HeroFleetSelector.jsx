@@ -77,28 +77,15 @@ export const HeroFleetSelector = ({
               : '1. Select Fleet Model'}
           </span>
         </span>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {isDiscountActive && selectedDiscount?.isDiscountActive && selectedDiscount.discountAmount > 0 && !isSelectedUnavailable && (
-            <span className="text-[8.5px] sm:text-[9.5px] font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-xs">
-              <span className="text-red-500 line-through decoration-red-600 decoration-2 font-bold">
-                ₹{selectedDiscount.originalAmount.toLocaleString('en-IN')}
-              </span>
-              <span className="text-slate-400 font-black">•</span>
-              <span className="text-emerald-700 font-black">
-                ₹{selectedDiscount.finalAmount.toLocaleString('en-IN')}{activeTab === 'tour-packages' ? '' : '/day'}
-              </span>
-            </span>
-          )}
-          <span
-            className={`text-[8px] sm:text-[8.5px] font-bold px-1.5 py-0.2 rounded-full border shrink-0 ${
-              isSelectedUnavailable
-                ? 'text-rose-700 bg-rose-50 border-rose-200'
-                : 'text-emerald-700 bg-emerald-50 border-emerald-200'
-            }`}
-          >
-            {isSelectedUnavailable ? '0 Available' : 'Live Fleet'}
-          </span>
-        </div>
+        <span
+          className={`text-[8px] sm:text-[8.5px] font-bold px-1.5 py-0.2 rounded-full border shrink-0 ${
+            isSelectedUnavailable
+              ? 'text-rose-700 bg-rose-50 border-rose-200'
+              : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+          }`}
+        >
+          {isSelectedUnavailable ? '0 Available' : 'Live Fleet'}
+        </span>
       </label>
 
       {activeTab === 'self-drive-car' && (
@@ -115,7 +102,7 @@ export const HeroFleetSelector = ({
             const baseRate = Number(c.pricePerDay) || Number(c.priceNumeric) || 1499;
             const disc = calculateDiscount(baseRate, 'self-drive-car');
             const priceText = disc.isDiscountActive && disc.discountAmount > 0
-              ? `₹${baseRate.toLocaleString('en-IN')} ➔ Final: ₹${disc.finalAmount.toLocaleString('en-IN')}/day (${disc.badgeText})`
+              ? `₹${baseRate.toLocaleString('en-IN')} ➔ ₹${disc.finalAmount.toLocaleString('en-IN')}/day`
               : `₹${baseRate.toLocaleString('en-IN')}/day`;
             return (
               <option
@@ -152,7 +139,7 @@ export const HeroFleetSelector = ({
             const totalWithDriver = baseCarRate + Number(driverDailyRate || 799);
             const disc = calculateDiscount(totalWithDriver, 'car-with-driver');
             const priceText = disc.isDiscountActive && disc.discountAmount > 0
-              ? `₹${totalWithDriver.toLocaleString('en-IN')} ➔ Final: ₹${disc.finalAmount.toLocaleString('en-IN')}/day with Driver (${disc.badgeText})`
+              ? `₹${totalWithDriver.toLocaleString('en-IN')} ➔ ₹${disc.finalAmount.toLocaleString('en-IN')}/day with Driver`
               : `₹${totalWithDriver.toLocaleString('en-IN')}/day with Driver`;
             return (
               <option
@@ -178,7 +165,7 @@ export const HeroFleetSelector = ({
         const baseRate = Number(driverDailyRate || 799);
         const disc = calculateDiscount(baseRate, 'driver-only');
         const driverPriceText = disc.isDiscountActive && disc.discountAmount > 0
-          ? `₹${baseRate} ➔ Final: ₹${disc.finalAmount}/day (${disc.badgeText})`
+          ? `₹${baseRate} ➔ ₹${disc.finalAmount}/day`
           : `₹${baseRate}/day`;
         return (
           <select
@@ -207,7 +194,7 @@ export const HeroFleetSelector = ({
             const baseBikeRate = Number(b.pricePerDay) || Number(b.priceNumeric) || 499;
             const disc = calculateDiscount(baseBikeRate, 'self-drive-bike');
             const priceText = disc.isDiscountActive && disc.discountAmount > 0
-              ? `₹${baseBikeRate.toLocaleString('en-IN')} ➔ Final: ₹${disc.finalAmount.toLocaleString('en-IN')}/day (${disc.badgeText})`
+              ? `₹${baseBikeRate.toLocaleString('en-IN')} ➔ ₹${disc.finalAmount.toLocaleString('en-IN')}/day`
               : `₹${baseBikeRate.toLocaleString('en-IN')}/day`;
             return (
               <option
@@ -239,7 +226,7 @@ export const HeroFleetSelector = ({
             const baseTourRate = Number(t.priceNumeric) || Number(t.pricePerDay) || 4999;
             const disc = calculateDiscount(baseTourRate, 'tour-packages');
             const priceText = disc.isDiscountActive && disc.discountAmount > 0
-              ? `₹${baseTourRate.toLocaleString('en-IN')} ➔ Final: ₹${disc.finalAmount.toLocaleString('en-IN')} (${disc.badgeText})`
+              ? `₹${baseTourRate.toLocaleString('en-IN')} ➔ ₹${disc.finalAmount.toLocaleString('en-IN')}`
               : t.startingPrice || `₹${baseTourRate.toLocaleString('en-IN')}`;
             return (
               <option key={t.id} value={t.id} className="text-slate-900 bg-white font-semibold py-1">
@@ -250,35 +237,44 @@ export const HeroFleetSelector = ({
         </select>
       )}
 
-      {/* Dynamic availability notice & Discount Highlight */}
+      {/* Car name, availability, purana price redcutmark, discounted price */}
       {selectedCarObj && (
-        <div className="pt-1.5 flex items-center justify-between gap-2 border-t border-slate-200/60 mt-1 flex-wrap">
-          {isSelectedUnavailable ? (
-            <div className="text-[10px] font-bold text-rose-600 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3 shrink-0 text-rose-600" />
-              <span className="truncate">Not available right now (0 in stock).</span>
-            </div>
-          ) : (
-            <div className="text-[10px] font-semibold text-emerald-700 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-              <span className="truncate">{selectedCarObj.availableCount || 1} available • {selectedCarObj.seats || '5 Seats'}</span>
-            </div>
-          )}
+        <div className="pt-1.5 flex items-center justify-between gap-2 border-t border-slate-200/60 mt-1 flex-wrap text-xs">
+          <div className="flex items-center gap-1.5 text-slate-700 font-semibold truncate">
+            <span className="font-extrabold text-slate-900 truncate">
+              {selectedCarObj.name}
+            </span>
+            <span className="text-slate-400 font-bold">•</span>
+            {isSelectedUnavailable ? (
+              <span className="text-rose-600 font-bold flex items-center gap-1 shrink-0">
+                <AlertCircle className="w-3 h-3 shrink-0 text-rose-600" />
+                <span>0 Available</span>
+              </span>
+            ) : (
+              <span className="text-emerald-700 font-bold flex items-center gap-1 shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span>{selectedCarObj.availableCount || 1} Available</span>
+              </span>
+            )}
+          </div>
 
-          {selectedDiscount?.isDiscountActive && selectedDiscount?.discountAmount > 0 && !isSelectedUnavailable && (
-            <div className="flex items-center gap-1.5 text-xs font-black">
-              <span className="text-red-500 line-through decoration-red-600 decoration-[2.5px] font-extrabold text-xs sm:text-sm">
-                ₹{selectedDiscount.originalAmount.toLocaleString('en-IN')}
+          <div className="flex items-center gap-1.5 font-black text-xs sm:text-sm shrink-0 ml-auto">
+            {selectedDiscount?.isDiscountActive && selectedDiscount?.discountAmount > 0 && !isSelectedUnavailable ? (
+              <>
+                <span className="text-red-500 line-through decoration-red-600 decoration-[2.5px] font-extrabold">
+                  ₹{selectedDiscount.originalAmount.toLocaleString('en-IN')}
+                </span>
+                <span className="text-slate-400 font-black">•</span>
+                <span className="text-emerald-600 font-black">
+                  ₹{selectedDiscount.finalAmount.toLocaleString('en-IN')}{activeTab === 'tour-packages' ? '' : '/day'}
+                </span>
+              </>
+            ) : (
+              <span className="text-slate-900 font-black">
+                ₹{selectedItemRate.toLocaleString('en-IN')}{activeTab === 'tour-packages' ? '' : '/day'}
               </span>
-              <span className="text-slate-400 font-black">•</span>
-              <span className="text-emerald-600 sm:text-sm font-black">
-                ₹{selectedDiscount.finalAmount.toLocaleString('en-IN')}{activeTab === 'tour-packages' ? '' : '/day'}
-              </span>
-              <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase">
-                {selectedDiscount.badgeText}
-              </span>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>

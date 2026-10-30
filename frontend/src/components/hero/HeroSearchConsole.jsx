@@ -210,7 +210,11 @@ export const HeroSearchConsole = ({
             </div>
 
             {currentSelectedItem?.originalPrice && currentSelectedItem.originalPrice > (currentSelectedItem.priceNumeric || currentSelectedItem.pricePerDay) && (
-              <div className="inline-flex items-center gap-1.5 justify-center sm:justify-start bg-emerald-50/70 border border-emerald-200/80 px-2 py-0.5 rounded-lg">
+              <div className="inline-flex items-center gap-1.5 justify-center sm:justify-start bg-emerald-50/70 border border-emerald-200/80 px-2.5 py-0.5 rounded-lg text-xs">
+                <span className="font-extrabold text-slate-900 truncate max-w-[130px] sm:max-w-none">
+                  {currentSelectedItem.name}
+                </span>
+                <span className="text-slate-400 font-bold">•</span>
                 <span className="text-[11px] text-red-500 font-bold line-through decoration-red-600 decoration-[2.5px]">
                   ₹{currentSelectedItem.originalPrice.toLocaleString('en-IN')}
                 </span>
@@ -218,11 +222,6 @@ export const HeroSearchConsole = ({
                 <span className="text-xs sm:text-sm font-black text-emerald-700">
                   {currentSelectedItem.priceDisplay}
                 </span>
-                {currentSelectedItem.discountBadge && (
-                  <span className="px-1.5 py-0.2 rounded-full bg-emerald-600 text-white text-[9px] font-black uppercase">
-                    {currentSelectedItem.discountBadge}
-                  </span>
-                )}
               </div>
             )}
           </div>
