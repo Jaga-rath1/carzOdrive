@@ -211,9 +211,10 @@ export const HeroSearchConsole = ({
 
             {currentSelectedItem?.originalPrice && currentSelectedItem.originalPrice > (currentSelectedItem.priceNumeric || currentSelectedItem.pricePerDay) && (
               <div className="inline-flex items-center gap-1.5 justify-center sm:justify-start bg-emerald-50/70 border border-emerald-200/80 px-2 py-0.5 rounded-lg">
-                <span className="text-[11px] text-slate-400 font-bold line-through decoration-rose-500 decoration-2">
+                <span className="text-[11px] text-red-500 font-bold line-through decoration-red-600 decoration-[2.5px]">
                   ₹{currentSelectedItem.originalPrice.toLocaleString('en-IN')}
                 </span>
+                <span className="text-slate-400 font-black">•</span>
                 <span className="text-xs sm:text-sm font-black text-emerald-700">
                   {currentSelectedItem.priceDisplay}
                 </span>

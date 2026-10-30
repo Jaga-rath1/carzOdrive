@@ -78,10 +78,15 @@ export const HeroFleetSelector = ({
           </span>
         </span>
         <div className="flex items-center gap-1.5 shrink-0">
-          {isDiscountActive && (
-            <span className="text-[7.5px] sm:text-[8px] font-black px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-0.5">
-              <Tag className="w-2 h-2 text-emerald-600" />
-              <span>{badgeText || 'Special Discount'}</span>
+          {isDiscountActive && selectedDiscount?.isDiscountActive && selectedDiscount.discountAmount > 0 && !isSelectedUnavailable && (
+            <span className="text-[8.5px] sm:text-[9.5px] font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-xs">
+              <span className="text-red-500 line-through decoration-red-600 decoration-2 font-bold">
+                ₹{selectedDiscount.originalAmount.toLocaleString('en-IN')}
+              </span>
+              <span className="text-slate-400 font-black">•</span>
+              <span className="text-emerald-700 font-black">
+                ₹{selectedDiscount.finalAmount.toLocaleString('en-IN')}{activeTab === 'tour-packages' ? '' : '/day'}
+              </span>
             </span>
           )}
           <span
@@ -110,7 +115,7 @@ export const HeroFleetSelector = ({
             const baseRate = Number(c.pricePerDay) || Number(c.priceNumeric) || 1499;
             const disc = calculateDiscount(baseRate, 'self-drive-car');
             const priceText = disc.isDiscountActive && disc.discountAmount > 0
-              ? `₹${disc.finalAmount.toLocaleString('en-IN')}/day (${disc.badgeText} • was ₹${baseRate.toLocaleString('en-IN')})`
+              ? `₹${baseRate.toLocaleString('en-IN')} ➔ Final: ₹${disc.finalAmount.toLocaleString('en-IN')}/day (${disc.badgeText})`
               : `₹${baseRate.toLocaleString('en-IN')}/day`;
             return (
               <option
@@ -147,7 +152,7 @@ export const HeroFleetSelector = ({
             const totalWithDriver = baseCarRate + Number(driverDailyRate || 799);
             const disc = calculateDiscount(totalWithDriver, 'car-with-driver');
             const priceText = disc.isDiscountActive && disc.discountAmount > 0
-              ? `₹${disc.finalAmount.toLocaleString('en-IN')}/day with Driver (${disc.badgeText} • was ₹${totalWithDriver.toLocaleString('en-IN')})`
+              ? `₹${totalWithDriver.toLocaleString('en-IN')} ➔ Final: ₹${disc.finalAmount.toLocaleString('en-IN')}/day with Driver (${disc.badgeText})`
               : `₹${totalWithDriver.toLocaleString('en-IN')}/day with Driver`;
             return (
               <option
@@ -173,7 +178,7 @@ export const HeroFleetSelector = ({
         const baseRate = Number(driverDailyRate || 799);
         const disc = calculateDiscount(baseRate, 'driver-only');
         const driverPriceText = disc.isDiscountActive && disc.discountAmount > 0
-          ? `₹${disc.finalAmount}/day (${disc.badgeText} • was ₹${baseRate})`
+          ? `₹${baseRate} ➔ Final: ₹${disc.finalAmount}/day (${disc.badgeText})`
           : `₹${baseRate}/day`;
         return (
           <select
@@ -202,7 +207,7 @@ export const HeroFleetSelector = ({
             const baseBikeRate = Number(b.pricePerDay) || Number(b.priceNumeric) || 499;
             const disc = calculateDiscount(baseBikeRate, 'self-drive-bike');
             const priceText = disc.isDiscountActive && disc.discountAmount > 0
-              ? `₹${disc.finalAmount.toLocaleString('en-IN')}/day (${disc.badgeText} • was ₹${baseBikeRate.toLocaleString('en-IN')})`
+              ? `₹${baseBikeRate.toLocaleString('en-IN')} ➔ Final: ₹${disc.finalAmount.toLocaleString('en-IN')}/day (${disc.badgeText})`
               : `₹${baseBikeRate.toLocaleString('en-IN')}/day`;
             return (
               <option
@@ -234,7 +239,7 @@ export const HeroFleetSelector = ({
             const baseTourRate = Number(t.priceNumeric) || Number(t.pricePerDay) || 4999;
             const disc = calculateDiscount(baseTourRate, 'tour-packages');
             const priceText = disc.isDiscountActive && disc.discountAmount > 0
-              ? `₹${disc.finalAmount.toLocaleString('en-IN')} (${disc.badgeText} • was ₹${baseTourRate.toLocaleString('en-IN')})`
+              ? `₹${baseTourRate.toLocaleString('en-IN')} ➔ Final: ₹${disc.finalAmount.toLocaleString('en-IN')} (${disc.badgeText})`
               : t.startingPrice || `₹${baseTourRate.toLocaleString('en-IN')}`;
             return (
               <option key={t.id} value={t.id} className="text-slate-900 bg-white font-semibold py-1">
@@ -261,10 +266,11 @@ export const HeroFleetSelector = ({
           )}
 
           {selectedDiscount?.isDiscountActive && selectedDiscount?.discountAmount > 0 && !isSelectedUnavailable && (
-            <div className="flex items-center gap-1.5 text-xs font-bold">
-              <span className="text-slate-400 line-through decoration-rose-500 decoration-2 font-semibold">
+            <div className="flex items-center gap-1.5 text-xs font-black">
+              <span className="text-red-500 line-through decoration-red-600 decoration-[2.5px] font-extrabold text-xs sm:text-sm">
                 ₹{selectedDiscount.originalAmount.toLocaleString('en-IN')}
               </span>
+              <span className="text-slate-400 font-black">•</span>
               <span className="text-emerald-600 sm:text-sm font-black">
                 ₹{selectedDiscount.finalAmount.toLocaleString('en-IN')}{activeTab === 'tour-packages' ? '' : '/day'}
               </span>
