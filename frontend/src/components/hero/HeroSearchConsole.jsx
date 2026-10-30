@@ -203,9 +203,27 @@ export const HeroSearchConsole = ({
 
         {/* BOTTOM ACTIONS: BOOK ON WHATSAPP & BOOK ONLINE */}
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-2.5 border-t border-slate-200/80">
-          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-500 font-semibold text-center sm:text-left justify-center sm:justify-start">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span>Free cancellation up to 6 hours before pickup</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-center sm:text-left justify-center sm:justify-start">
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-500 font-semibold justify-center sm:justify-start">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Free cancellation up to 6 hours before pickup</span>
+            </div>
+
+            {currentSelectedItem?.originalPrice && currentSelectedItem.originalPrice > (currentSelectedItem.priceNumeric || currentSelectedItem.pricePerDay) && (
+              <div className="inline-flex items-center gap-1.5 justify-center sm:justify-start bg-emerald-50/70 border border-emerald-200/80 px-2 py-0.5 rounded-lg">
+                <span className="text-[11px] text-slate-400 font-bold line-through decoration-rose-500 decoration-2">
+                  ₹{currentSelectedItem.originalPrice.toLocaleString('en-IN')}
+                </span>
+                <span className="text-xs sm:text-sm font-black text-emerald-700">
+                  {currentSelectedItem.priceDisplay}
+                </span>
+                {currentSelectedItem.discountBadge && (
+                  <span className="px-1.5 py-0.2 rounded-full bg-emerald-600 text-white text-[9px] font-black uppercase">
+                    {currentSelectedItem.discountBadge}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">

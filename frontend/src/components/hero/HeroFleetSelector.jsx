@@ -27,12 +27,14 @@ export const HeroFleetSelector = ({
   // Determine selected object for current active tab
   const selectedCarObj =
     activeTab === 'self-drive-car'
-      ? dbCars.find((c) => c.id === selectedCarId)
+      ? (dbCars.find((c) => c.id === selectedCarId) || dbCars[0])
       : activeTab === 'car-with-driver'
-      ? dbCars.find((c) => c.id === withDriverId)
+      ? (dbCars.find((c) => c.id === withDriverId) || dbCars[0])
       : activeTab === 'self-drive-bike'
       ? (dbBikes.find((b) => (b.id || b.name) === selectedBikeId) || dbBikes[0])
-      : null;
+      : activeTab === 'tour-packages'
+      ? (dbTours.find((t) => t.id === selectedTourId) || dbTours[0])
+      : { name: 'Verified Driver', pricePerDay: driverDailyRate, isAvailable: true };
 
   const isSelectedUnavailable = selectedCarObj && selectedCarObj.isAvailable === false;
 
@@ -42,6 +44,8 @@ export const HeroFleetSelector = ({
       ? (Number(selectedCarObj?.pricePerDay) || 1499) + Number(driverDailyRate || 799)
       : activeTab === 'driver-only'
       ? Number(driverDailyRate || 799)
+      : activeTab === 'tour-packages'
+      ? (Number(selectedCarObj?.priceNumeric) || Number(selectedCarObj?.pricePerDay) || 4999)
       : (Number(selectedCarObj?.pricePerDay) || Number(selectedCarObj?.priceNumeric) || 1499);
 
   const selectedDiscount = calculateDiscount(selectedItemRate, activeTab);
@@ -257,9 +261,13 @@ export const HeroFleetSelector = ({
           )}
 
           {selectedDiscount?.isDiscountActive && selectedDiscount?.discountAmount > 0 && !isSelectedUnavailable && (
-            <div className="flex items-center gap-1.5 text-[10px] font-bold">
-              <span className="text-slate-400 line-through">₹{selectedDiscount.originalAmount.toLocaleString('en-IN')}</span>
-              <span className="text-blue-700 font-black">₹{selectedDiscount.finalAmount.toLocaleString('en-IN')}/day</span>
+            <div className="flex items-center gap-1.5 text-xs font-bold">
+              <span className="text-slate-400 line-through decoration-rose-500 decoration-2 font-semibold">
+                ₹{selectedDiscount.originalAmount.toLocaleString('en-IN')}
+              </span>
+              <span className="text-emerald-600 sm:text-sm font-black">
+                ₹{selectedDiscount.finalAmount.toLocaleString('en-IN')}{activeTab === 'tour-packages' ? '' : '/day'}
+              </span>
               <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase">
                 {selectedDiscount.badgeText}
               </span>

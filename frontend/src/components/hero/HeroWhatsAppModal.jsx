@@ -162,7 +162,7 @@ export const HeroWhatsAppModal = ({
               <span className="font-medium">Rate / Pricing:</span>
               <div className="flex items-center gap-1.5">
                 {currentSelectedItem.originalPrice && currentSelectedItem.originalPrice > (currentSelectedItem.priceNumeric || currentSelectedItem.pricePerDay) && (
-                  <span className="text-xs text-slate-400 line-through">
+                  <span className="text-xs text-slate-400 line-through decoration-rose-500 decoration-2 font-bold">
                     ₹{currentSelectedItem.originalPrice.toLocaleString('en-IN')}
                   </span>
                 )}
