@@ -135,14 +135,6 @@ function authorize(...rolesOrPerms) {
       return next();
     }
 
-    // 5. Bidirectional Mapping: If endpoint accepts specific roles, check if user's permissions map to those roles
-    for (const perm of userPerms) {
-      const allowedRoles = PERMISSION_ROLES_MAP[perm] || [];
-      if (allowedRoles.some((r) => targets.some((target) => target.toUpperCase() === r.toUpperCase()))) {
-        return next();
-      }
-    }
-
     return forbidden(res, 'Insufficient permissions. You do not have access to this resource.');
   };
 }

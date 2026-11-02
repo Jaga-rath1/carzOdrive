@@ -4,14 +4,8 @@ const { authenticate, optionalAuth, authorize } = require('../middleware/auth.mi
 
 const router = express.Router();
 
-const ADMINS = [
-  'SUPER_ADMIN',
-  'OPERATIONS_ADMIN',
-  'FINANCE_ADMIN',
-  'SUPPORT_ADMIN',
-  'STAFF_ADMIN',
-  'ADMIN',
-];
+const RATE_ADMINS = ['SUPER_ADMIN', 'FINANCE_ADMIN', 'OPERATIONS_ADMIN', 'manage_rates', 'manage_settings'];
+const DRIVER_RATE_ADMINS = ['SUPER_ADMIN', 'OPERATIONS_ADMIN', 'manage_settings', 'manage_drivers'];
 
 // ─── Discount Settings (Default 5%) ─────────────────────────────────────────
 // Public / client-side route to fetch active discount (supports both singular and plural aliases)
@@ -22,8 +16,8 @@ router.get('/discounts/public', controller.getDiscountSettings);
 router.get('/', optionalAuth, controller.getDiscountSettings);
 
 // Admin-only route to update discount percentage & settings
-router.put('/discount', authenticate, authorize(...ADMINS, 'manage_settings'), controller.updateDiscountSettings);
-router.put('/discounts', authenticate, authorize(...ADMINS, 'manage_settings'), controller.updateDiscountSettings);
+router.put('/discount', authenticate, authorize(...RATE_ADMINS), controller.updateDiscountSettings);
+router.put('/discounts', authenticate, authorize(...RATE_ADMINS), controller.updateDiscountSettings);
 
 // ─── Driver Pricing & Registration Settings (Default ₹799) ──────────────────
 // Public / client-side route to fetch driver rates and registration fee
@@ -31,6 +25,6 @@ router.get('/driver', optionalAuth, controller.getDriverSettings);
 router.get('/driver/public', controller.getDriverSettings);
 
 // Admin-only route to update driver daily rate & registration fee
-router.put('/driver', authenticate, authorize(...ADMINS, 'manage_settings', 'manage_drivers'), controller.updateDriverSettings);
+router.put('/driver', authenticate, authorize(...DRIVER_RATE_ADMINS), controller.updateDriverSettings);
 
 module.exports = router;

@@ -137,6 +137,7 @@ const vehicleSchema = new mongoose.Schema(
 
     // Vendor / Host attachment properties
     vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     isVendorListing: { type: Boolean, default: false },
     ownerName: { type: String, trim: true },
     ownerPhone: { type: String, trim: true },
