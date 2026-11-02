@@ -79,6 +79,24 @@ const FALLBACK_BIKES = [
   { id: 'honda-activa-6g', name: 'Honda Activa 6G Scooty', category: 'scooter', pricePerDay: 549, priceDisplay: '₹549', isAvailable: false, availableCount: 0, quantity: 0, availabilityStatus: 'Currently Unavailable', badge: 'Coming Soon', image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262145/carzodrive/bikes/bike-main-1793262144481-2bbb612b.jpg' },
 ];
 
+const FALLBACK_TOURS = [
+  {
+    id: 'puri-konark-heritage',
+    name: 'Golden Triangle: Puri, Konark & Chilika',
+    title: 'Golden Triangle: Puri, Konark & Chilika',
+    category: 'Heritage & Coast',
+    destination: 'Puri - Konark - Chilika',
+    priceNumeric: 4999,
+    pricePerDay: 4999,
+    startingPrice: '₹4,999',
+    priceDisplay: '₹4,999/day',
+    duration: '3D / 2N',
+    isAvailable: true,
+    availableCount: 10,
+    image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792779598/carzodrive/cars/car-main-1792779591435-ee911a8b.jpg',
+  },
+];
+
 export const Hero = ({ onOpenQuickBook }) => {
   const navigate = useNavigate();
   const { isAuthenticated, openAuthModal } = useAuth();
@@ -108,13 +126,13 @@ export const Hero = ({ onOpenQuickBook }) => {
   // 2. Dynamic Database Fleet State with instant Cloudinary fallbacks
   const [dbCars, setDbCars] = useState(FALLBACK_CARS);
   const [dbBikes, setDbBikes] = useState(FALLBACK_BIKES);
-  const [dbTours, setDbTours] = useState([]);
+  const [dbTours, setDbTours] = useState(FALLBACK_TOURS);
   const [dbDrivers, setDbDrivers] = useState([]);
 
   const [selectedCarId, setSelectedCarId] = useState(FALLBACK_CARS[0].id);
   const [selectedChauffeurId, setSelectedChauffeurId] = useState(FALLBACK_CARS[0].id);
   const [selectedBikeId, setSelectedBikeId] = useState(FALLBACK_BIKES[0].id);
-  const [selectedTourId, setSelectedTourId] = useState('');
+  const [selectedTourId, setSelectedTourId] = useState(FALLBACK_TOURS[0].id);
 
   useEffect(() => {
     let isMounted = true;
@@ -256,7 +274,7 @@ export const Hero = ({ onOpenQuickBook }) => {
   const currentSelectedItem = useMemo(() => {
     switch (activeTab) {
       case 'car-with-driver': {
-        const car = dbCars.find((c) => c.id === selectedChauffeurId) || dbCars[0];
+        const car = dbCars.find((c) => c.id === selectedChauffeurId) || dbCars[0] || FALLBACK_CARS[0];
         const baseRate = Number(car?.pricePerDay) || Number(car?.priceNumeric) || 1499;
         const totalWithDriver = baseRate + Number(driverSettings?.dailyRate || 799);
         const disc = calculateDiscount(totalWithDriver, 'car-with-driver');
@@ -307,7 +325,7 @@ export const Hero = ({ onOpenQuickBook }) => {
         };
       }
       case 'tour-packages': {
-        const tour = dbTours.find((t) => t.id === selectedTourId) || dbTours[0];
+        const tour = dbTours.find((t) => t.id === selectedTourId) || dbTours[0] || FALLBACK_TOURS[0];
         const baseRate = Number(tour?.priceNumeric) || Number(tour?.pricePerDay) || 4999;
         const disc = calculateDiscount(baseRate, 'tour-packages');
         return {
@@ -323,7 +341,7 @@ export const Hero = ({ onOpenQuickBook }) => {
       }
       case 'self-drive-car':
       default: {
-        const car = dbCars.find((c) => c.id === selectedCarId) || dbCars[0];
+        const car = dbCars.find((c) => c.id === selectedCarId) || dbCars[0] || FALLBACK_CARS[0];
         const baseRate = Number(car?.pricePerDay) || Number(car?.priceNumeric) || 1499;
         const disc = calculateDiscount(baseRate, 'self-drive-car');
         return {
@@ -341,10 +359,10 @@ export const Hero = ({ onOpenQuickBook }) => {
 
   // Dynamic live service showcase mapped directly from Database & Cloudinary with real discount
   const serviceData = useMemo(() => {
-    const selfDriveCar = dbCars.find((c) => c.isAvailable) || dbCars[0];
-    const chauffeurCar = dbCars.find((c) => (c.category === 'luxury' || c.category === 'sedan') && c.isAvailable) || dbCars[1] || dbCars[0];
+    const selfDriveCar = dbCars.find((c) => c.isAvailable) || dbCars[0] || FALLBACK_CARS[0];
+    const chauffeurCar = dbCars.find((c) => (c.category === 'luxury' || c.category === 'sedan') && c.isAvailable) || dbCars[1] || dbCars[0] || FALLBACK_CARS[0];
     const bike = dbBikes.find((b) => b.isAvailable) || dbBikes[0] || FALLBACK_BIKES[0];
-    const tour = dbTours[0];
+    const tour = dbTours[0] || FALLBACK_TOURS[0];
 
     const carRate = Number(selfDriveCar?.pricePerDay) || 1499;
     const carDisc = calculateDiscount(carRate, 'self-drive-car');

@@ -27,13 +27,13 @@ export const HeroFleetSelector = ({
   // Determine selected object for current active tab
   const selectedCarObj =
     activeTab === 'self-drive-car'
-      ? (dbCars.find((c) => c.id === selectedCarId) || dbCars[0])
+      ? (dbCars?.find((c) => c.id === selectedCarId) || dbCars?.[0])
       : activeTab === 'car-with-driver'
-      ? (dbCars.find((c) => c.id === withDriverId) || dbCars[0])
+      ? (dbCars?.find((c) => c.id === withDriverId) || dbCars?.[0])
       : activeTab === 'self-drive-bike'
-      ? (dbBikes.find((b) => (b.id || b.name) === selectedBikeId) || dbBikes[0])
+      ? (dbBikes?.find((b) => (b.id || b.name) === selectedBikeId) || dbBikes?.[0])
       : activeTab === 'tour-packages'
-      ? (dbTours.find((t) => t.id === selectedTourId) || dbTours[0])
+      ? (dbTours?.find((t) => t.id === selectedTourId) || dbTours?.[0])
       : { name: 'Verified Driver', pricePerDay: driverDailyRate, isAvailable: true };
 
   const isSelectedUnavailable = selectedCarObj && selectedCarObj.isAvailable === false;
@@ -96,7 +96,7 @@ export const HeroFleetSelector = ({
             isSelectedUnavailable ? 'text-rose-600 opacity-60' : ''
           }`}
         >
-          {dbCars.map((c) => {
+          {(dbCars || []).map((c) => {
             const count = c.availableCount !== undefined ? c.availableCount : (c.quantity ?? 1);
             const isAvail = c.isAvailable !== false && count > 0;
             const baseRate = Number(c.pricePerDay) || Number(c.priceNumeric) || 1499;
@@ -132,7 +132,7 @@ export const HeroFleetSelector = ({
             isSelectedUnavailable ? 'text-rose-600 opacity-60' : ''
           }`}
         >
-          {dbCars.map((c) => {
+          {(dbCars || []).map((c) => {
             const count = c.availableCount !== undefined ? c.availableCount : (c.quantity ?? 1);
             const isAvail = c.isAvailable !== false && count > 0;
             const baseCarRate = Number(c.pricePerDay) || Number(c.priceNumeric) || 1499;
@@ -188,7 +188,7 @@ export const HeroFleetSelector = ({
             isSelectedUnavailable ? 'text-rose-600 opacity-60' : ''
           }`}
         >
-          {dbBikes.map((b) => {
+          {(dbBikes || []).map((b) => {
             const count = b.availableCount !== undefined ? b.availableCount : (b.quantity ?? 1);
             const isAvail = b.isAvailable !== false && count > 0;
             const baseBikeRate = Number(b.pricePerDay) || Number(b.priceNumeric) || 499;
@@ -222,7 +222,7 @@ export const HeroFleetSelector = ({
           onChange={(e) => setSelectedTourId(e.target.value)}
           className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
         >
-          {dbTours.map((t) => {
+          {(dbTours || []).map((t) => {
             const baseTourRate = Number(t.priceNumeric) || Number(t.pricePerDay) || 4999;
             const disc = calculateDiscount(baseTourRate, 'tour-packages');
             const priceText = disc.isDiscountActive && disc.discountAmount > 0

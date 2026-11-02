@@ -96,6 +96,17 @@ export const SearchableLocationInput = ({
             if (!isOpen) setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (value && value.trim()) {
+                onChange?.(value.trim());
+              }
+              setIsOpen(false);
+            } else if (e.key === 'Escape') {
+              setIsOpen(false);
+            }
+          }}
           placeholder={placeholder}
           autoComplete="off"
           className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none py-1 sm:py-0.5 pr-14 min-h-[38px] sm:min-h-0"

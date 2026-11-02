@@ -111,12 +111,14 @@ const downloadBookingInvoicePdf = asyncHandler(async (req, res) => {
   if (mongoose.Types.ObjectId.isValid(identifier)) {
     booking = await Booking.findById(identifier);
   }
-  if (!booking) {
+  if (!booking && identifier) {
+    const escapedId = String(identifier).trim().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     booking = await Booking.findOne({
       $or: [
         { bookingNumber: identifier },
         { invoiceNumber: identifier },
-        { bookingNumber: new RegExp(`^${identifier}$`, 'i') },
+        { bookingNumber: new RegExp(`^${escapedId}$`, 'i') },
+        { invoiceNumber: new RegExp(`^${escapedId}$`, 'i') },
       ],
     });
   }

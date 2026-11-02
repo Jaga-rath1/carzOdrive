@@ -1056,6 +1056,8 @@ module.exports = {
   sendBookingAlertToAdmin,
   dispatchBookingEmails,
   resolveCustomerContact,
+  resolveBookingLedger,
+  getFormattedFrom,
   verifyMailer,
   getTransporter,
 };
