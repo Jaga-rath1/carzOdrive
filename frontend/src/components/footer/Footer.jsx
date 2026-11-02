@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Clock, Sparkles, MapPin, ArrowRight, Mail } from 'lucide-react';
+import { ShieldCheck, Clock, Sparkles, MapPin, ArrowRight, Mail, Phone } from 'lucide-react';
 import { Container } from '../common/Container';
 import { DrivoraLogo } from '../navbar/DrivoraLogo';
 import { CONTACT_CONFIG } from '../../config/contact';
@@ -225,12 +225,12 @@ export const Footer = () => {
               </li>
               <li>
                 <a
-                  href={CONTACT_CONFIG.gmailMailto || `mailto:${CONTACT_CONFIG.gmail || 'carzodrive1@gmail.com'}`}
+                  href="tel:+917377733391"
                   className="inline-flex items-center gap-1.5 text-slate-400 hover:text-cyan-300 transition-colors group pt-1"
-                  title="Direct Gmail Concierge"
+                  title="Call CARZODRIVE Admin (+91 7377733391)"
                 >
-                  <Mail className="w-3.5 h-3.5 text-red-400 group-hover:scale-110 transition-transform shrink-0" />
-                  <span className="truncate">{CONTACT_CONFIG.gmail || 'carzodrive1@gmail.com'}</span>
+                  <Phone className="w-3.5 h-3.5 text-blue-400 group-hover:scale-110 transition-transform shrink-0" />
+                  <span className="truncate font-semibold text-slate-300 group-hover:text-cyan-300">+91 7377733391</span>
                 </a>
               </li>
             </ul>

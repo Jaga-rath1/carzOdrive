@@ -11,7 +11,9 @@
     "seed:admin": "node src/scripts/seedAdmin.js",
     "purge:demo": "node src/scripts/purgeDemoData.js",
     "sync:indexes": "node src/scripts/syncIndexes.js",
-    "test:email": "node src/scripts/testEmail.js"
+    "test:email": "node src/scripts/testEmail.js",
+    "test:e2e": "node src/scripts/comprehensiveE2ETest.js",
+    "test:rbac": "node src/scripts/testRBAC.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
