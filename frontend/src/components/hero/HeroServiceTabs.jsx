@@ -22,6 +22,7 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
             const data = serviceData?.[item.id] || {};
             const Icon = meta.icon;
             const isActive = activeTab === item.id;
+            const isComingSoon = Boolean(data.isComingSoon || meta.isComingSoon || meta.badge === 'Coming Soon' || data.badge === 'Coming Soon');
 
             const handleCardClick = (e) => {
               if (e?.preventDefault) e.preventDefault();
@@ -40,19 +41,18 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
                     : 'bg-slate-50/80 hover:bg-white text-slate-800 hover:text-blue-700 border border-slate-200/80 hover:border-blue-300 shadow-xs hover:shadow-md'
                 }`}
               >
-                {/* Active Floating Pill */}
-                {isActive && (
+                {/* Status Floating Pill */}
+                {isComingSoon ? (
+                  <span className="absolute -top-2.5 right-1 sm:right-1.5 px-2 py-0.5 rounded-full text-[7.5px] sm:text-[8px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow-md border border-amber-300 z-10 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping shrink-0" />
+                    <span>Coming Soon</span>
+                  </span>
+                ) : isActive ? (
                   <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[8px] sm:text-[8.5px] font-black uppercase tracking-wider bg-white text-blue-700 shadow-md flex items-center gap-1 z-10 whitespace-nowrap">
                     <Sparkles className="w-2.5 h-2.5 text-blue-600" />
                     <span>Selected</span>
                   </span>
-                )}
-
-                {!isActive && meta.badge === 'Coming Soon' && (
-                  <span className="absolute -top-2 right-1.5 sm:right-2 px-1.5 py-0.2 rounded-full text-[7px] sm:text-[7.5px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 shadow-xs z-10">
-                    Soon
-                  </span>
-                )}
+                ) : null}
 
                 {/* 1. The 3D Service App Tile directly from user's image */}
                 <div className="w-full flex items-center justify-center pt-0.5">
@@ -85,23 +85,29 @@ export const HeroServiceTabs = ({ activeTab, onTabSelect, serviceMeta, serviceDa
                 <div className="flex flex-col items-center justify-center mt-0.5">
                   <span
                     className={`text-[8.5px] xs:text-[9px] sm:text-[10.5px] font-bold line-clamp-1 ${
-                      isActive ? 'text-blue-100' : 'text-slate-500 group-hover:text-blue-600'
+                      isComingSoon
+                        ? (isActive ? 'text-amber-200 font-extrabold' : 'text-amber-600 font-extrabold')
+                        : (isActive ? 'text-blue-100' : 'text-slate-500 group-hover:text-blue-600')
                     }`}
                   >
-                    {data.tagline || meta.tagline || 'Drive Your Way'}
+                    {isComingSoon ? 'Coming Soon' : (data.tagline || meta.tagline || 'Drive Your Way')}
                   </span>
                 </div>
 
-                {/* 4. Book Now CTA Pill */}
+                {/* 4. Book / Coming Soon CTA Pill */}
                 <div
                   className={`mt-1.5 sm:mt-2 w-full py-0.5 sm:py-1.5 px-1.5 sm:px-2 rounded-lg text-[8.5px] sm:text-[10px] font-black tracking-wider uppercase flex items-center justify-center gap-1 transition-all ${
-                    isActive
+                    isComingSoon
+                      ? (isActive
+                          ? 'bg-amber-400 text-slate-950 shadow-sm border border-amber-300'
+                          : 'bg-amber-100/90 group-hover:bg-amber-400 text-amber-800 group-hover:text-slate-950 border border-amber-300 shadow-xs')
+                      : isActive
                       ? 'bg-white text-blue-700 hover:bg-slate-50 shadow-sm'
                       : 'bg-slate-100/90 group-hover:bg-blue-600 text-slate-700 group-hover:text-white border border-slate-200/80 group-hover:border-blue-600 shadow-xs'
                   }`}
                 >
-                  <span>Book</span>
-                  <ArrowRight className="w-2.5 h-2.5 transition-transform group-hover:translate-x-0.5" />
+                  <span>{isComingSoon ? 'Coming Soon' : 'Book'}</span>
+                  {!isComingSoon && <ArrowRight className="w-2.5 h-2.5 transition-transform group-hover:translate-x-0.5" />}
                 </div>
               </motion.div>
             );

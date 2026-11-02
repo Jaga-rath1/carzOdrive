@@ -209,7 +209,7 @@ export const HeroFleetSelector = ({
               >
                 {isAvail
                   ? `🟢 ${b.name} — ${count} Available • ${priceText}`
-                  : `🔴 ${b.name} — Not Available (0 left) • ${priceText}`}
+                  : `🟡 ${b.name} — Coming Soon • ${priceText}`}
               </option>
             );
           })}

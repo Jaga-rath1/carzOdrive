@@ -18,6 +18,7 @@ export const HeroSearchConsole = ({
   activeTab,
   activeService,
   activeMeta,
+  hasAvailableBikes: propHasAvailableBikes,
   dbCars,
   dbBikes,
   dbTours,
@@ -47,6 +48,15 @@ export const HeroSearchConsole = ({
 }) => {
   const navigate = useNavigate();
   const { isAuthenticated, openAuthModal } = useAuth();
+
+  const isBikeAvailable = useMemo(() => {
+    if (typeof propHasAvailableBikes === 'boolean') return propHasAvailableBikes;
+    return Array.isArray(dbBikes) && dbBikes.some((b) => {
+      const count = b.availableCount !== undefined ? Number(b.availableCount) : (b.quantity !== undefined ? Number(b.quantity) : (b.count ?? 0));
+      const notUnavailable = b.availabilityStatus !== 'UNAVAILABLE' && b.availabilityStatus !== 'Currently Unavailable';
+      return b.isAvailable === true && count > 0 && notUnavailable;
+    });
+  }, [propHasAvailableBikes, dbBikes]);
 
   const tripDays = useMemo(() => {
     if (!pickupDate || !returnDate) return 1;
@@ -202,8 +212,8 @@ export const HeroSearchConsole = ({
           setReturnTime={setReturnTime}
         />
 
-        {/* Bike pre-order notice */}
-        {activeTab === 'self-drive-bike' && (
+        {/* Bike pre-order notice (Shown ONLY when two-wheelers are coming soon / out of stock) */}
+        {activeTab === 'self-drive-bike' && !isBikeAvailable && (
           <div className="p-2 sm:p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 sm:gap-2 text-xs">
             <div className="flex items-center gap-2 font-bold text-[11px] sm:text-xs">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
@@ -245,7 +255,7 @@ export const HeroSearchConsole = ({
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
 
-            {/* OPTION 2: BOOK ON WHATSAPP (NAVIGATES TO DEDICATED BOOKING PAGE) */}
+            {/* OPTION 1: BOOK ON WHATSAPP (NAVIGATES TO DEDICATED BOOKING PAGE) */}
             <button
               type="button"
               onClick={handleBookOnWhatsApp}
@@ -257,13 +267,13 @@ export const HeroSearchConsole = ({
             </button>
 
             {/* OPTION 2: BOOK ONLINE */}
-            {activeTab === 'self-drive-bike' ? (
+            {activeTab === 'self-drive-bike' && !isBikeAvailable ? (
               <button
                 type="button"
                 onClick={handleBookOnWhatsApp}
                 className="w-full sm:w-auto px-6 py-3 sm:py-2.5 rounded-xl font-black text-xs sm:text-sm text-white bg-amber-600 border border-amber-500 hover:bg-amber-700 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
               >
-                <span>Pre-Book Bike Online</span>
+                <span>Pre-Book Bike on WhatsApp</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
@@ -289,7 +299,17 @@ export const HeroSearchConsole = ({
                   <>
                     <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
                     <Sparkles className="w-4 h-4 text-cyan-200 animate-pulse" />
-                    <span>Book Online</span>
+                    <span>
+                      {activeTab === 'self-drive-bike'
+                        ? 'Book Self-Drive Bike Online'
+                        : activeTab === 'car-with-driver'
+                        ? 'Book With Driver Online'
+                        : activeTab === 'driver-only'
+                        ? 'Confirm Driver Pilot'
+                        : activeTab === 'tour-packages'
+                        ? 'Book Tour Package'
+                        : 'Book Self-Drive Car Online'}
+                    </span>
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </>
                 )}

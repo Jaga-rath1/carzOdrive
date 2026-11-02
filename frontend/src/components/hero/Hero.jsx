@@ -75,8 +75,8 @@ const FALLBACK_CARS = [
 ];
 
 const FALLBACK_BIKES = [
-  { id: 'hero-splendor-plus', name: 'Hero Splendor Plus XTEC', category: 'commuter', pricePerDay: 499, priceDisplay: '₹499', isAvailable: true, availableCount: 20, quantity: 20, badge: 'Coming Soon', image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg' },
-  { id: 'honda-activa-6g', name: 'Honda Activa 6G Scooty', category: 'scooter', pricePerDay: 549, priceDisplay: '₹549', isAvailable: true, availableCount: 15, quantity: 15, badge: 'Coming Soon', image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262145/carzodrive/bikes/bike-main-1793262144481-2bbb612b.jpg' },
+  { id: 'hero-splendor-plus', name: 'Hero Splendor Plus XTEC', category: 'commuter', pricePerDay: 499, priceDisplay: '₹499', isAvailable: false, availableCount: 0, quantity: 0, availabilityStatus: 'Currently Unavailable', badge: 'Coming Soon', image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg' },
+  { id: 'honda-activa-6g', name: 'Honda Activa 6G Scooty', category: 'scooter', pricePerDay: 549, priceDisplay: '₹549', isAvailable: false, availableCount: 0, quantity: 0, availabilityStatus: 'Currently Unavailable', badge: 'Coming Soon', image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262145/carzodrive/bikes/bike-main-1793262144481-2bbb612b.jpg' },
 ];
 
 export const Hero = ({ onOpenQuickBook }) => {
@@ -227,8 +227,30 @@ export const Hero = ({ onOpenQuickBook }) => {
   const [returnDate, setReturnDate] = useState(() => getTodayDateString(2));
   const [returnTime, setReturnTime] = useState('18:00');
 
+  // Dynamic Bike Availability: True only if at least one bike is available in DB with stock > 0
+  const hasAvailableBikes = useMemo(() => {
+    return Array.isArray(dbBikes) && dbBikes.some((b) => {
+      const count = b.availableCount !== undefined ? Number(b.availableCount) : (b.quantity !== undefined ? Number(b.quantity) : (b.count ?? 0));
+      const notUnavailable = b.availabilityStatus !== 'UNAVAILABLE' && b.availabilityStatus !== 'Currently Unavailable';
+      return b.isAvailable === true && count > 0 && notUnavailable;
+    });
+  }, [dbBikes]);
+
+  const dynamicServiceMeta = useMemo(() => {
+    return {
+      ...SERVICE_META,
+      'self-drive-bike': {
+        ...SERVICE_META['self-drive-bike'],
+        badge: hasAvailableBikes ? 'Live Fleet' : 'Coming Soon',
+        tagline: hasAvailableBikes ? 'Ride the Freedom' : 'Coming Soon',
+        ctaText: hasAvailableBikes ? 'Book Self-Drive Bike' : 'Pre-Book Bike',
+        isComingSoon: !hasAvailableBikes,
+      },
+    };
+  }, [hasAvailableBikes]);
+
   const activeService = SERVICE_OPTIONS.find((s) => s.id === activeTab) || SERVICE_OPTIONS[0];
-  const activeMeta = SERVICE_META[activeTab] || SERVICE_META['self-drive-car'];
+  const activeMeta = dynamicServiceMeta[activeTab] || dynamicServiceMeta['self-drive-car'];
 
   // Resolve currently chosen item object with real live discount applied
   const currentSelectedItem = useMemo(() => {
@@ -367,8 +389,9 @@ export const Hero = ({ onOpenQuickBook }) => {
         image: '/images/services/self-drive-bike.png',
         vehiclePhoto: bike?.image || FALLBACK_BIKES[0].image,
         title: bike?.name || 'Splendor & Activa Scooty',
-        tagline: 'Coming Soon • Pre-Book via WhatsApp',
-        badge: 'Coming Soon',
+        tagline: hasAvailableBikes ? 'Ride the Freedom' : 'Coming Soon',
+        badge: hasAvailableBikes ? 'Live Fleet' : 'Coming Soon',
+        isComingSoon: !hasAvailableBikes,
         rate: `₹${bikeDisc.finalAmount.toLocaleString('en-IN')}/d`,
       },
       'tour-packages': {
@@ -380,7 +403,7 @@ export const Hero = ({ onOpenQuickBook }) => {
         rate: `From ₹${tourDisc.finalAmount.toLocaleString('en-IN')}/day`,
       },
     };
-  }, [dbCars, dbBikes, dbTours, driverSettings, calculateDiscount]);
+  }, [dbCars, dbBikes, dbTours, driverSettings, calculateDiscount, hasAvailableBikes]);
 
   const effectivePickup = pickupLocation;
   const effectiveDrop = dropLocation === 'Same as Pick-up Location' ? pickupLocation : dropLocation;
@@ -470,7 +493,7 @@ export const Hero = ({ onOpenQuickBook }) => {
               <HeroServiceTabs
                 activeTab={activeTab}
                 onTabSelect={handleServiceSelect}
-                serviceMeta={SERVICE_META}
+                serviceMeta={dynamicServiceMeta}
                 serviceData={serviceData}
               />
             </div>
@@ -485,6 +508,7 @@ export const Hero = ({ onOpenQuickBook }) => {
                 activeTab={activeTab}
                 activeService={activeService}
                 activeMeta={activeMeta}
+                hasAvailableBikes={hasAvailableBikes}
                 dbCars={dbCars}
                 dbBikes={dbBikes}
                 dbTours={dbTours}
