@@ -147,7 +147,17 @@ const attachBookingDocument = asyncHandler(async (req, res) => {
 
 const resendBookingEmails = asyncHandler(async (req, res) => {
   const result = await svc.resendBookingEmails(req.params.id, req.body?.email);
-  success(res, result, 'Booking confirmation and invoice emails dispatched successfully');
+  let message = 'Tax invoice & booking notification dispatched successfully';
+  if (result.customerSent && result.adminSent) {
+    message = `Tax Invoice successfully emailed to ${result.customerEmail} and Admin`;
+  } else if (result.customerSent) {
+    message = `Tax Invoice successfully emailed to customer (${result.customerEmail})`;
+  } else if (result.adminSent && !result.customerEmail) {
+    message = 'Notification dispatched to Admin. (No customer email found for this booking)';
+  } else if (result.adminSent) {
+    message = `Admin alert dispatched. Note: Customer email (${result.customerEmail}) could not be reached.`;
+  }
+  success(res, result, message);
 });
 
 module.exports = {

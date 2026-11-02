@@ -11,8 +11,8 @@ const rawApiUrl = (import.meta.env.VITE_API_URL || defaultApiUrl).trim().replace
 const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
   ? rawApiUrl
   : rawApiUrl.endsWith('/api')
-  ? `${rawApiUrl}/v1`
-  : `${rawApiUrl}/api/v1`;
+    ? `${rawApiUrl}/v1`
+    : `${rawApiUrl}/api/v1`;
 
 // Base server origin (e.g., http://localhost:5000 or https://carzodrive-1.onrender.com)
 export const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, '');

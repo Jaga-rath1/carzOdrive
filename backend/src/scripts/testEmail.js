@@ -1,3 +1,9 @@
+const path = require('path');
+// Guarantee loading .env regardless of whether process is started from root or backend directory
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+require('dotenv').config({ path: path.resolve(process.cwd(), 'backend/.env') });
+require('dotenv').config({ path: path.resolve(process.cwd(), '.env') });
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 

@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   FileText,
   Loader2,
-  Mail
+  Mail,
+  AlertCircle
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 import { bookingsAPI } from '../../services/api';
@@ -316,9 +317,17 @@ export const InvoiceModal = ({ isOpen, onClose, booking, bookingIdOrCode }) => {
     setIsSendingEmail(true);
     setEmailStatus(null);
     try {
-      const email = b.guestEmail || b.customerId?.email;
-      await bookingsAPI.resendEmail(targetCode, email);
-      setEmailStatus({ type: 'success', message: 'Email sent!' });
+      let email = (b.guestEmail || b.customerId?.email || '').trim();
+      if (!email || !email.includes('@')) {
+        const entered = window.prompt('Please enter the customer email address to receive this Tax Invoice PDF:');
+        if (!entered || !entered.trim() || !entered.includes('@')) {
+          setIsSendingEmail(false);
+          return;
+        }
+        email = entered.trim();
+      }
+      const res = await bookingsAPI.resendEmail(targetCode, email);
+      setEmailStatus({ type: 'success', message: res?.message || 'Email sent!' });
       setTimeout(() => setEmailStatus(null), 4000);
     } catch (err) {
       setEmailStatus({ type: 'error', message: err.message || 'Failed to dispatch email' });
@@ -448,6 +457,11 @@ export const InvoiceModal = ({ isOpen, onClose, booking, bookingIdOrCode }) => {
                   <Check className="w-3.5 h-3.5" />
                   <span>Email Sent!</span>
                 </>
+              ) : emailStatus?.type === 'error' ? (
+                <>
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>Send Failed</span>
+                </>
               ) : (
                 <>
                   <Mail className="w-3.5 h-3.5" />
@@ -498,6 +512,33 @@ export const InvoiceModal = ({ isOpen, onClose, booking, bookingIdOrCode }) => {
             </button>
           </div>
         </div>
+
+        {/* Email status notification feedback */}
+        {emailStatus && (
+          <div
+            className={`no-print px-4 py-2.5 text-xs font-semibold flex items-center justify-between gap-3 border-b animate-in fade-in duration-150 ${
+              emailStatus.type === 'success'
+                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {emailStatus.type === 'success' ? (
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              ) : (
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              )}
+              <span>{emailStatus.message}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setEmailStatus(null)}
+              className="text-zinc-400 hover:text-white px-1.5 py-0.5 rounded cursor-pointer transition-colors"
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {/* Scrollable Printable Invoice Content */}
         <div className="invoice-modal-scroll overflow-y-auto p-3 sm:p-6 bg-zinc-100 flex-1">

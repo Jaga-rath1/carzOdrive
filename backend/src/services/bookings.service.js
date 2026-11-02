@@ -1497,9 +1497,30 @@ async function resendBookingEmails(bookingIdOrCode, overrideEmail = null) {
     throw err;
   }
 
-  const { dispatchBookingEmails } = require('../utils/mailer');
+  // If an override email was provided and booking lacks guestEmail, persist it for future dispatches
+  if (overrideEmail && typeof overrideEmail === 'string' && overrideEmail.includes('@') && !booking.guestEmail) {
+    try {
+      booking.guestEmail = overrideEmail.trim().toLowerCase();
+      await booking.save();
+    } catch (_) {}
+  }
+
+  const { dispatchBookingEmails, resolveCustomerContact, resolveAdminAlertEmail } = require('../utils/mailer');
   const results = await dispatchBookingEmails(booking, overrideEmail);
-  return { success: true, bookingNumber: booking.bookingNumber, results };
+  const { email: resolvedCustMail } = await resolveCustomerContact(booking, overrideEmail);
+  const targetAdmin = resolveAdminAlertEmail();
+
+  const customerSent = results.some((r) => r && r.success && r.email && r.email.toLowerCase() === (resolvedCustMail || '').toLowerCase());
+  const adminSent = results.some((r) => r && r.success && r.email && r.email.toLowerCase() === (targetAdmin || '').toLowerCase());
+
+  return {
+    success: true,
+    bookingNumber: booking.bookingNumber,
+    customerEmail: resolvedCustMail || null,
+    customerSent,
+    adminSent,
+    results,
+  };
 }
 
 module.exports = {

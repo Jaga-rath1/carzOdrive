@@ -1,4 +1,11 @@
+const path = require('path');
+// Guarantee loading .env regardless of whether process is started from root or backend directory
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+require('dotenv').config({ path: path.resolve(process.cwd(), 'backend/.env') });
+require('dotenv').config({ path: path.resolve(process.cwd(), '.env') });
 require('dotenv').config();
+
 const nodemailer = require('nodemailer');
 const logger = require('./logger');
 
@@ -58,9 +65,7 @@ function getTransporter() {
       port: isGmail ? 465 : port,
       secure: isGmail ? true : isSecure,
       auth: { user, pass },
-      pool: true,
-      maxConnections: 3,
-      maxMessages: 100,
+      pool: false, // Direct TLS connection prevents stale socket ECONNRESET errors with Gmail
       tls: {
         rejectUnauthorized: false,
       },
@@ -70,7 +75,7 @@ function getTransporter() {
     };
 
     transporter = nodemailer.createTransport(transportConfig);
-    logger.success(`✓ Nodemailer configured with ${isGmail ? 'Direct Gmail SSL (465) [Pooled]' : `${host}:${port}`} [User: ${user}]`);
+    logger.success(`✓ Nodemailer configured with ${isGmail ? 'Direct Gmail SSL (465)' : `${host}:${port}`} [User: ${user}]`);
   } else {
     // Development / fallback transporter using JSON transport or logging
     transporter = nodemailer.createTransport({
@@ -80,6 +85,29 @@ function getTransporter() {
   }
 
   return transporter;
+}
+
+/**
+ * Robust email dispatcher with automatic retry on transient socket / TLS drop
+ */
+async function sendMailWithRetry(mailOptions, description = 'Email') {
+  let lastError = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const client = getTransporter();
+      const info = await client.sendMail(mailOptions);
+      return { success: true, info };
+    } catch (err) {
+      lastError = err;
+      logger.warn(`[Mailer] Attempt ${attempt}/2 failed for ${description}: ${err.message}`);
+      resetTransporter();
+      if (attempt < 2) {
+        // Wait 1.2s before retrying with fresh socket handshake
+        await new Promise((r) => setTimeout(r, 1200));
+      }
+    }
+  }
+  return { success: false, error: lastError?.message || 'Unknown SMTP error' };
 }
 
 /**
@@ -159,22 +187,21 @@ async function sendPasswordResetOtp({ email, name = 'Customer', otp }) {
   console.log(`⏰ Valid for: 15 minutes`);
   console.log(`======================================================\n`);
 
-  try {
-    const client = getTransporter();
-    const info = await client.sendMail({
-      from,
-      replyTo: user || 'support@carzodrive.com',
-      to: email,
-      subject,
-      text: textContent,
-      html: htmlContent,
-    });
-    logger.success(`✓ Password reset OTP sent successfully to: ${email} [MessageId: ${info.messageId}]`);
-    return { success: true, messageId: info.messageId, otp };
-  } catch (err) {
-    logger.error(`Email sending error for ${email}:`, err.message);
-    resetTransporter();
-    return { success: false, error: err.message, otp };
+  const mailResult = await sendMailWithRetry({
+    from,
+    replyTo: user || 'support@carzodrive.com',
+    to: email,
+    subject,
+    text: textContent,
+    html: htmlContent,
+  }, `Password Reset OTP (${email})`);
+
+  if (mailResult.success) {
+    logger.success(`✓ Password reset OTP sent successfully to: ${email} [MessageId: ${mailResult.info?.messageId}]`);
+    return { success: true, messageId: mailResult.info?.messageId, otp };
+  } else {
+    logger.error(`Email sending error for ${email}:`, mailResult.error);
+    return { success: false, error: mailResult.error, otp };
   }
 }
 
@@ -550,32 +577,31 @@ async function sendBookingInvoiceToCustomer({ email, name = 'Valued Guest', book
     </html>
   `;
 
-  try {
-    const client = getTransporter();
-    const attachments = [];
-    if (pdfBuffer) {
-      attachments.push({
-        filename: `Tax_Invoice_${invoiceNumber || bookingNumber}.pdf`,
-        content: pdfBuffer,
-        contentType: 'application/pdf',
-      });
-    }
-
-    const info = await client.sendMail({
-      from,
-      replyTo,
-      to: cleanEmail,
-      subject,
-      text: textContent,
-      html: htmlContent,
-      attachments,
+  const attachments = [];
+  if (pdfBuffer) {
+    attachments.push({
+      filename: `Tax_Invoice_${invoiceNumber || bookingNumber}.pdf`,
+      content: pdfBuffer,
+      contentType: 'application/pdf',
     });
-    logger.success(`✓ Customer Tax Invoice dispatched successfully to: ${cleanEmail} [Ref: #${bookingNumber}, Attached: ${attachments.length > 0 ? 'YES' : 'NO'}, MessageId: ${info.messageId}]`);
-    return { success: true, messageId: info.messageId, email: cleanEmail };
-  } catch (err) {
-    logger.error(`Failed to send customer invoice email to ${cleanEmail}:`, err.message);
-    resetTransporter();
-    return { success: false, error: err.message, email: cleanEmail };
+  }
+
+  const mailResult = await sendMailWithRetry({
+    from,
+    replyTo,
+    to: cleanEmail,
+    subject,
+    text: textContent,
+    html: htmlContent,
+    attachments,
+  }, `Customer Tax Invoice (${cleanEmail} / Ref: #${bookingNumber})`);
+
+  if (mailResult.success) {
+    logger.success(`✓ Customer Tax Invoice dispatched successfully to: ${cleanEmail} [Ref: #${bookingNumber}, Attached: ${attachments.length > 0 ? 'YES' : 'NO'}, MessageId: ${mailResult.info?.messageId}]`);
+    return { success: true, messageId: mailResult.info?.messageId, email: cleanEmail };
+  } else {
+    logger.error(`Failed to send customer invoice email to ${cleanEmail}:`, mailResult.error);
+    return { success: false, error: mailResult.error, email: cleanEmail };
   }
 }
 
@@ -831,32 +857,31 @@ async function sendBookingAlertToAdmin({ booking, adminEmail, pdfBuffer = null }
     </html>
   `;
 
-  try {
-    const client = getTransporter();
-    const attachments = [];
-    if (pdfBuffer) {
-      attachments.push({
-        filename: `Booking_${bookingNumber}_Invoice_${invoiceNumber}.pdf`,
-        content: pdfBuffer,
-        contentType: 'application/pdf',
-      });
-    }
-
-    const info = await client.sendMail({
-      from,
-      replyTo,
-      to: targetAdminEmail,
-      subject,
-      text: textContent,
-      html: htmlContent,
-      attachments,
+  const attachments = [];
+  if (pdfBuffer) {
+    attachments.push({
+      filename: `Booking_${bookingNumber}_Invoice_${invoiceNumber}.pdf`,
+      content: pdfBuffer,
+      contentType: 'application/pdf',
     });
-    logger.success(`✓ Admin New Booking Alert dispatched successfully to: ${targetAdminEmail} [Ref: #${bookingNumber}, Attached: ${attachments.length > 0 ? 'YES' : 'NO'}, MessageId: ${info.messageId}]`);
-    return { success: true, messageId: info.messageId, email: targetAdminEmail };
-  } catch (err) {
-    logger.error(`Failed to send Admin booking alert to ${targetAdminEmail}:`, err.message);
-    resetTransporter();
-    return { success: false, error: err.message, email: targetAdminEmail };
+  }
+
+  const mailResult = await sendMailWithRetry({
+    from,
+    replyTo,
+    to: targetAdminEmail,
+    subject,
+    text: textContent,
+    html: htmlContent,
+    attachments,
+  }, `Admin New Booking Alert (${targetAdminEmail} / Ref: #${bookingNumber})`);
+
+  if (mailResult.success) {
+    logger.success(`✓ Admin New Booking Alert dispatched successfully to: ${targetAdminEmail} [Ref: #${bookingNumber}, Attached: ${attachments.length > 0 ? 'YES' : 'NO'}, MessageId: ${mailResult.info?.messageId}]`);
+    return { success: true, messageId: mailResult.info?.messageId, email: targetAdminEmail };
+  } else {
+    logger.error(`Failed to send Admin booking alert to ${targetAdminEmail}:`, mailResult.error);
+    return { success: false, error: mailResult.error, email: targetAdminEmail };
   }
 }
 
@@ -920,6 +945,15 @@ async function resolveCustomerContact(booking, overrideEmail = null) {
     const payGuestEmail = booking.paymentId?.guestEmail || booking.paymentId?.customerEmail;
     if (isRealEmail(payGuestEmail)) {
       email = payGuestEmail.trim().toLowerCase();
+    } else {
+      try {
+        const { Payment } = require('../models/payment.model');
+        const rawPayId = booking.paymentId?._id || booking.paymentId;
+        const p = await Payment.findById(rawPayId).select('guestEmail customerEmail');
+        if (p && isRealEmail(p.guestEmail || p.customerEmail)) {
+          email = (p.guestEmail || p.customerEmail).trim().toLowerCase();
+        }
+      } catch (_) {}
     }
   }
 
