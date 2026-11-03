@@ -10,6 +10,8 @@ const nodemailer = require('nodemailer');
 const logger = require('./logger');
 
 let transporter = null;
+let currentPort = null;
+let currentSecure = null;
 
 function resetTransporter() {
   if (transporter && typeof transporter.close === 'function') {
@@ -18,6 +20,8 @@ function resetTransporter() {
     } catch (_) {}
   }
   transporter = null;
+  currentPort = null;
+  currentSecure = null;
 }
 
 function getFormattedFrom(customLabel = 'CARZODRIVE Concierge') {
@@ -43,94 +47,181 @@ function getFormattedFrom(customLabel = 'CARZODRIVE Concierge') {
   return `"${senderName}" <${senderEmail}>`;
 }
 
-function getTransporter() {
-  if (transporter) return transporter;
-
+/**
+ * Resolve SMTP configuration with cloud-safe defaults.
+ * GCP (Google Cloud Platform) blocks port 25 and often drops/times out on port 465 SSL.
+ * Port 587 with STARTTLS (secure: false, requireTLS: true) is the official GCP-supported standard.
+ */
+function resolveSmtpConfig(overridePort = null, overrideSecure = null) {
   const rawUser = process.env.SMTP_USER || process.env.EMAIL_USER || '';
   const rawPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || '';
   const user = rawUser.trim();
-  const pass = rawPass.replace(/\s+/g, ''); // Strip all spaces (common when copying Google App Passwords)
+  const pass = rawPass.replace(/\s+/g, ''); // Strip spaces (common when copying Google App Passwords)
 
   const service = (process.env.SMTP_SERVICE || '').trim().toLowerCase();
   const host = (process.env.SMTP_HOST || (service === 'gmail' ? 'smtp.gmail.com' : 'smtp.gmail.com')).trim();
-  const port = parseInt(process.env.SMTP_PORT || (host === 'smtp.gmail.com' ? '465' : '587'), 10);
-  const isSecure = process.env.SMTP_SECURE !== undefined
-    ? process.env.SMTP_SECURE === 'true'
-    : port === 465;
 
-  if (user && pass) {
-    const isGmail = service === 'gmail' || host === 'smtp.gmail.com';
-    const transportConfig = {
-      host: isGmail ? 'smtp.gmail.com' : host,
-      port: isGmail ? 465 : port,
-      secure: isGmail ? true : isSecure,
-      auth: { user, pass },
-      pool: false, // Direct TLS connection prevents stale socket ECONNRESET errors with Gmail
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: 15000,
-      greetingTimeout: 15000,
-      socketTimeout: 20000,
-    };
+  // GCP Requirement: Default to Port 587 unless explicitly overridden or set in environment variables
+  const port = overridePort !== null
+    ? overridePort
+    : parseInt(process.env.SMTP_PORT || '587', 10);
 
-    transporter = nodemailer.createTransport(transportConfig);
-    logger.success(`✓ Nodemailer configured with ${isGmail ? 'Direct Gmail SSL (465)' : `${host}:${port}`} [User: ${user}]`);
-  } else {
-    // Development / fallback transporter using JSON transport or logging
-    transporter = nodemailer.createTransport({
-      jsonTransport: true,
-    });
-    logger.info('ℹ️ Nodemailer: SMTP credentials not set in .env. OTP will be logged directly to the server terminal.');
+  const isSecure = overrideSecure !== null
+    ? overrideSecure
+    : (process.env.SMTP_SECURE !== undefined
+        ? process.env.SMTP_SECURE === 'true'
+        : port === 465);
+
+  const requireTLS = !isSecure && (port === 587 || port === 2525);
+
+  return { user, pass, host, port, isSecure, requireTLS, service };
+}
+
+function getTransporter(overridePort = null, overrideSecure = null) {
+  if (transporter && overridePort === null && overrideSecure === null) {
+    return transporter;
   }
 
-  return transporter;
+  const { user, pass, host, port, isSecure, requireTLS } = resolveSmtpConfig(overridePort, overrideSecure);
+
+  if (user && pass) {
+    const transportConfig = {
+      host,
+      port,
+      secure: isSecure,
+      requireTLS,
+      auth: { user, pass },
+      pool: false, // Prevents stale socket resets on cloud platforms
+      tls: {
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2',
+      },
+      connectionTimeout: 25000, // 25s for GCP/cloud cold starts
+      greetingTimeout: 20000,
+      socketTimeout: 30000,
+      dnsTimeout: 10000,
+    };
+
+    const instance = nodemailer.createTransport(transportConfig);
+
+    if (overridePort === null && overrideSecure === null) {
+      transporter = instance;
+      currentPort = port;
+      currentSecure = isSecure;
+      logger.success(`✓ Nodemailer configured with ${host}:${port} (${isSecure ? 'Direct SSL' : 'STARTTLS'}) [User: ${user}]`);
+    }
+
+    return instance;
+  } else {
+    // Development / fallback transporter using JSON transport or logging
+    const devTransporter = nodemailer.createTransport({
+      jsonTransport: true,
+    });
+    if (overridePort === null && overrideSecure === null) {
+      transporter = devTransporter;
+      logger.info('ℹ️ Nodemailer: SMTP credentials not set in .env. OTP will be logged directly to the server terminal.');
+    }
+    return devTransporter;
+  }
 }
 
 /**
- * Robust email dispatcher with automatic retry on transient socket / TLS drop
+ * Robust email dispatcher with dual-port auto-fallback for Google Cloud Platform (GCP)
+ * If Port 587 (or Port 465) suffers network drop / timeout, it automatically falls back
+ * to the alternate port and delivers successfully.
  */
 async function sendMailWithRetry(mailOptions, description = 'Email') {
+  const { user, pass, port: primaryPort, isSecure: primarySecure } = resolveSmtpConfig();
+
+  if (!user || !pass) {
+    const client = getTransporter();
+    const info = await client.sendMail(mailOptions);
+    return { success: true, info, note: 'Sent via mock JSON transport' };
+  }
+
+  const alternatePort = primaryPort === 465 ? 587 : 465;
+  const alternateSecure = alternatePort === 465;
+
+  const attempts = [
+    { port: primaryPort, secure: primarySecure, label: `Primary Port ${primaryPort} (${primarySecure ? 'Direct SSL' : 'STARTTLS'})` },
+    { port: alternatePort, secure: alternateSecure, label: `GCP Fallback Port ${alternatePort} (${alternateSecure ? 'Direct SSL' : 'STARTTLS'})` },
+  ];
+
   let lastError = null;
-  for (let attempt = 1; attempt <= 2; attempt++) {
+
+  for (let i = 0; i < attempts.length; i++) {
+    const attemptCfg = attempts[i];
     try {
-      const client = getTransporter();
+      const client = (i === 0 && transporter)
+        ? transporter
+        : getTransporter(attemptCfg.port, attemptCfg.secure);
+
       const info = await client.sendMail(mailOptions);
-      return { success: true, info };
+
+      if (i > 0) {
+        // Fallback succeeded! Adopt this working port as active transporter for subsequent requests
+        logger.success(`✓ [Mailer] Successfully delivered ${description} via GCP Fallback Port ${attemptCfg.port}!`);
+        resetTransporter();
+        getTransporter(attemptCfg.port, attemptCfg.secure);
+      }
+
+      return { success: true, info, port: attemptCfg.port };
     } catch (err) {
       lastError = err;
-      logger.warn(`[Mailer] Attempt ${attempt}/2 failed for ${description}: ${err.message}`);
-      resetTransporter();
-      if (attempt < 2) {
-        // Wait 1.2s before retrying with fresh socket handshake
+      logger.warn(`[Mailer] Attempt ${i + 1}/2 (${attemptCfg.label}) failed for ${description}: ${err.message}`);
+
+      if (i < attempts.length - 1) {
+        // Wait 1.2s before retrying on fallback port
         await new Promise((r) => setTimeout(r, 1200));
       }
     }
   }
-  return { success: false, error: lastError?.message || 'Unknown SMTP error' };
+
+  logger.error(`❌ [Mailer] All delivery attempts failed for ${description}: ${lastError?.message}`);
+  logger.error(`[Mailer GCP Deployment Diagnostic]:
+    1. Port 25 is permanently blocked on GCP.
+    2. Port 465 (Direct SSL) often times out due to GCP VPC egress policies.
+    3. Port 587 (STARTTLS) is recommended on GCP: set SMTP_PORT=587 and SMTP_SECURE=false in GCP environment variables.
+    4. Ensure your Google Account has 2FA enabled and uses a 16-character App Password (adkqhnnwtpespkxj, no spaces).
+    5. If Google Security blocks cloud datacenter IPs, use transactional SMTP relays (Brevo / SendGrid / Resend).`);
+
+  return { success: false, error: lastError?.message || 'Unknown SMTP error across all ports' };
 }
 
 /**
- * Verify transporter connection
+ * Verify transporter connection with dual-port GCP fallback detection
  */
 async function verifyMailer() {
-  const rawUser = process.env.SMTP_USER || process.env.EMAIL_USER || '';
-  const rawPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || '';
-  const user = rawUser.trim();
-  const pass = rawPass.replace(/\s+/g, '');
+  const { user, pass, port: primaryPort, isSecure: primarySecure } = resolveSmtpConfig();
 
   if (!user || !pass) {
     return { configured: false, message: 'SMTP credentials pending in .env (SMTP_USER / SMTP_PASS)' };
   }
 
+  const alternatePort = primaryPort === 465 ? 587 : 465;
+  const alternateSecure = alternatePort === 465;
+
+  // 1. Try Primary Port
   try {
-    const client = getTransporter();
+    const client = getTransporter(primaryPort, primarySecure);
     await client.verify();
-    logger.success('✓ Nodemailer SMTP handshake verified successfully.');
-    return { configured: true, message: 'SMTP ready' };
+    logger.success(`✓ Nodemailer SMTP handshake verified successfully on Port ${primaryPort} (${primarySecure ? 'Direct SSL' : 'STARTTLS'}).`);
+    return { configured: true, port: primaryPort, message: `SMTP ready on port ${primaryPort}` };
   } catch (err) {
-    logger.error('Nodemailer SMTP verification failed:', err.message);
-    return { configured: false, error: err.message };
+    logger.warn(`[Mailer] Primary Port ${primaryPort} handshake failed (${err.message}). Testing GCP Fallback Port ${alternatePort}...`);
+
+    // 2. Try Alternate Port Fallback
+    try {
+      const fallbackClient = getTransporter(alternatePort, alternateSecure);
+      await fallbackClient.verify();
+      resetTransporter();
+      getTransporter(alternatePort, alternateSecure);
+      logger.success(`✓ Nodemailer GCP Fallback Port ${alternatePort} verified successfully!`);
+      return { configured: true, port: alternatePort, message: `SMTP ready on fallback port ${alternatePort}` };
+    } catch (fallbackErr) {
+      logger.error(`Nodemailer SMTP verification failed on both Port ${primaryPort} and Port ${alternatePort}:`, fallbackErr.message);
+      return { configured: false, error: fallbackErr.message };
+    }
   }
 }
 
