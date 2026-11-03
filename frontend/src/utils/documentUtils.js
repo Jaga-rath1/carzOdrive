@@ -4,7 +4,7 @@
  */
 
 const defaultApiUrl = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-  ? 'https://carzodrive-1.onrender.com/api/v1'
+  ? `${window.location.origin}/api/v1`
   : 'http://localhost:5000/api/v1';
 
 const rawApiUrl = (import.meta.env.VITE_API_URL || defaultApiUrl).trim().replace(/\/+$/, '');
@@ -14,7 +14,7 @@ const API_BASE_URL = rawApiUrl.endsWith('/api/v1')
     ? `${rawApiUrl}/v1`
     : `${rawApiUrl}/api/v1`;
 
-// Base server origin (e.g., http://localhost:5000 or https://carzodrive-1.onrender.com)
+// Base server origin (e.g., http://localhost:5000 or custom host)
 export const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
 
 export const DEFAULT_CAR_IMAGE = 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001791/carzodrive/cars/car-main-1793001789245-86ca636d.jpg';

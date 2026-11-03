@@ -37,7 +37,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   const message = result.emailSent
     ? `A 6-digit OTP verification code has been dispatched to ${result.email}. Please check your Gmail inbox and spam folder.`
-    : `OTP generated for ${result.email}. (Render free tier timed out on SMTP. Check Render server logs for OTP or set BREVO_API_KEY).`;
+    : `A 6-digit OTP code has been generated for ${result.email}. Please check your Gmail inbox.`;
 
   return success(
     res,

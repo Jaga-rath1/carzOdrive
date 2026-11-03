@@ -13,24 +13,27 @@ const getInitialApiBaseUrl = () => {
 
   const envUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
 
-  // If in browser and NOT on localhost (e.g. deployed on Vercel or accessed via remote host),
-  // NEVER use localhost URL even if it was present in .env during build
-  if (isBrowser && !isLocalHost && (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
-    return 'https://carzodrive-1.onrender.com/api/v1';
-  }
-
   // In local Vite dev mode, use /api/v1 (which Vite proxies to http://localhost:5000/api/v1)
-  // This completely eliminates CORS issues, IPv6/IPv4 mismatch, and firewall port blocking
+  // This completely eliminates CORS issues and firewall port blocking
   if (isBrowser && isLocalHost && import.meta.env.DEV) {
     return '/api/v1';
   }
 
-  const raw = envUrl || (isLocalHost ? 'http://localhost:5000/api/v1' : 'https://carzodrive-1.onrender.com/api/v1');
-  return raw.endsWith('/api/v1')
-    ? raw
-    : raw.endsWith('/api')
-    ? `${raw}/v1`
-    : `${raw}/api/v1`;
+  // If explicitly configured in .env (e.g. GCP Cloud Run backend URL), use it
+  if (envUrl) {
+    return envUrl.endsWith('/api/v1')
+      ? envUrl
+      : envUrl.endsWith('/api')
+      ? `${envUrl}/v1`
+      : `${envUrl}/api/v1`;
+  }
+
+  // If deployed in production and VITE_API_URL was not set, use current host origin
+  if (isBrowser && !isLocalHost) {
+    return `${window.location.origin}/api/v1`;
+  }
+
+  return 'http://localhost:5000/api/v1';
 };
 
 export const API_BASE_URL = getInitialApiBaseUrl();
@@ -205,38 +208,13 @@ export async function apiRequest(endpoint, { method = 'GET', body, headers = {},
         }
 
         if (!response) {
-          try {
-            const remoteUrl = `https://carzodrive-1.onrender.com/api/v1${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-            const remoteRes = await fetch(remoteUrl, options);
-            if (remoteRes.ok) {
-              response = remoteRes;
-            }
-          } catch {
-            // remote attempt failed
-          }
-        }
-
-        if (!response) {
           const isRemote = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
           const errorMsg = isRemote
-            ? 'Server se connection establish nahi ho paya. Backend server wake up ho raha ho sakta hai, kripya 10 second baad dobara try karein.'
+            ? 'Server se connection establish nahi ho paya. Kripya check karein ki backend service online hai aur VITE_API_URL configured hai.'
             : 'Backend server unreachable hai. Kripya check karein ki backend terminal me "npm run dev" chal raha hai (port 5000 pe).';
           const err = new Error(errorMsg);
           err.isNetworkError = true;
           throw err;
-        }
-      }
-
-      // If local proxy returned 502/503 (e.g. backend offline or starting), try remote fallback
-      if (response && (response.status === 502 || response.status === 503 || response.status === 504) && !url.includes('onrender.com')) {
-        try {
-          const remoteUrl = `https://carzodrive-1.onrender.com/api/v1${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-          const remoteRes = await fetch(remoteUrl, options);
-          if (remoteRes.ok) {
-            response = remoteRes;
-          }
-        } catch {
-          // remote attempt failed
         }
       }
 

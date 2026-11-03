@@ -27,3 +27,4 @@ EXPOSE 8080
 
 # Start production server
 CMD ["node", "src/server.js"]
+

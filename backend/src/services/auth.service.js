@@ -189,18 +189,10 @@ async function initiatePasswordReset(identifier) {
   if (!mailResult.success) {
     logger.error(`✗ Password reset OTP email dispatch failed for ${user.email}: ${mailResult.error}`);
 
-    // If running on a cloud host with blocked SMTP (such as Render Free Tier which drops ports 25, 465, 587):
-    // The OTP has already been generated and saved into MongoDB, and logged to the server terminal.
-    // Allow the user to proceed to the OTP screen so they aren't blocked by the cloud host firewall.
-    const isTimeoutOrCloudBlock =
-      String(mailResult.error || '').toLowerCase().includes('timeout') ||
-      Boolean(process.env.RENDER) ||
-      Boolean(process.env.IS_RENDER) ||
-      process.env.ALLOW_OTP_DEV_BYPASS === 'true' ||
-      process.env.NODE_ENV !== 'production';
-
-    if (isTimeoutOrCloudBlock) {
-      logger.warn(`⚠️ [Cloud Host SMTP Block] Email timed out on host firewall. OTP [ ${otp} ] preserved in DB. User can enter OTP from Render server logs.`);
+    // In local development or testing mode, allow entering OTP logged in terminal
+    const isDevOrBypass = process.env.ALLOW_OTP_DEV_BYPASS === 'true' || process.env.NODE_ENV === 'development';
+    if (isDevOrBypass) {
+      logger.warn(`⚠️ [Dev OTP Fallback] SMTP issue: ${mailResult.error}. OTP [ ${otp} ] preserved. Check server terminal.`);
       return {
         otp,
         email: user.email,
@@ -210,7 +202,7 @@ async function initiatePasswordReset(identifier) {
       };
     }
 
-    const err = new Error(`Unable to deliver OTP email to ${user.email} (${mailResult.error || 'SMTP delivery issue'}). Please try again or contact support.`);
+    const err = new Error(`Unable to deliver OTP email to ${user.email} (${mailResult.error || 'SMTP delivery issue'}). Please verify SMTP credentials or try again.`);
     err.statusCode = 502;
     throw err;
   }

@@ -59,9 +59,8 @@ async function runDiagnostic() {
   }
 
   console.log('\n2. Network & Cloud Port Compatibility Audit:');
-  console.log('   • GCP Policy: Port 25 blocked, Port 465 drops. Port 587 STARTTLS required.');
-  console.log('   • Render.com Free Policy: Outbound ports 25, 465, and 587 are blocked.');
-  console.log('     (Render requires Brevo/Resend HTTP API on Port 443 or Brevo SMTP on Port 2525).');
+  console.log('   • GCP Policy: Port 25 blocked, Port 465 SSL may drop. Port 587 STARTTLS required.');
+  console.log('   • Gmail SMTP: Connecting to smtp.gmail.com with Google App Password...');
   
   const port587Res = await testPort(host, 587, false, user, pass);
   const port465Res = await testPort(host, 465, true, user, pass);
@@ -93,15 +92,13 @@ async function runDiagnostic() {
     console.log('================================================================\n');
   } else {
     console.error(`   ❌ Dispatch failed: ${dispatchRes.error}`);
-    console.log('\n--- CLOUD DEPLOYMENT TROUBLESHOOTING ---');
-    console.log('1. On Render.com Free Tier:');
-    console.log('   Render free tier BLOCKS ports 25, 465, and 587 (causing "Connection timeout").');
-    console.log('   Fix: Add BREVO_API_KEY in Render Environment Variables (free at brevo.com, 300/day).');
-    console.log('   Port 443 HTTPS is never blocked by Render!');
-    console.log('2. On GCP (Google Cloud):');
-    console.log('   Ensure backend/.env contains:');
+    console.log('\n--- GCP DEPLOYMENT TROUBLESHOOTING ---');
+    console.log('1. On Google Cloud Platform (Cloud Run / Compute Engine / GAE):');
+    console.log('   Ensure environment variables contain:');
     console.log('     SMTP_PORT=587');
     console.log('     SMTP_SECURE=false');
+    console.log('2. Ensure your Google Account has 2-Step Verification ON.');
+    console.log('3. Ensure your Google App Password is 16 characters without spaces.');
     process.exit(1);
   }
 }

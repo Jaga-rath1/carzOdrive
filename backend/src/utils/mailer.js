@@ -126,143 +126,12 @@ function getTransporter(overridePort = null, overrideSecure = null) {
 }
 
 /**
- * Send email via Brevo (Sendinblue) HTTP REST API over Port 443 (HTTPS)
- * Render.com free tier blocks SMTP ports 25, 465, and 587, but NEVER blocks Port 443.
- * Brevo provides 300 free emails per day forever without a credit card.
- */
-async function sendViaBrevoApi(mailOptions, apiKey) {
-  const fromStr = mailOptions.from || getFormattedFrom();
-  let senderName = 'CARZODRIVE Concierge';
-  let senderEmail = process.env.SMTP_USER || 'jagankumarrath72@gmail.com';
-  const match = fromStr.match(/^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/);
-  if (match) {
-    if (match[1]) senderName = match[1].trim();
-    if (match[2]) senderEmail = match[2].trim();
-  }
-
-  const rawTo = Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to];
-  const toList = rawTo.map((entry) => {
-    if (typeof entry === 'object' && entry?.email) return entry;
-    const str = String(entry).trim();
-    const m = str.match(/^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/);
-    if (m) return { name: m[1].trim(), email: m[2].trim() };
-    return { email: str };
-  });
-
-  const payload = {
-    sender: { name: senderName, email: senderEmail },
-    to: toList,
-    subject: mailOptions.subject,
-  };
-
-  if (mailOptions.html) payload.htmlContent = mailOptions.html;
-  if (mailOptions.text) payload.textContent = mailOptions.text;
-  if (mailOptions.replyTo) payload.replyTo = { email: mailOptions.replyTo };
-
-  if (Array.isArray(mailOptions.attachments) && mailOptions.attachments.length > 0) {
-    payload.attachment = mailOptions.attachments.map((att) => ({
-      name: att.filename,
-      content: Buffer.isBuffer(att.content)
-        ? att.content.toString('base64')
-        : Buffer.from(att.content || '').toString('base64'),
-    }));
-  }
-
-  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'api-key': apiKey.trim(),
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(data.message || `Brevo API HTTP ${response.status}: ${JSON.stringify(data)}`);
-  }
-
-  return { messageId: data.messageId || `brevo-${Date.now()}` };
-}
-
-/**
- * Send email via Resend HTTP REST API over Port 443 (HTTPS)
- * Free 3,000 emails/month, 100% cloud-safe.
- */
-async function sendViaResendApi(mailOptions, apiKey) {
-  const fromStr = mailOptions.from || getFormattedFrom();
-  const rawTo = Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to];
-  const toList = rawTo.map((e) => (typeof e === 'object' ? e.email : String(e).trim()));
-
-  const payload = {
-    from: fromStr,
-    to: toList,
-    subject: mailOptions.subject,
-  };
-
-  if (mailOptions.html) payload.html = mailOptions.html;
-  if (mailOptions.text) payload.text = mailOptions.text;
-  if (mailOptions.replyTo) payload.reply_to = mailOptions.replyTo;
-
-  if (Array.isArray(mailOptions.attachments) && mailOptions.attachments.length > 0) {
-    payload.attachments = mailOptions.attachments.map((att) => ({
-      filename: att.filename,
-      content: Buffer.isBuffer(att.content)
-        ? att.content.toString('base64')
-        : Buffer.from(att.content || '').toString('base64'),
-    }));
-  }
-
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey.trim()}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(data.message || `Resend API HTTP ${response.status}: ${JSON.stringify(data)}`);
-  }
-
-  return { messageId: data.id || `resend-${Date.now()}` };
-}
-
-/**
- * Robust email dispatcher supporting both HTTP REST APIs (Port 443 - Render/Vercel safe)
- * and dual-port SMTP (Ports 587 / 465 / 2525) with automatic fallback.
+ * Robust email dispatcher with dual-port auto-fallback for Google Cloud Platform (GCP)
+ * Google Cloud requires Port 587 with STARTTLS (secure: false, requireTLS: true).
+ * If a network drop occurs, it automatically falls back to Port 465 (Direct SSL)
+ * to guarantee delivery without crashing.
  */
 async function sendMailWithRetry(mailOptions, description = 'Email') {
-  // 1. If Brevo HTTP API is configured, use it (Port 443 HTTPS - NEVER blocked by Render)
-  const brevoApiKey = (process.env.BREVO_API_KEY || '').trim();
-  if (brevoApiKey) {
-    try {
-      logger.info(`[Mailer] Dispatching ${description} via Brevo HTTP API (Port 443 - Render Safe)...`);
-      const info = await sendViaBrevoApi(mailOptions, brevoApiKey);
-      logger.success(`✓ [Mailer] Successfully delivered ${description} via Brevo HTTP API [MessageId: ${info.messageId}]`);
-      return { success: true, info, method: 'brevo-http' };
-    } catch (apiErr) {
-      logger.warn(`[Mailer] Brevo HTTP API delivery failed (${apiErr.message}). Falling back to SMTP...`);
-    }
-  }
-
-  // 2. If Resend HTTP API is configured, use it (Port 443 HTTPS - NEVER blocked by Render)
-  const resendApiKey = (process.env.RESEND_API_KEY || '').trim();
-  if (resendApiKey) {
-    try {
-      logger.info(`[Mailer] Dispatching ${description} via Resend HTTP API (Port 443 - Render Safe)...`);
-      const info = await sendViaResendApi(mailOptions, resendApiKey);
-      logger.success(`✓ [Mailer] Successfully delivered ${description} via Resend HTTP API [MessageId: ${info.messageId}]`);
-      return { success: true, info, method: 'resend-http' };
-    } catch (apiErr) {
-      logger.warn(`[Mailer] Resend HTTP API delivery failed (${apiErr.message}). Falling back to SMTP...`);
-    }
-  }
-
-  // 3. Fallback to SMTP Engine with Dual-Port Auto-Fallback
   const { user, pass, port: primaryPort, isSecure: primarySecure } = resolveSmtpConfig();
 
   if (!user || !pass) {
@@ -310,46 +179,18 @@ async function sendMailWithRetry(mailOptions, description = 'Email') {
   }
 
   logger.error(`❌ [Mailer] All delivery attempts failed for ${description}: ${lastError?.message}`);
-  logger.error(`[Mailer Cloud Deployment Diagnostic]:
-    1. Render.com Free Tier BLOCKS SMTP ports 25, 465, and 587. To send on Render Free:
-       - Set BREVO_API_KEY in Render Environment Variables (uses Port 443 HTTPS - never blocked).
-       - Or use Brevo SMTP on Port 2525 (Render allows port 2525).
-    2. GCP requires Port 587 STARTTLS (SMTP_PORT=587, SMTP_SECURE=false).
-    3. Ensure your Google Account has 2FA enabled and uses a 16-character App Password (adkqhnnwtpespkxj, no spaces).`);
+  logger.error(`[Mailer GCP Checklist]:
+    1. Port 25 is permanently blocked on GCP.
+    2. Port 587 (STARTTLS) is recommended on GCP: set SMTP_PORT=587 and SMTP_SECURE=false in GCP environment variables.
+    3. Ensure your Google Account has 2-Step Verification ON and uses a 16-character App Password (adkqhnnwtpespkxj, no spaces).`);
 
   return { success: false, error: lastError?.message || 'Unknown SMTP error across all ports' };
 }
 
 /**
- * Verify transporter connection with HTTP API and dual-port GCP fallback detection
+ * Verify transporter connection with dual-port GCP fallback detection
  */
 async function verifyMailer() {
-  const brevoApiKey = (process.env.BREVO_API_KEY || '').trim();
-  if (brevoApiKey) {
-    try {
-      const res = await fetch('https://api.brevo.com/v3/account', {
-        headers: { 'api-key': brevoApiKey },
-      });
-      if (res.ok) {
-        logger.success('✓ Brevo HTTP API active and authenticated (Port 443 - Render Safe).');
-        return { configured: true, method: 'brevo-http', message: 'Brevo HTTP API ready' };
-      }
-    } catch (_) {}
-  }
-
-  const resendApiKey = (process.env.RESEND_API_KEY || '').trim();
-  if (resendApiKey) {
-    try {
-      const res = await fetch('https://api.resend.com/api-keys', {
-        headers: { Authorization: `Bearer ${resendApiKey}` },
-      });
-      if (res.ok) {
-        logger.success('✓ Resend HTTP API active and authenticated (Port 443 - Render Safe).');
-        return { configured: true, method: 'resend-http', message: 'Resend HTTP API ready' };
-      }
-    } catch (_) {}
-  }
-
   const { user, pass, port: primaryPort, isSecure: primarySecure } = resolveSmtpConfig();
 
   if (!user || !pass) {
@@ -858,7 +699,7 @@ function resolveAdminAlertEmail(override = null) {
   if (override && override.includes('@') && !override.includes('@carzodrive.com')) return override;
   const configured = process.env.SUPER_ADMIN_EMAIL?.trim();
   if (configured && configured.includes('@') && !configured.includes('@carzodrive.com')) return configured;
-  return process.env.SMTP_USER || 'jagankumarrath72@gmail.com';
+  return process.env.SUPER_ADMIN_EMAIL || process.env.SMTP_USER || process.env.EMAIL_USER || '';
 }
 
 /**
