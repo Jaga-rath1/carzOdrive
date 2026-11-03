@@ -52,6 +52,15 @@ app.use(
       if (/^https:\/\/([a-zA-Z0-9-]+\.)*onrender\.com$/.test(origin)) {
         return callback(null, true);
       }
+      if (/^https:\/\/([a-zA-Z0-9-]+\.)*run\.app$/.test(origin)) {
+        return callback(null, true);
+      }
+      if (/^https:\/\/([a-zA-Z0-9-]+\.)*appspot\.com$/.test(origin)) {
+        return callback(null, true);
+      }
+      if (/^https:\/\/([a-zA-Z0-9-]+\.)*googleusercontent\.com$/.test(origin)) {
+        return callback(null, true);
+      }
       if (/^https?:\/\/([a-zA-Z0-9-]+\.)*carzodrive\.com$/.test(origin)) {
         return callback(null, true);
       }
@@ -108,6 +117,8 @@ const authLimiter = rateLimit({
   max: env.nodeEnv === 'production' ? 100 : 50000,
   skip: (req) => {
     if (env.nodeEnv !== 'production') return true;
+    const userAgent = req.headers['user-agent'] || '';
+    if (userAgent.includes('GoogleHC') || userAgent.includes('Google-Cloud-Run')) return true;
     const ip = req.ip || req.connection.remoteAddress || '';
     if (ip.includes('127.0.0.1') || ip === '::1' || ip === 'localhost') return true;
     if (req.path === '/me' || req.path === '/refresh') return true;
@@ -124,8 +135,11 @@ const generalLimiter = rateLimit({
   max: env.nodeEnv === 'production' ? 2000 : 100000,
   skip: (req) => {
     if (env.nodeEnv !== 'production') return true;
+    const userAgent = req.headers['user-agent'] || '';
+    if (userAgent.includes('GoogleHC') || userAgent.includes('Google-Cloud-Run')) return true;
     const ip = req.ip || req.connection.remoteAddress || '';
     if (ip.includes('127.0.0.1') || ip === '::1' || ip === 'localhost') return true;
+    if (req.path === '/health' || req.path === '/_ah/health' || req.path === '/' || req.path === '/_health') return true;
     return false;
   },
   standardHeaders: true,
@@ -162,13 +176,26 @@ app.use('/api/v1', router);
 app.use('/api', router);
 app.use('/', router);
 
-// 9. Root Health Route
+// 9. Root & Cloud Health Routes (GCP Cloud Run, App Engine /_ah/health, and Kubernetes Liveness Probes)
+app.get(['/health', '/_ah/health', '/_health'], (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: 'ONLINE',
+    service: 'CarzoDrive Production API',
+    version: '1.0.0',
+    platform: process.env.K_SERVICE ? 'GCP Cloud Run' : process.env.GAE_SERVICE ? 'GCP App Engine' : 'Production Node.js',
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.get('/', (req, res) => {
   res.json({
     success: true,
     service: 'CarzoDrive Production API',
     version: '1.0.0',
     status: 'ONLINE',
+    platform: process.env.K_SERVICE ? 'GCP Cloud Run' : process.env.GAE_SERVICE ? 'GCP App Engine' : 'Production Node.js',
     timestamp: new Date().toISOString(),
   });
 });

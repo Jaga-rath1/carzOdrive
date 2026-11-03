@@ -1,10 +1,21 @@
 const dns = require('dns');
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-  if (typeof dns.setDefaultResultOrder === 'function') {
-    dns.setDefaultResultOrder('ipv4first');
-  }
-} catch (e) {}
+
+const isGcpEnvironment = Boolean(
+  process.env.K_SERVICE ||
+  process.env.GAE_SERVICE ||
+  process.env.GOOGLE_CLOUD_PROJECT ||
+  process.env.GCP_PROJECT
+);
+
+if (!isGcpEnvironment) {
+  try {
+    dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+  } catch (e) {}
+}
+
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 const path = require('path');
 // Guarantee loading .env regardless of whether process is started from root or backend directory

@@ -209,3 +209,43 @@ Tests cover: health checks, registration, login, role-based access, vendor opera
 5. Set `FRONTEND_URL` to your production frontend URL
 6. Use a process manager: `pm2 start src/server.js --name carzodrive-api`
 7. Configure reverse proxy (nginx) for HTTPS termination
+
+---
+
+## ☁️ Google Cloud Platform (GCP) Deployment Guide
+
+This backend is 100% turnkey ready for Google Cloud Platform (**Cloud Run**, **App Engine**, or **Compute Engine**).
+
+### 1. Google Cloud Run (Recommended Containerized Serverless)
+Deploy with a single command from the `backend/` directory:
+```bash
+cd backend
+gcloud run deploy carzodrive-backend \
+  --source . \
+  --region asia-south1 \
+  --platform managed \
+  --allow-unauthenticated \
+  --port 8080 \
+  --set-env-vars NODE_ENV=production,SMTP_PORT=587,SMTP_SECURE=false
+```
+
+### 2. Google App Engine (Standard Environment)
+Deploy using the included `app.yaml`:
+```bash
+cd backend
+gcloud app deploy app.yaml
+```
+
+### 3. GCP Email Delivery Rules
+- **Port 25**: Blocked on GCP globally.
+- **Port 587 (STARTTLS)**: Supported on GCP. Set:
+  ```ini
+  SMTP_PORT=587
+  SMTP_SECURE=false
+  ```
+- **Port 443 (HTTP REST API)**: For zero port restrictions on any cloud host, set:
+  ```ini
+  BREVO_API_KEY=your_brevo_api_key
+  ```
+- **Health Checks**: `/health`, `/_ah/health`, and `/` are optimized for GCP liveness probes.
+

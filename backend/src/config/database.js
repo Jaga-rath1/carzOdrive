@@ -2,11 +2,20 @@ const dns = require('dns');
 
 // On Windows / local networks, Node's c-ares DNS resolver frequently throws
 // querySrv ECONNREFUSED for MongoDB Atlas mongodb+srv:// URIs using the default router DNS.
-// Setting public DNS servers (Google 8.8.8.8, Cloudflare 1.1.1.1) fixes SRV resolution reliably.
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-} catch (e) {
-  // Graceful fallback if custom DNS servers are restricted in the current runtime
+// On GCP (Cloud Run / GAE / GCE), Google Cloud provides its own high-speed internal VPC metadata DNS (169.254.169.254).
+const isGcpEnvironment = Boolean(
+  process.env.K_SERVICE ||
+  process.env.GAE_SERVICE ||
+  process.env.GOOGLE_CLOUD_PROJECT ||
+  process.env.GCP_PROJECT
+);
+
+if (!isGcpEnvironment) {
+  try {
+    dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+  } catch (e) {
+    // Graceful fallback if custom DNS servers are restricted in the current runtime
+  }
 }
 
 const mongoose = require('mongoose');

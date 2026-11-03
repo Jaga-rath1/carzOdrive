@@ -1,0 +1,32 @@
+# ==============================================================================
+# Google App Engine (GAE) Standard Environment Deployment Config
+# ==============================================================================
+runtime: nodejs20
+instance_class: F1
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 5
+  target_cpu_utilization: 0.65
+
+# Dedicated liveness & readiness check paths
+readiness_check:
+  path: "/health"
+  check_interval_sec: 15
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 1
+
+liveness_check:
+  path: "/health"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 3
+  success_threshold: 1
+
+env_variables:
+  NODE_ENV: "production"
+  SMTP_SERVICE: "gmail"
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  SMTP_SECURE: "false"
