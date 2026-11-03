@@ -35,13 +35,18 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const email = (req.body.email || req.body.identifier || '').trim().toLowerCase();
   const result = await authService.initiatePasswordReset(email);
 
+  const message = result.emailSent
+    ? `A 6-digit OTP verification code has been dispatched to ${result.email}. Please check your Gmail inbox and spam folder.`
+    : `OTP generated for ${result.email}. (Render free tier timed out on SMTP. Check Render server logs for OTP or set BREVO_API_KEY).`;
+
   return success(
     res,
     {
       email: result.email,
       emailSent: result.emailSent,
+      devFallback: Boolean(result.devFallback),
     },
-    `A 6-digit OTP verification code has been dispatched to ${result.email}. Please check your Gmail inbox and spam folder.`
+    message
   );
 });
 

@@ -59,7 +59,9 @@ async function runDiagnostic() {
   }
 
   console.log('\n2. Network & Cloud Port Compatibility Audit:');
-  console.log('   (Note: GCP blocks port 25 and often drops port 465 SSL. Port 587 STARTTLS is required.)');
+  console.log('   • GCP Policy: Port 25 blocked, Port 465 drops. Port 587 STARTTLS required.');
+  console.log('   • Render.com Free Policy: Outbound ports 25, 465, and 587 are blocked.');
+  console.log('     (Render requires Brevo/Resend HTTP API on Port 443 or Brevo SMTP on Port 2525).');
   
   const port587Res = await testPort(host, 587, false, user, pass);
   const port465Res = await testPort(host, 465, true, user, pass);
@@ -67,7 +69,7 @@ async function runDiagnostic() {
   console.log('\n3. Verifying High-Resilience Mailer Module (with auto-fallback):');
   const verifyRes = await verifyMailer();
   if (verifyRes.configured) {
-    console.log(`   ✅ Mailer Module Ready! Active Port: ${verifyRes.port || envPort}`);
+    console.log(`   ✅ Mailer Module Ready! Method/Port: ${verifyRes.method || verifyRes.port || envPort}`);
   } else {
     console.warn(`   ⚠️ Mailer Handshake Warning: ${verifyRes.error || verifyRes.message}`);
   }
@@ -87,19 +89,19 @@ async function runDiagnostic() {
     console.log(`   • Message ID: ${dispatchRes.messageId}`);
     console.log(`   • Generated OTP: [ ${testOtp} ]`);
     console.log('\n================================================================');
-    console.log('🎉 NODEMAILER IS 100% OPERATIONAL FOR BOTH LOCAL & GCP!');
+    console.log('🎉 NODEMAILER IS 100% OPERATIONAL!');
     console.log('================================================================\n');
   } else {
     console.error(`   ❌ Dispatch failed: ${dispatchRes.error}`);
-    console.log('\n--- GCP DEPLOYMENT TROUBLESHOOTING ---');
-    console.log('1. If running on Google Cloud Platform (Cloud Run / Compute Engine / GKE):');
+    console.log('\n--- CLOUD DEPLOYMENT TROUBLESHOOTING ---');
+    console.log('1. On Render.com Free Tier:');
+    console.log('   Render free tier BLOCKS ports 25, 465, and 587 (causing "Connection timeout").');
+    console.log('   Fix: Add BREVO_API_KEY in Render Environment Variables (free at brevo.com, 300/day).');
+    console.log('   Port 443 HTTPS is never blocked by Render!');
+    console.log('2. On GCP (Google Cloud):');
     console.log('   Ensure backend/.env contains:');
     console.log('     SMTP_PORT=587');
     console.log('     SMTP_SECURE=false');
-    console.log('2. Ensure your Google Account has 2-Step Verification turned ON.');
-    console.log('3. Ensure you are using a 16-character App Password (adkqhnnwtpespkxj, NO spaces).');
-    console.log('4. If Google security blocks Google Cloud IPs, check https://myaccount.google.com/notifications');
-    console.log('   or switch to a dedicated transactional relay (e.g. Brevo/SendGrid/Resend).');
     process.exit(1);
   }
 }
