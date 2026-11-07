@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck,
@@ -30,32 +30,37 @@ import {
   AlertOctagon,
   HelpCircle,
   Award,
-  DollarSign
+  DollarSign,
+  Smartphone,
+  Check
 } from 'lucide-react';
 import { Container } from '../../components/common/Container';
 
 export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [activeSection, setActiveSection] = useState('introduction');
-  const [deletionModalOpen, setDeletionModalOpen] = useState(false);
+
+  // Account Deletion Form State
   const [deletionForm, setDeletionForm] = useState({
-    name: '',
     email: '',
     phone: '',
-    reason: '',
+    reason: 'No longer using the service',
+    notes: '',
     confirmed: false,
   });
   const [deletionSubmitted, setDeletionSubmitted] = useState(false);
+  const [ticketId, setTicketId] = useState('');
 
-  // Sync tab if route changes (e.g. /terms-and-conditions, /terms or /account-deletion)
+  // Sync tab with URL pathname
   useEffect(() => {
     if (location.pathname.includes('terms')) {
       setActiveTab('terms');
       setActiveSection('terms-introduction');
     } else if (location.pathname.includes('account-deletion')) {
       setActiveTab('deletion');
-      setActiveSection('deletion-process');
+      setActiveSection('online-deletion-form');
     } else {
       setActiveTab('privacy');
       setActiveSection('introduction');
@@ -77,39 +82,48 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
   // Scrollspy to update active section in sidebar
   useEffect(() => {
     const handleScroll = () => {
-      const sections =
-        activeTab === 'terms'
-          ? [
-              'terms-introduction',
-              'terms-eligibility',
-              'terms-booking-deposit',
-              'terms-tariffs-fuel',
-              'terms-permitted-use',
-              'terms-speed-challans',
-              'terms-insurance-damage',
-              'terms-breakdown-rsa',
-              'terms-cancellation',
-              'terms-fleet-partner',
-              'terms-driver-partner',
-              'terms-app-license',
-              'terms-indemnity',
-              'terms-governing-law',
-              'terms-support',
-            ]
-          : [
-              'introduction',
-              'data-collected',
-              'kyc-data',
-              'data-not-collected',
-              'how-we-use',
-              'storage-security',
-              'sharing-disclosure',
-              'retention',
-              'user-rights',
-              'deletion-process',
-              'children',
-              'grievance',
-            ];
+      let sections = [];
+      if (activeTab === 'terms') {
+        sections = [
+          'terms-introduction',
+          'terms-eligibility',
+          'terms-booking-deposit',
+          'terms-tariffs-fuel',
+          'terms-permitted-use',
+          'terms-speed-challans',
+          'terms-insurance-damage',
+          'terms-breakdown-rsa',
+          'terms-cancellation',
+          'terms-fleet-partner',
+          'terms-driver-partner',
+          'terms-app-license',
+          'terms-indemnity',
+          'terms-governing-law',
+          'terms-support',
+        ];
+      } else if (activeTab === 'deletion') {
+        sections = [
+          'online-deletion-form',
+          'in-app-deletion-guide',
+          'statutory-retention-notice',
+          'compliance-helpdesk',
+        ];
+      } else {
+        sections = [
+          'introduction',
+          'data-collected',
+          'kyc-data',
+          'data-not-collected',
+          'how-we-use',
+          'storage-security',
+          'sharing-disclosure',
+          'retention',
+          'user-rights',
+          'deletion-process',
+          'children',
+          'grievance',
+        ];
+      }
 
       for (const sectionId of sections) {
         const el = document.getElementById(sectionId);
@@ -129,14 +143,21 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
 
   const handleDeletionSubmit = (e) => {
     e.preventDefault();
-    if (!deletionForm.email || !deletionForm.phone || !deletionForm.confirmed) return;
+    if (!deletionForm.email || !deletionForm.phone) return;
+    const randomTicket = 'DEL-' + Math.floor(100000 + Math.random() * 900000);
+    setTicketId(randomTicket);
     setDeletionSubmitted(true);
   };
 
   const resetDeletionForm = () => {
-    setDeletionForm({ name: '', email: '', phone: '', reason: '', confirmed: false });
+    setDeletionForm({
+      email: '',
+      phone: '',
+      reason: 'No longer using the service',
+      notes: '',
+      confirmed: false,
+    });
     setDeletionSubmitted(false);
-    setDeletionModalOpen(false);
   };
 
   // Privacy Policy Table of Contents
@@ -155,7 +176,7 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
     { id: 'grievance', title: '12. Grievance Officer & Contact Information' },
   ];
 
-  // Terms & Conditions Table of Contents (Play Store Certified)
+  // Terms & Conditions Table of Contents
   const termsTableOfContents = [
     { id: 'terms-introduction', title: '1. Preamble & Agreement to Terms' },
     { id: 'terms-eligibility', title: '2. User Eligibility & Driving License' },
@@ -174,155 +195,134 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
     { id: 'terms-support', title: '15. Grievance Officer & Concierge Support' },
   ];
 
+  // Account Deletion Table of Contents
+  const deletionTableOfContents = [
+    { id: 'online-deletion-form', title: '1. Online Request Form' },
+    { id: 'in-app-deletion-guide', title: '2. Mobile App Deletion Guide' },
+    { id: 'statutory-retention-notice', title: '3. Data Retention & Policy' },
+    { id: 'compliance-helpdesk', title: '4. Grievance & Concierge Desk' },
+  ];
+
   const currentTableOfContents =
-    activeTab === 'terms' ? termsTableOfContents : privacyTableOfContents;
+    activeTab === 'terms'
+      ? termsTableOfContents
+      : activeTab === 'deletion'
+      ? deletionTableOfContents
+      : privacyTableOfContents;
 
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-blue-600 selection:text-white">
-      {/* 1. HERO & TOP METADATA HEADER (White Luxury Aesthetic with Perfect Symmetrical Spacing) */}
-      <section className="relative pt-24 sm:pt-32 pb-10 sm:pb-14 bg-gradient-to-b from-slate-50 via-white to-slate-50/70 border-b border-slate-200/80 overflow-hidden">
-        {/* Soft Ambient Glows */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[650px] h-[300px] bg-blue-500/5 rounded-full blur-[130px] pointer-events-none" />
-        <div className="absolute top-0 right-1/4 w-[380px] h-[260px] bg-cyan-500/5 rounded-full blur-[110px] pointer-events-none" />
-
-        <Container className="relative z-10 max-w-7xl mx-auto">
-          {/* Breadcrumbs */}
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-4">
-            <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-500">Legal & Compliance</span>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-blue-600 font-bold">
-              {activeTab === 'terms' ? 'Terms & Conditions' : activeTab === 'deletion' ? 'Account Deletion' : 'Privacy Policy'}
-            </span>
-          </nav>
-
-          {/* Badges Bar */}
-          <div className="flex flex-wrap items-center gap-2.5 mb-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-black uppercase tracking-wider shadow-xs">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              LEGAL & COMPLIANCE
-            </span>
-
-            {activeTab === 'terms' ? (
-              <>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold tracking-wider">
-                  <Scale className="w-3.5 h-3.5" />
-                  MOTOR VEHICLES ACT, 1988 COMPLIANT
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[11px] font-bold tracking-wider">
-                  <Award className="w-3.5 h-3.5" />
-                  GOOGLE PLAY STORE CERTIFIED
-                </span>
-              </>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold tracking-wider">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                DPDP ACT, 2023 COMPLIANT
-              </span>
-            )}
-
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-[11px] font-medium shadow-xs">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              Effective: Nov 01, 2026 • Last Updated: Nov 06, 2026
-            </span>
+      {/* 1. HERO HEADER (Matches User Screenshot Exactly: Center-Aligned Luxury White Header) */}
+      <section className="relative pt-24 sm:pt-28 pb-10 sm:pb-12 bg-white border-b border-slate-100">
+        <Container className="max-w-4xl mx-auto text-center">
+          
+          {/* Centered Category Pill Badge */}
+          <div className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full border border-blue-200 bg-blue-50/60 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-4 shadow-2xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+            <span>LEGAL & COMPLIANCE</span>
           </div>
 
-          {/* Dynamic Main Title */}
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight leading-tight">
+          {/* Centered Main Title */}
+          <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight mb-4">
             {activeTab === 'terms'
               ? 'Terms & Conditions'
               : activeTab === 'deletion'
-              ? 'Account & Data Deletion'
+              ? 'Account Deletion'
               : 'Privacy Policy'}
           </h1>
 
-          {/* Dynamic Subtitle */}
-          <p className="text-slate-600 text-sm sm:text-base max-w-3xl mt-3 leading-relaxed font-normal">
-            {activeTab === 'terms' ? (
-              <>
-                Official vehicle rental agreement, driving eligibility, tariff terms, insurance coverage, and user policies for <strong className="text-slate-900 font-semibold">CARZODRIVE</strong> (Nexnuv Private Limited) self-drive and mobility services in accordance with Indian transport laws and Google Play guidelines.
-              </>
-            ) : activeTab === 'deletion' ? (
-              <>
-                Public account deletion and data erasure portal for CARZODRIVE in compliance with Google Play Store Developer Policy and the <strong className="text-slate-900 font-semibold">Digital Personal Data Protection Act, 2023 (DPDP Act)</strong>.
-              </>
-            ) : (
-              <>
-                How CARZODRIVE safeguards your personal data, identity documentation, and reservation details in accordance with the <strong className="text-slate-900 font-semibold">Digital Personal Data Protection Act, 2023 (DPDP Act)</strong> and applicable Indian transport laws.
-              </>
-            )}
+          {/* Centered Subtitle */}
+          <p className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed mb-4">
+            {activeTab === 'terms'
+              ? 'Official vehicle rental agreement, driving eligibility, tariff terms, insurance coverage, and user policies for CARZODRIVE self-drive and mobility services in accordance with Indian transport laws.'
+              : activeTab === 'deletion'
+              ? 'How CARZODRIVE processes account deletion and personal data erasure requests in compliance with Google Play Store Developer Guidelines and the Digital Personal Data Protection Act, 2023 (DPDP Act).'
+              : 'How CARZODRIVE safeguards your personal data, identity documentation, and reservation details in accordance with the Digital Personal Data Protection Act, 2023 (DPDP Act) and applicable Indian transport laws.'}
           </p>
 
-          {/* Segmented Control / Tab Switcher (Modern Pill Positioning) */}
-          <div className="mt-8 pt-5 border-t border-slate-200/90 flex flex-wrap items-center gap-2">
-            <div className="inline-flex p-1.5 bg-slate-100 border border-slate-200/80 rounded-2xl gap-1 shadow-inner">
-              <Link
-                to="/privacy-policy"
-                onClick={() => {
-                  setActiveTab('privacy');
-                  setActiveSection('introduction');
-                }}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-                  activeTab === 'privacy'
-                    ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80'
-                    : 'text-slate-600 hover:text-slate-950 hover:bg-white/60'
-                }`}
-              >
-                <ShieldCheck className="w-4 h-4 text-blue-600" />
-                <span>Privacy Policy</span>
-              </Link>
+          {/* Centered Dates Bar */}
+          <div className="flex items-center justify-center gap-3 text-xs text-slate-500 font-medium mb-8">
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              Effective Date: November 01, 2026
+            </span>
+            <span>•</span>
+            <span className="inline-flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-slate-400" />
+              Last Updated: November 06, 2026
+            </span>
+          </div>
 
-              <Link
-                to="/terms-and-conditions"
-                onClick={() => {
-                  setActiveTab('terms');
-                  setActiveSection('terms-introduction');
-                }}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-                  activeTab === 'terms'
-                    ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80'
-                    : 'text-slate-600 hover:text-slate-950 hover:bg-white/60'
-                }`}
-              >
-                <FileText className="w-4 h-4 text-blue-600" />
-                <span>Terms & Conditions</span>
-              </Link>
+          {/* Centered Tab Selector Pills (Exact match to screenshot) */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+            <Link
+              to="/privacy-policy"
+              onClick={() => {
+                setActiveTab('privacy');
+                setActiveSection('introduction');
+              }}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-xs ${
+                activeTab === 'privacy'
+                  ? 'bg-blue-600 text-white shadow-blue-500/20'
+                  : 'bg-white text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:bg-slate-50'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Privacy Policy</span>
+            </Link>
 
-              <Link
-                to="/account-deletion"
-                onClick={() => {
-                  setActiveTab('deletion');
-                  setActiveSection('deletion-process');
-                }}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-                  activeTab === 'deletion'
-                    ? 'bg-white text-red-600 shadow-sm border border-slate-200/80'
-                    : 'text-slate-600 hover:text-red-600 hover:bg-white/60'
-                }`}
-              >
-                <Trash2 className="w-4 h-4 text-red-500" />
-                <span>Account Deletion (Google Play & DPDP)</span>
-              </Link>
-            </div>
+            <Link
+              to="/terms-and-conditions"
+              onClick={() => {
+                setActiveTab('terms');
+                setActiveSection('terms-introduction');
+              }}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-xs ${
+                activeTab === 'terms'
+                  ? 'bg-blue-600 text-white shadow-blue-500/20'
+                  : 'bg-white text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:bg-slate-50'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              <span>Terms & Conditions</span>
+            </Link>
+
+            <Link
+              to="/account-deletion"
+              onClick={() => {
+                setActiveTab('deletion');
+                setActiveSection('online-deletion-form');
+              }}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-xs ${
+                activeTab === 'deletion'
+                  ? 'bg-blue-600 text-white shadow-blue-500/20'
+                  : 'bg-white text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:bg-slate-50'
+              }`}
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>Account Deletion</span>
+              <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full transition-colors ${
+                activeTab === 'deletion'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-blue-50 text-blue-700 border border-blue-200'
+              }`}>
+                GOOGLE PLAY & DPDP
+              </span>
+            </Link>
           </div>
         </Container>
       </section>
 
-      {/* 2. BODY CONTENT SECTION (Side-by-side Table of Contents + Document Content) */}
+      {/* 2. BODY CONTENT SECTION */}
       <section className="py-10 sm:py-14 bg-white text-slate-900">
         <Container className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
             
-            {/* LEFT COLUMN: Sticky Table of Contents & Quick Action Cards */}
+            {/* LEFT COLUMN: Sticky Table of Contents Card (Exact match to screenshot) */}
             <aside className="lg:col-span-4 sticky top-28 space-y-5">
-              {/* Table of Contents Container */}
-              <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-100">
-                  <FileText className="w-4 h-4 text-blue-600" />
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-900">
-                    {activeTab === 'terms' ? 'Terms Table of Contents' : 'Policy Table of Contents'}
-                  </span>
+              <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs">
+                <div className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-4 pb-2 border-b border-slate-100">
+                  TABLE OF CONTENTS
                 </div>
 
                 <nav className="space-y-1 max-h-[55vh] overflow-y-auto pr-1 text-xs scrollbar-thin">
@@ -330,9 +330,9 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                     <button
                       key={item.id}
                       onClick={() => scrollToAnchor(item.id)}
-                      className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center justify-between group ${
+                      className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center justify-between group ${
                         activeSection === item.id
-                          ? 'bg-blue-50 text-blue-700 font-bold border-l-4 border-blue-600 shadow-xs'
+                          ? 'bg-blue-50 text-blue-700 font-bold'
                           : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50 font-medium'
                       }`}
                     >
@@ -345,63 +345,287 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                 </nav>
               </div>
 
-              {/* Data & Booking Assistance Callout */}
-              <div className="bg-gradient-to-br from-blue-50/70 via-slate-50 to-white rounded-3xl border border-blue-200/80 p-5 shadow-xs space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center shrink-0 text-blue-700">
-                    <UserCheck className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-sm font-bold text-slate-900">Need Immediate Help?</h4>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Have questions about vehicle rental clauses, deposit refunds, or trip insurance? Our 24/7 concierge is available.
-                </p>
-                <div className="pt-1 flex flex-col gap-2">
-                  <a
-                    href="tel:+917377733391"
-                    className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-xs"
-                  >
-                    <Phone className="w-3.5 h-3.5" />
-                    <span>Call Concierge: +91 73777 33391</span>
-                  </a>
-                  <button
-                    onClick={() => setDeletionModalOpen(true)}
-                    className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-200 font-bold text-xs transition-all"
-                  >
-                    <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                    <span>Request Account Deletion</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Quick Legal Entity Box */}
-              <div className="bg-slate-50/80 rounded-2xl border border-slate-200 p-4 text-xs space-y-1.5">
+              {/* Need Data / Grievance Quick Box */}
+              <div className="bg-slate-50/80 rounded-2xl border border-slate-200/90 p-4 text-xs space-y-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-                  Operating Commercial Entity
+                  Need Data Assistance?
                 </span>
-                <p className="font-bold text-slate-900">Nexnuv Private Limited</p>
-                <p className="text-slate-500 text-[11px]">Bhubaneswar, Odisha, India - 751029</p>
+                <p className="text-slate-600 leading-relaxed">
+                  You can request a copy of your records or invoke account deletion at any time.
+                </p>
+                <div className="pt-1">
+                  <Link
+                    to="/account-deletion"
+                    className="inline-flex items-center gap-1.5 font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    <span>Request Account Deletion</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             </aside>
 
-            {/* RIGHT COLUMN: Document Content (Switches between Terms & Conditions and Privacy Policy) */}
+            {/* RIGHT COLUMN: Main Content Cards */}
             <main className="lg:col-span-8 space-y-7 sm:space-y-8">
               
-              {activeTab === 'terms' ? (
+              {/* ============================================================ */}
+              {/* VIEW 1: ACCOUNT DELETION (EXACT USER SPECIFIED CONTENT)      */}
+              {/* ============================================================ */}
+              {activeTab === 'deletion' ? (
+                <>
+                  {/* Card 1: Online Request Form */}
+                  <section id="online-deletion-form" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 block mb-1">
+                      Online Request Form
+                    </span>
+
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        Submit Deletion Request
+                      </h2>
+                    </div>
+
+                    <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+                      Fill in your registered credentials. Our compliance desk will verify the request and dispatch an authentication confirmation.
+                    </p>
+
+                    {!deletionSubmitted ? (
+                      <form onSubmit={handleDeletionSubmit} className="space-y-4 text-xs">
+                        <div>
+                          <label className="font-bold text-slate-800 block mb-1.5 text-xs">
+                            Registered Email Address *
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            value={deletionForm.email}
+                            onChange={(e) => setDeletionForm({ ...deletionForm, email: e.target.value })}
+                            placeholder="e.g. yourname@gmail.com"
+                            className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white text-xs transition-colors"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-800 block mb-1.5 text-xs">
+                            Registered Mobile Phone Number *
+                          </label>
+                          <input
+                            type="tel"
+                            required
+                            value={deletionForm.phone}
+                            onChange={(e) => setDeletionForm({ ...deletionForm, phone: e.target.value })}
+                            placeholder="e.g. +91 98765 43210"
+                            className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white text-xs transition-colors"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-800 block mb-1.5 text-xs">
+                            Reason for Deletion
+                          </label>
+                          <select
+                            value={deletionForm.reason}
+                            onChange={(e) => setDeletionForm({ ...deletionForm, reason: e.target.value })}
+                            className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white text-xs transition-colors"
+                          >
+                            <option value="No longer using the service">No longer using the service</option>
+                            <option value="Privacy or data security concerns">Privacy or data security concerns</option>
+                            <option value="Temporary break / seasonal travel">Temporary break / seasonal travel</option>
+                            <option value="Created a duplicate account">Created a duplicate account</option>
+                            <option value="Switching to another platform">Switching to another platform</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-800 block mb-1.5 text-xs">
+                            Additional Notes (Optional)
+                          </label>
+                          <textarea
+                            rows="3"
+                            value={deletionForm.notes}
+                            onChange={(e) => setDeletionForm({ ...deletionForm, notes: e.target.value })}
+                            placeholder="Any specific instructions or booking reference..."
+                            className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white text-xs resize-none transition-colors"
+                          />
+                        </div>
+
+                        <div className="pt-2">
+                          <button
+                            type="submit"
+                            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors shadow-sm flex items-center justify-center gap-2"
+                          >
+                            <Send className="w-4 h-4" />
+                            <span>Submit Official Deletion Request</span>
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center">
+                          <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-base font-bold text-slate-900">
+                          Deletion Request Dispatched ({ticketId})
+                        </h3>
+                        <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+                          Your request for <strong className="text-slate-900">{deletionForm.email}</strong> has been logged with CARZODRIVE Compliance Desk. An authentication verification email has been dispatched. Once confirmed, data erasure will be completed within 30 days.
+                        </p>
+                        <div className="pt-2">
+                          <button
+                            onClick={resetDeletionForm}
+                            className="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
+                          >
+                            Submit Another Request
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </section>
+
+                  {/* Card 2: How to Request Deletion Inside the Mobile App (Exact match to prompt) */}
+                  <section id="in-app-deletion-guide" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 block mb-1">
+                      Android & iOS Mobile Application
+                    </span>
+
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        How to Request Deletion Inside the Mobile App
+                      </h2>
+                    </div>
+
+                    <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+                      Follow these step-by-step instructions if you have the Android app installed:
+                    </p>
+
+                    <div className="space-y-4">
+                      {/* Step 1 */}
+                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-4">
+                        <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
+                          1
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-sm font-bold text-slate-900">
+                            Launch App & Navigate to Profile:
+                          </h3>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            Open the CarzoDrive mobile application and tap the <strong>Profile</strong> tab in the bottom navigation bar.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Step 2 */}
+                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-4">
+                        <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
+                          2
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-sm font-bold text-slate-900">
+                            Open Personal Information:
+                          </h3>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            Tap on <strong>Personal Information</strong> to view your registered profile credentials.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Step 3 */}
+                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-4">
+                        <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
+                          3
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-sm font-bold text-slate-900">
+                            Select Account Deletion / Support:
+                          </h3>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            Scroll down and select <strong>Request Account Deletion</strong> or contact the Concierge Desk.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Step 4 */}
+                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-4">
+                        <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
+                          4
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-sm font-bold text-slate-900">
+                            Confirm Deletion Request:
+                          </h3>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            Confirm your request. You will receive an OTP or confirmation email to verify ownership.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Card 3: Statutory Retention Notice */}
+                  <section id="statutory-retention-notice" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                      Legal Compliance
+                    </span>
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                        Data Retention & Deletion Policy Details
+                      </h2>
+                    </div>
+                    <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
+                      <p>
+                        In accordance with the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act)</strong> and <strong>Google Play Store Developer Policies</strong>, when an account deletion request is finalized:
+                      </p>
+                      <ul className="list-disc pl-5 space-y-1.5 text-slate-600">
+                        <li>User credentials, authentication tokens, contact lists, and profile photos are permanently deleted.</li>
+                        <li>Driving License copies and KYC records are purged from active media stores within 30 days after verifying no unsettled vehicle claims exist.</li>
+                        <li>Statutory tax invoices and payment vouchers (GST SAC 996411) are retained for the legally mandated period under Indian Income Tax and GST laws.</li>
+                      </ul>
+                    </div>
+                  </section>
+
+                  {/* Card 4: Concierge Helpdesk */}
+                  <section id="compliance-helpdesk" className="bg-slate-50 rounded-3xl border border-slate-200 p-6 sm:p-8">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-base font-bold text-slate-900 tracking-tight">
+                        Concierge Assistance & Grievance Contact
+                      </h2>
+                    </div>
+                    <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+                      If you experience any difficulties accessing the in-app deletion button or online form, reach out directly:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <span className="text-slate-400 block font-medium">Email Desk:</span>
+                        <a href="mailto:carzodrive1@gmail.com" className="font-bold text-blue-600 hover:text-blue-700">
+                          carzodrive1@gmail.com
+                        </a>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block font-medium">Helpline:</span>
+                        <a href="tel:+917377733391" className="font-bold text-slate-900 hover:text-blue-600">
+                          +91 73777 33391
+                        </a>
+                      </div>
+                    </div>
+                  </section>
+                </>
+              ) : activeTab === 'terms' ? (
                 /* ============================================================ */
-                /* TERMS & CONDITIONS (GOOGLE PLAY STORE & MV ACT COMPLIANT)   */
+                /* VIEW 2: TERMS & CONDITIONS (MV ACT & PLAY STORE COMPLIANT)   */
                 /* ============================================================ */
                 <>
                   {/* 1. Preamble & Agreement */}
-                  <section id="terms-introduction" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        1
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Contractual Agreement</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">1. Preamble & Agreement to Terms</h2>
-                      </div>
+                  <section id="terms-introduction" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        1. Preamble & Agreement to Terms
+                      </h2>
                     </div>
 
                     <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
@@ -419,15 +643,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 2. User Eligibility & Driving License Requirements */}
-                  <section id="terms-eligibility" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        2
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Renter Qualifications</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">2. User Eligibility & Driving License</h2>
-                      </div>
+                  <section id="terms-eligibility" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        2. User Eligibility & Driving License
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-5 leading-relaxed">
@@ -468,15 +689,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 3. Booking, Handover & Security Deposit */}
-                  <section id="terms-booking-deposit" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        3
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Rental Process</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">3. Booking, Handover & Security Deposit</h2>
-                      </div>
+                  <section id="terms-booking-deposit" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        3. Booking, Handover & Security Deposit
+                      </h2>
                     </div>
 
                     <div className="space-y-4 text-sm text-slate-600 leading-relaxed">
@@ -504,15 +722,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 4. Tariff, Fuel & Odometer Policy */}
-                  <section id="terms-tariffs-fuel" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        4
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Fair Billing</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">4. Tariff, Fuel & Odometer Policy</h2>
-                      </div>
+                  <section id="terms-tariffs-fuel" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        4. Tariff, Fuel & Odometer Policy
+                      </h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -543,15 +758,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 5. Permitted Use & Strict Prohibitions */}
-                  <section id="terms-permitted-use" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600 font-black text-sm shrink-0">
-                        5
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-red-600">Zero Tolerance</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">5. Permitted Use & Strict Prohibitions</h2>
-                      </div>
+                  <section id="terms-permitted-use" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-red-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        5. Permitted Use & Strict Prohibitions
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-5 leading-relaxed">
@@ -578,15 +790,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 6. Speed Limits, FASTag & E-Challans */}
-                  <section id="terms-speed-challans" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        6
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Road Safety & Fines</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">6. Speed Limits, FASTag & E-Challans</h2>
-                      </div>
+                  <section id="terms-speed-challans" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        6. Speed Limits, FASTag & E-Challans
+                      </h2>
                     </div>
 
                     <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
@@ -614,15 +823,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 7. Commercial Insurance & Damage Liability */}
-                  <section id="terms-insurance-damage" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        7
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Asset Protection</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">7. Commercial Insurance & Damage Liability</h2>
-                      </div>
+                  <section id="terms-insurance-damage" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        7. Commercial Insurance & Damage Liability
+                      </h2>
                     </div>
 
                     <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
@@ -649,15 +855,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 8. 24/7 Roadside Assistance & Maintenance */}
-                  <section id="terms-breakdown-rsa" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        8
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Emergency Support</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">8. 24/7 Roadside Assistance & Breakdown</h2>
-                      </div>
+                  <section id="terms-breakdown-rsa" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        8. 24/7 Roadside Assistance & Breakdown
+                      </h2>
                     </div>
 
                     <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
@@ -687,15 +890,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 9. Cancellation, Rescheduling & Refund */}
-                  <section id="terms-cancellation" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        9
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Fair Cancellation</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">9. Cancellation, Rescheduling & Refund</h2>
-                      </div>
+                  <section id="terms-cancellation" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        9. Cancellation, Rescheduling & Refund
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-4 leading-relaxed">
@@ -738,15 +938,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 10. Fleet Host & Vendor Partner Terms */}
-                  <section id="terms-fleet-partner" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        10
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Partner Fleet</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">10. Fleet Host & Vendor Partner Terms</h2>
-                      </div>
+                  <section id="terms-fleet-partner" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        10. Fleet Host & Vendor Partner Terms
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-4 leading-relaxed">
@@ -755,15 +952,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 11. Driver Partner Code of Conduct */}
-                  <section id="terms-driver-partner" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        11
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Professional Chauffeurs</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">11. Driver Partner Code of Conduct</h2>
-                      </div>
+                  <section id="terms-driver-partner" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        11. Driver Partner Code of Conduct
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm leading-relaxed">
@@ -772,15 +966,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 12. Google Play App License & IP Rights */}
-                  <section id="terms-app-license" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 font-black text-sm shrink-0">
-                        12
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Google Play Compliance</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">12. Google Play App License & IP Rights</h2>
-                      </div>
+                  <section id="terms-app-license" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        12. Google Play App License & IP Rights
+                      </h2>
                     </div>
 
                     <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
@@ -794,15 +985,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 13. Indemnity & Limitation of Liability */}
-                  <section id="terms-indemnity" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        13
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Legal Safeguards</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">13. Indemnity & Limitation of Liability</h2>
-                      </div>
+                  <section id="terms-indemnity" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        13. Indemnity & Limitation of Liability
+                      </h2>
                     </div>
 
                     <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
@@ -816,15 +1004,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 14. Governing Law & Arbitration */}
-                  <section id="terms-governing-law" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        14
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Jurisdiction</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">14. Governing Law & Arbitration (Bhubaneswar)</h2>
-                      </div>
+                  <section id="terms-governing-law" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        14. Governing Law & Arbitration (Bhubaneswar)
+                      </h2>
                     </div>
 
                     <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
@@ -841,15 +1026,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 15. Grievance Officer & Concierge Support */}
-                  <section id="terms-support" className="bg-gradient-to-br from-blue-50/70 via-white to-cyan-50/40 rounded-3xl border border-blue-200/90 p-6 sm:p-9 shadow-xs">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-sm shrink-0">
-                        15
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">Official Assistance</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">15. Grievance Officer & Concierge Support</h2>
-                      </div>
+                  <section id="terms-support" className="bg-slate-50 rounded-3xl border border-slate-200 p-6 sm:p-8">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        15. Grievance Officer & Concierge Support
+                      </h2>
                     </div>
 
                     <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5 shadow-xs">
@@ -886,19 +1068,16 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                 </>
               ) : (
                 /* ============================================================ */
-                /* PRIVACY POLICY (DPDP ACT, 2023 COMPLIANT)                   */
+                /* VIEW 3: PRIVACY POLICY (DPDP ACT, 2023 COMPLIANT)            */
                 /* ============================================================ */
                 <>
                   {/* 1. Introduction & Overview */}
-                  <section id="introduction" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        1
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Corporate Scope</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">1. Introduction & Overview</h2>
-                      </div>
+                  <section id="introduction" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        1. Introduction & Overview
+                      </h2>
                     </div>
 
                     <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
@@ -916,15 +1095,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 2. Information We Collect */}
-                  <section id="data-collected" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        2
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Data Architecture</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">2. Information We Collect</h2>
-                      </div>
+                  <section id="data-collected" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        2. Information We Collect
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-5 leading-relaxed">
@@ -932,7 +1108,6 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* A */}
                       <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 space-y-2 hover:border-blue-200 transition-colors">
                         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-blue-100 text-[11px] flex items-center justify-center font-bold text-blue-700">A</span>
@@ -943,7 +1118,6 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                         </p>
                       </div>
 
-                      {/* B */}
                       <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 space-y-2 hover:border-blue-200 transition-colors">
                         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-blue-100 text-[11px] flex items-center justify-center font-bold text-blue-700">B</span>
@@ -954,7 +1128,6 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                         </p>
                       </div>
 
-                      {/* C */}
                       <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 space-y-2 hover:border-blue-200 transition-colors">
                         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-blue-100 text-[11px] flex items-center justify-center font-bold text-blue-700">C</span>
@@ -965,7 +1138,6 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                         </p>
                       </div>
 
-                      {/* D */}
                       <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 space-y-2 hover:border-blue-200 transition-colors">
                         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-blue-100 text-[11px] flex items-center justify-center font-bold text-blue-700">D</span>
@@ -976,7 +1148,6 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                         </p>
                       </div>
 
-                      {/* E */}
                       <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 space-y-2 md:col-span-2 hover:border-blue-200 transition-colors">
                         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-blue-100 text-[11px] flex items-center justify-center font-bold text-blue-700">E</span>
@@ -990,15 +1161,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 3. Identity Verification & Motor Vehicle KYC */}
-                  <section id="kyc-data" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        3
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Statutory Mandate</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">3. Identity Verification & Motor Vehicle KYC</h2>
-                      </div>
+                  <section id="kyc-data" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        3. Identity Verification & Motor Vehicle KYC
+                      </h2>
                     </div>
 
                     <div className="bg-gradient-to-r from-emerald-50 via-slate-50 to-emerald-50/30 border border-emerald-200 rounded-2xl p-5 mb-5 space-y-2">
@@ -1035,15 +1203,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 4. Information We Do NOT Collect */}
-                  <section id="data-not-collected" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600 font-black text-sm shrink-0">
-                        4
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-red-600">Strict Boundary</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">4. Information We Do NOT Collect</h2>
-                      </div>
+                  <section id="data-not-collected" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-red-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        4. Information We Do NOT Collect
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-5 leading-relaxed">
@@ -1094,15 +1259,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 5. Purpose of Data Processing */}
-                  <section id="how-we-use" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        5
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Processing Rationale</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">5. Purpose of Data Processing</h2>
-                      </div>
+                  <section id="how-we-use" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        5. Purpose of Data Processing
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-5 leading-relaxed">
@@ -1129,15 +1291,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 6. Storage, Encryption & Security Practices */}
-                  <section id="storage-security" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        6
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Data Fortification</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">6. Storage, Encryption & Security Practices</h2>
-                      </div>
+                  <section id="storage-security" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        6. Storage, Encryption & Security Practices
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-5 leading-relaxed">
@@ -1178,15 +1337,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 7. Third-Party Sharing & Statutory Disclosures */}
-                  <section id="sharing-disclosure" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        7
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Zero Selling Policy</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">7. Third-Party Sharing & Statutory Disclosures</h2>
-                      </div>
+                  <section id="sharing-disclosure" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        7. Third-Party Sharing & Statutory Disclosures
+                      </h2>
                     </div>
 
                     <div className="space-y-4 text-sm text-slate-600 leading-relaxed">
@@ -1239,15 +1395,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 8. Data Retention & Lifecycle Policy */}
-                  <section id="retention" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        8
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Statutory Timelines</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">8. Data Retention & Lifecycle Policy</h2>
-                      </div>
+                  <section id="retention" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        8. Data Retention & Lifecycle Policy
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-5 leading-relaxed">
@@ -1282,15 +1435,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 9. Your Rights as a Data Principal (DPDP Act, 2023) */}
-                  <section id="user-rights" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        9
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Citizen Rights</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">9. Your Rights as a Data Principal (DPDP Act, 2023)</h2>
-                      </div>
+                  <section id="user-rights" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        9. Your Rights as a Data Principal (DPDP Act, 2023)
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-5 leading-relaxed">
@@ -1319,15 +1469,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 10. Account & Data Deletion */}
-                  <section id="deletion-process" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600 font-black text-sm shrink-0">
-                        10
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-red-600">Google Play & DPDP Standard</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">10. Account & Data Deletion</h2>
-                      </div>
+                  <section id="deletion-process" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-red-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        10. Account & Data Deletion
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-5 leading-relaxed">
@@ -1335,7 +1482,6 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Channel A */}
                       <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 flex flex-col justify-between">
                         <div>
                           <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Channel A</span>
@@ -1344,16 +1490,15 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                             Visit our dedicated public Account Deletion Portal to submit a request with your registered email and mobile number.
                           </p>
                         </div>
-                        <button
-                          onClick={() => setDeletionModalOpen(true)}
+                        <Link
+                          to="/account-deletion"
                           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors shadow-xs"
                         >
                           <span>Open Deletion Form</span>
                           <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
+                        </Link>
                       </div>
 
-                      {/* Channel B */}
                       <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 flex flex-col justify-between">
                         <div>
                           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Channel B</span>
@@ -1379,15 +1524,12 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 11. Age Restrictions & Children's Privacy */}
-                  <section id="children" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm shrink-0">
-                        11
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Eligibility Policy</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">11. Age Restrictions & Children's Privacy</h2>
-                      </div>
+                  <section id="children" className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        11. Age Restrictions & Children's Privacy
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm leading-relaxed">
@@ -1396,22 +1538,18 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                   </section>
 
                   {/* 12. Grievance Officer & Contact Information */}
-                  <section id="grievance" className="bg-gradient-to-br from-blue-50/70 via-white to-cyan-50/40 rounded-3xl border border-blue-200/90 p-6 sm:p-9 shadow-xs">
-                    <div className="flex items-center gap-3.5 mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-sm shrink-0">
-                        12
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">Official Redressal</span>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-950">12. Grievance Redressal Officer & Contact Info</h2>
-                      </div>
+                  <section id="grievance" className="bg-slate-50 rounded-3xl border border-slate-200 p-6 sm:p-8">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block shrink-0"></span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        12. Grievance Redressal Officer & Contact Info
+                      </h2>
                     </div>
 
                     <p className="text-slate-600 text-sm mb-6 leading-relaxed">
                       In accordance with the <strong className="text-slate-900">Information Technology Act, 2000</strong> and the <strong className="text-slate-900">DPDP Act, 2023</strong>, the details of the designated Grievance Officer for CARZODRIVE are provided below:
                     </p>
 
-                    {/* Grievance Officer Details Card */}
                     <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-7 space-y-5 shadow-xs">
                       <div className="border-b border-slate-100 pb-4">
                         <span className="text-[11px] font-black uppercase tracking-wider text-blue-600">Designated Authority</span>
@@ -1455,7 +1593,6 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                         </div>
                       </div>
 
-                      {/* Resolution SLA Badges */}
                       <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
                         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold">
                           <Clock className="w-3.5 h-3.5" />
@@ -1474,143 +1611,6 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
           </div>
         </Container>
       </section>
-
-      {/* 3. INTERACTIVE ACCOUNT DELETION MODAL (Google Play & DPDP Statutory Flow) */}
-      <AnimatePresence>
-        {deletionModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative overflow-hidden"
-            >
-              <button
-                onClick={resetDeletionForm}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
-                aria-label="Close Modal"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {!deletionSubmitted ? (
-                <>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600">
-                      <Trash2 className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-red-600">DPDP Act & Google Play</span>
-                      <h3 className="text-lg font-black text-slate-950">Request Account & Data Deletion</h3>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-600 leading-relaxed mb-5">
-                    Submitting this form permanently initiates the erasure of your CARZODRIVE customer account, login credentials, and stored personal profile within 30 days, subject to settlement of active trips and statutory tax retention.
-                  </p>
-
-                  <form onSubmit={handleDeletionSubmit} className="space-y-4 text-xs">
-                    <div>
-                      <label className="font-semibold text-slate-800 block mb-1">Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={deletionForm.name}
-                        onChange={(e) => setDeletionForm({ ...deletionForm, name: e.target.value })}
-                        placeholder="e.g. Rahul Sharma"
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white text-xs"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="font-semibold text-slate-800 block mb-1">Registered Gmail / Email *</label>
-                      <input
-                        type="email"
-                        required
-                        value={deletionForm.email}
-                        onChange={(e) => setDeletionForm({ ...deletionForm, email: e.target.value })}
-                        placeholder="yourname@gmail.com"
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white text-xs"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="font-semibold text-slate-800 block mb-1">Registered Mobile Number *</label>
-                      <input
-                        type="tel"
-                        required
-                        value={deletionForm.phone}
-                        onChange={(e) => setDeletionForm({ ...deletionForm, phone: e.target.value })}
-                        placeholder="+91 9876543210"
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white text-xs"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="font-semibold text-slate-800 block mb-1">Reason for Deletion (Optional)</label>
-                      <textarea
-                        rows="2"
-                        value={deletionForm.reason}
-                        onChange={(e) => setDeletionForm({ ...deletionForm, reason: e.target.value })}
-                        placeholder="Tell us how we can improve..."
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white text-xs resize-none"
-                      />
-                    </div>
-
-                    <div className="flex items-start gap-2 pt-1">
-                      <input
-                        type="checkbox"
-                        id="confirmDeletion"
-                        required
-                        checked={deletionForm.confirmed}
-                        onChange={(e) => setDeletionForm({ ...deletionForm, confirmed: e.target.checked })}
-                        className="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <label htmlFor="confirmDeletion" className="text-[11px] text-slate-600 leading-relaxed cursor-pointer select-none">
-                        I confirm that I have no active or ongoing car/bike reservations with CARZODRIVE, and understand that account erasure is irreversible after completion.
-                      </label>
-                    </div>
-
-                    <div className="flex items-center gap-3 pt-3">
-                      <button
-                        type="button"
-                        onClick={resetDeletionForm}
-                        className="w-1/2 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="w-1/2 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold transition-colors shadow-lg shadow-red-600/20"
-                      >
-                        Submit Request
-                      </button>
-                    </div>
-                  </form>
-                </>
-              ) : (
-                <div className="text-center py-6 space-y-4">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 mx-auto flex items-center justify-center">
-                    <CheckCircle2 className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-lg font-black text-slate-950">Deletion Request Logged</h3>
-                  <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
-                    Thank you. We have recorded your account deletion request for <strong className="text-slate-900">{deletionForm.email}</strong>. Our data privacy compliance officer will review and confirm acknowledgment within 48 hours.
-                  </p>
-                  <div className="pt-2">
-                    <button
-                      onClick={resetDeletionForm}
-                      className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors shadow-xs"
-                    >
-                      Done
-                    </button>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
