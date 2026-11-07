@@ -11,6 +11,7 @@ import { RentYourCarPage } from '../pages/RentYourCar/RentYourCarPage';
 import { RentYourBikePage } from '../pages/RentYourBike/RentYourBikePage';
 import { DriverRegistrationPage } from '../pages/DriverRegistration/DriverRegistrationPage';
 import { AboutPage } from '../pages/About/AboutPage';
+import { PrivacyPolicyPage } from '../pages/PrivacyPolicy/PrivacyPolicyPage';
 import { ContactPage } from '../pages/Contact/ContactPage';
 import { VehicleDetailPage } from '../pages/VehicleDetail/VehicleDetailPage';
 import { TourDetailPage } from '../pages/TourDetail/TourDetailPage';
@@ -60,6 +61,11 @@ export const AppRoutes = () => {
           
           {/* Main prompt routes */}
           <Route path="about" element={<AboutPage />} />
+          <Route path="privacy-policy" element={<PrivacyPolicyPage initialTab="privacy" />} />
+          <Route path="privacy" element={<PrivacyPolicyPage initialTab="privacy" />} />
+          <Route path="terms-and-conditions" element={<PrivacyPolicyPage initialTab="terms" />} />
+          <Route path="terms" element={<PrivacyPolicyPage initialTab="terms" />} />
+          <Route path="account-deletion" element={<PrivacyPolicyPage initialTab="deletion" />} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="bike-self-ride" element={<BikeSelfRidePage />} />
           <Route path="car-self-ride" element={<CarSelfRidePage />} />

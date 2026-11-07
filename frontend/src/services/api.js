@@ -24,8 +24,8 @@ const getInitialApiBaseUrl = () => {
     return envUrl.endsWith('/api/v1')
       ? envUrl
       : envUrl.endsWith('/api')
-      ? `${envUrl}/v1`
-      : `${envUrl}/api/v1`;
+        ? `${envUrl}/v1`
+        : `${envUrl}/api/v1`;
   }
 
   // If deployed in production and VITE_API_URL was not set, use current host origin
@@ -230,56 +230,56 @@ export async function apiRequest(endpoint, { method = 'GET', body, headers = {},
 
       // Auto-refresh token if 401 and token expired
       if (response.status === 401 && (data?.message === 'Token expired' || data?.message === 'Invalid token')) {
-      const refreshToken = getRefreshToken();
-      if (refreshToken && endpoint !== '/auth/refresh') {
-        try {
-          const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refreshToken }),
-          });
-          const refreshData = await refreshRes.json().catch(() => ({}));
-          if (refreshRes.ok && refreshData?.data?.accessToken) {
-            setAccessToken(refreshData.data.accessToken);
-            if (refreshData.data.refreshToken) {
-              setRefreshToken(refreshData.data.refreshToken);
+        const refreshToken = getRefreshToken();
+        if (refreshToken && endpoint !== '/auth/refresh') {
+          try {
+            const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ refreshToken }),
+            });
+            const refreshData = await refreshRes.json().catch(() => ({}));
+            if (refreshRes.ok && refreshData?.data?.accessToken) {
+              setAccessToken(refreshData.data.accessToken);
+              if (refreshData.data.refreshToken) {
+                setRefreshToken(refreshData.data.refreshToken);
+              }
+              // Retry original request with newly refreshed access token
+              requestHeaders.Authorization = `Bearer ${refreshData.data.accessToken}`;
+              const retryRes = await fetch(url, { ...options, headers: requestHeaders });
+              const retryData = await retryRes.json().catch(() => ({}));
+              if (retryRes.ok) return retryData;
             }
-            // Retry original request with newly refreshed access token
-            requestHeaders.Authorization = `Bearer ${refreshData.data.accessToken}`;
-            const retryRes = await fetch(url, { ...options, headers: requestHeaders });
-            const retryData = await retryRes.json().catch(() => ({}));
-            if (retryRes.ok) return retryData;
+          } catch {
+            // Refresh attempt failed
           }
-        } catch {
-          // Refresh attempt failed
+        }
+
+        // If refresh failed or was not possible, clear stale auth session
+        clearAuthSession();
+        if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
+          window.location.href = '/admin/login';
         }
       }
 
-      // If refresh failed or was not possible, clear stale auth session
-      clearAuthSession();
-      if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
-        window.location.href = '/admin/login';
+      if (!response.ok) {
+        const errorMessage =
+          data?.errors?.[0]?.msg ||
+          data?.message ||
+          `Request failed with status ${response.status}`;
+        const error = new Error(errorMessage);
+        error.status = response.status;
+        error.data = data;
+        throw error;
+      }
+
+      return data;
+    } finally {
+      if (isGet) {
+        inFlightRequests.delete(cacheKey);
       }
     }
-
-    if (!response.ok) {
-      const errorMessage =
-        data?.errors?.[0]?.msg ||
-        data?.message ||
-        `Request failed with status ${response.status}`;
-      const error = new Error(errorMessage);
-      error.status = response.status;
-      error.data = data;
-      throw error;
-    }
-
-    return data;
-  } finally {
-    if (isGet) {
-      inFlightRequests.delete(cacheKey);
-    }
-  }
-})();
+  })();
 
   if (isGet && !skipCache) {
     inFlightRequests.set(cacheKey, fetchPromise);

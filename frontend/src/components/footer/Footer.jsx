@@ -214,12 +214,12 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-slate-400 hover:text-blue-400 transition-colors">
+                <Link to="/terms-and-conditions" className="text-slate-400 hover:text-blue-400 transition-colors">
                   Terms
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-slate-400 hover:text-blue-400 transition-colors">
+                <Link to="/privacy-policy" className="text-slate-400 hover:text-blue-400 transition-colors">
                   Privacy Policy
                 </Link>
               </li>
@@ -254,8 +254,8 @@ export const Footer = () => {
             </a>
           </div>
           <div className="flex items-center gap-6 font-medium">
-            <Link to="/about" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
-            <Link to="/about" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
+            <Link to="/privacy-policy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
+            <Link to="/terms-and-conditions" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
             <Link to="/contact" className="hover:text-slate-300 transition-colors">Concierge Support</Link>
           </div>
         </div>
