@@ -159,7 +159,7 @@ async function initiatePasswordReset(identifier) {
     { email: new RegExp(`^${cleanEmail.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') },
   ];
 
-  const user = await User.findOne({ $or: queryOr });
+  const user = await User.findOne({ $or: queryOr }).select('+passwordResetExpires');
   if (!user) {
     const err = new Error(`No registered account found with Gmail address "${cleanEmail}". Please check your email or register a new account.`);
     err.statusCode = 404;
@@ -172,7 +172,20 @@ async function initiatePasswordReset(identifier) {
     throw err;
   }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  // Resend cooldown protection: rate-limit OTP generation if requested within 60 seconds of previous active OTP
+  if (user.passwordResetExpires) {
+    const timeUntilExpiry = user.passwordResetExpires.getTime() - Date.now();
+    // Default validity is 15 minutes (900,000 ms). If more than 14 minutes remain, it was requested < 60s ago
+    if (timeUntilExpiry > (14 * 60 * 1000)) {
+      const waitSeconds = Math.ceil((timeUntilExpiry - 14 * 60 * 1000) / 1000);
+      const err = new Error(`Please wait ${waitSeconds > 0 ? waitSeconds : 60} seconds before requesting a new verification code.`);
+      err.statusCode = 429;
+      throw err;
+    }
+  }
+
+  // Cryptographically secure 6-digit OTP generation
+  const otp = crypto.randomInt(100000, 1000000).toString();
   const hashed = crypto.createHash('sha256').update(otp).digest('hex');
 
   user.passwordResetToken = hashed;

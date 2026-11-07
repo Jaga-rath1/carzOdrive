@@ -93,7 +93,13 @@ async function runE2ETests() {
     }
   }
 
-  const sampleCar = cars[0] || { _id: new mongoose.Types.ObjectId(), name: 'Test Creta SX' };
+  let sampleCar = cars.find((c) => c.isAvailable !== false && (c.availableCount === undefined || c.availableCount > 0));
+  if (!sampleCar && cars.length > 0) {
+    sampleCar = cars[0];
+    await Vehicle.findByIdAndUpdate(sampleCar._id, { isAvailable: true, availableCount: 2 });
+  } else if (!sampleCar) {
+    sampleCar = { _id: new mongoose.Types.ObjectId(), name: 'Test Creta SX' };
+  }
 
   const tomorrow = new Date(Date.now() + 86400000 * 1);
   const dayAfterTomorrow = new Date(Date.now() + 86400000 * 3);

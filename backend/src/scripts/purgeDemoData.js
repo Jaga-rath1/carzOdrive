@@ -1,7 +1,20 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+require('dotenv').config({ path: path.resolve(process.cwd(), 'backend/.env') });
+require('dotenv').config({ path: path.resolve(process.cwd(), '.env') });
+require('dotenv').config();
+
+const dns = require('dns');
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {}
+
 const mongoose = require('mongoose');
 
 async function purge() {
-  await mongoose.connect('mongodb://localhost:27017/carzodrive');
+  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/carzodrive';
+  await mongoose.connect(uri);
   console.log('Connected to MongoDB. Purging all demo data...');
 
   // 1. Delete all non-vendor vehicles (or all demo vehicles)
