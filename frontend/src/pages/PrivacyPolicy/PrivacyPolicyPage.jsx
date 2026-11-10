@@ -39,9 +39,11 @@ import {
   BadgePercent,
   Compass,
   Users,
-  ShieldAlert
+  ShieldAlert,
+  MessageCircle
 } from 'lucide-react';
 import { Container } from '../../components/common/Container';
+import { buildWhatsAppUrl } from '../../utils/whatsapp';
 
 export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
   const location = useLocation();
@@ -58,6 +60,7 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
   });
   const [deletionSubmitted, setDeletionSubmitted] = useState(false);
   const [ticketId, setTicketId] = useState('');
+  const [whatsappUrl, setWhatsappUrl] = useState('');
 
   // Sync tab with URL pathname
   useEffect(() => {
@@ -148,12 +151,31 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [activeTab]);
 
+  const buildDeletionWhatsAppMessage = (ticket) => {
+    let msg = `Hello CARZODRIVE Compliance Desk,\n\n*OFFICIAL ACCOUNT DELETION REQUEST (Google Play & DPDP)*\n\n`;
+    msg += `🆔 *Reference Ticket:* ${ticket}\n`;
+    msg += `📧 *Registered Email:* ${deletionForm.email.trim()}\n`;
+    msg += `📱 *Registered Mobile:* ${deletionForm.phone.trim()}\n`;
+    msg += `📋 *Reason for Deletion:* ${deletionForm.reason}\n`;
+    if (deletionForm.notes && deletionForm.notes.trim()) {
+      msg += `📝 *Additional Notes:* ${deletionForm.notes.trim()}\n`;
+    }
+    msg += `\nPlease verify my ownership and process permanent deletion of my account and associated data in compliance with the DPDP Act, 2023.`;
+    return msg;
+  };
+
   const handleDeletionSubmit = (e) => {
     e.preventDefault();
     if (!deletionForm.email || !deletionForm.phone) return;
     const randomTicket = 'DEL-' + Math.floor(100000 + Math.random() * 900000);
+    const waMessage = buildDeletionWhatsAppMessage(randomTicket);
+    const url = buildWhatsAppUrl(waMessage);
     setTicketId(randomTicket);
+    setWhatsappUrl(url);
     setDeletionSubmitted(true);
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const resetDeletionForm = () => {
@@ -164,6 +186,7 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
       notes: '',
       confirmed: false,
     });
+    setWhatsappUrl('');
     setDeletionSubmitted(false);
   };
 
@@ -519,14 +542,17 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                           />
                         </div>
 
-                        <div className="pt-2">
+                        <div className="pt-2 space-y-2">
                           <button
                             type="submit"
-                            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center justify-center gap-2"
+                            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
                           >
-                            <Send className="w-4 h-4" />
+                            <MessageCircle className="w-4 h-4" />
                             <span>Submit Official Deletion Request</span>
                           </button>
+                          <p className="text-[11px] text-center text-slate-500">
+                            Redirects securely to Official CARZODRIVE WhatsApp Compliance Desk with your details pre-filled.
+                          </p>
                         </div>
                       </form>
                     ) : (
@@ -535,15 +561,26 @@ export const PrivacyPolicyPage = ({ initialTab = 'privacy' }) => {
                           <CheckCircle2 className="w-6 h-6" />
                         </div>
                         <h3 className="text-base font-bold text-slate-900">
-                          Deletion Request Dispatched ({ticketId})
+                          Deletion Request Redirected to WhatsApp ({ticketId})
                         </h3>
                         <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
-                          Your request for <strong className="text-slate-900">{deletionForm.email}</strong> has been logged with CARZODRIVE Compliance Desk. An authentication verification email has been dispatched. Once confirmed, data erasure will be completed within 30 days.
+                          Your deletion details for <strong className="text-slate-900">{deletionForm.email}</strong> have been prepared and WhatsApp is opening directly. Please send the pre-filled message to our Compliance Desk to verify ownership and complete data erasure within 30 days.
                         </p>
-                        <div className="pt-2">
+                        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                          {whatsappUrl && (
+                            <a
+                              href={whatsappUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-md shadow-emerald-500/20"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                              <span>Continue in WhatsApp</span>
+                            </a>
+                          )}
                           <button
                             onClick={resetDeletionForm}
-                            className="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
+                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
                           >
                             Submit Another Request
                           </button>
