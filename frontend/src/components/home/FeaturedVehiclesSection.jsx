@@ -6,7 +6,7 @@ import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { vehiclesAPI, bikesAPI } from '../../services/api';
-import { resolveVehicleImageUrl, getVehicleFallbackImage, getVehicleCardSrcSet, DEFAULT_CAR_IMAGE, DEFAULT_BIKE_IMAGE, DEFAULT_FLEET_CARS, DEFAULT_FLEET_BIKES } from '../../utils/documentUtils';
+import { resolveVehicleImageUrl, getVehicleFallbackImage, getVehicleCardSrcSet, DEFAULT_CAR_IMAGE, DEFAULT_BIKE_IMAGE } from '../../utils/documentUtils';
 import { useDiscount } from '../../hooks/useDiscount';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -15,6 +15,7 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
   const [activeCategory, setActiveCategory] = useState('Available Now');
   const [vehicles, setVehicles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const { calculateDiscount, isDiscountActive, badgeText } = useDiscount();
 
   useEffect(() => {
@@ -26,13 +27,17 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
           bikesAPI.getAll(),
         ]);
 
-        const rawCars = (carsResult.status === 'fulfilled' && Array.isArray(carsResult.value?.data) && carsResult.value.data.length > 0)
+        const rawCars = (carsResult.status === 'fulfilled' && Array.isArray(carsResult.value?.data))
           ? carsResult.value.data
-          : DEFAULT_FLEET_CARS;
+          : [];
 
-        const rawBikes = (bikesResult.status === 'fulfilled' && Array.isArray(bikesResult.value?.data) && bikesResult.value.data.length > 0)
+        const rawBikes = (bikesResult.status === 'fulfilled' && Array.isArray(bikesResult.value?.data))
           ? bikesResult.value.data
-          : DEFAULT_FLEET_BIKES;
+          : [];
+
+        if (carsResult.status === 'rejected' && bikesResult.status === 'rejected' && isMounted) {
+          setLoadError('Unable to connect to live fleet server. Please refresh or try again shortly.');
+        }
 
         const carItems = rawCars.map((v) => ({
           id: v._id || v.id,
@@ -102,24 +107,8 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
       } catch (err) {
         console.error('Failed to load fleet from database:', err);
         if (isMounted) {
-          const fallbackCars = DEFAULT_FLEET_CARS.map((v) => ({
-            ...v,
-            rawId: v.id,
-            catalogId: v.slug || v.id,
-            pricePerDay: `₹${v.priceNumeric.toLocaleString('en-IN')}`,
-            vehicleType: 'car',
-            rawVehicle: v,
-          }));
-          const fallbackBikes = DEFAULT_FLEET_BIKES.map((b) => ({
-            ...b,
-            rawId: b.id,
-            catalogId: b.slug || b.id,
-            category: 'Bike',
-            pricePerDay: `₹${b.priceNumeric.toLocaleString('en-IN')}`,
-            vehicleType: 'bike',
-            rawVehicle: b,
-          }));
-          setVehicles([...fallbackCars, ...fallbackBikes]);
+          setVehicles([]);
+          setLoadError('Unable to connect to live fleet server. Please refresh or try again shortly.');
           setIsLoading(false);
         }
       }
@@ -224,7 +213,9 @@ export const FeaturedVehiclesSection = ({ onQuickBook }) => {
           </div>
         ) : filteredVehicles.length === 0 ? (
           <div className="py-16 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-8">
-            <p className="text-slate-600 font-bold text-sm">No vehicles found in this category.</p>
+            <p className={`font-bold text-sm ${loadError ? 'text-rose-600' : 'text-slate-600'}`}>
+              {loadError || 'No vehicles found in this category.'}
+            </p>
           </div>
         ) : (
           /* Vehicles Cards Grid */

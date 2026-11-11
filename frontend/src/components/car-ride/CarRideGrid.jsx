@@ -6,7 +6,7 @@ import { Container } from '../common/Container';
 import { WhatsAppButton } from '../common/WhatsAppButton';
 import { getVehicleWhatsAppMessage } from '../../utils/whatsapp';
 import { vehiclesAPI } from '../../services/api';
-import { resolveVehicleImageUrl, getVehicleCardSrcSet, DEFAULT_CAR_IMAGE, DEFAULT_FLEET_CARS } from '../../utils/documentUtils';
+import { resolveVehicleImageUrl, getVehicleCardSrcSet, DEFAULT_CAR_IMAGE } from '../../utils/documentUtils';
 import { CarRideCard } from './CarRideCard';
 
 export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
@@ -14,6 +14,7 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
   const [sortBy, setSortBy] = useState('popular');
   const [fleetCars, setFleetCars] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -63,9 +64,7 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
       .getAll()
       .then((res) => {
         if (!isMounted) return;
-        const rawList = (res?.data && Array.isArray(res.data) && res.data.length > 0)
-          ? res.data
-          : DEFAULT_FLEET_CARS;
+        const rawList = (res?.data && Array.isArray(res.data)) ? res.data : [];
 
         const mapped = mapCars(rawList);
         const sorted = mapped.sort((a, b) => {
@@ -78,8 +77,8 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
       .catch((err) => {
         console.error('Failed to load cars from DB:', err);
         if (isMounted) {
-          const mapped = mapCars(DEFAULT_FLEET_CARS);
-          setFleetCars(mapped);
+          setFleetCars([]);
+          setLoadError('Unable to load live cars from server. Please try again shortly.');
           setLoading(false);
         }
       });
@@ -167,7 +166,9 @@ export const CarRideGrid = ({ onOpenQuickBook, onOpenSpecs }) => {
           </div>
         ) : filteredAndSortedCars.length === 0 ? (
           <div className="py-16 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-8">
-            <p className="text-slate-600 font-bold text-sm">No vehicles found in this category.</p>
+            <p className={`font-bold text-sm ${loadError ? 'text-rose-600' : 'text-slate-600'}`}>
+              {loadError || 'No vehicles found in this category.'}
+            </p>
           </div>
         ) : (
           /* Cars Grid */

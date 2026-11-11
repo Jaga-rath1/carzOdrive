@@ -9,55 +9,11 @@ import { bikesAPI } from '../../services/api';
 import { resolveVehicleImageUrl, getVehicleCardSrcSet, DEFAULT_BIKE_IMAGE } from '../../utils/documentUtils';
 import { BikeRideCard } from './BikeRideCard';
 
-const FALLBACK_BIKES = [
-  {
-    id: 'hero-splendor-plus',
-    rawId: 'hero-splendor-plus',
-    bikeId: 'hero-splendor-plus',
-    name: 'Hero Splendor Plus XTEC',
-    brand: 'Hero',
-    category: 'Commuter',
-    engine: '97.2 cc',
-    mileage: '65 km/l',
-    transmission: '4-Speed Manual',
-    pricePerDay: '₹499',
-    priceNumeric: 499,
-    deposit: '₹1,500',
-    depositNumeric: 1500,
-    image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg',
-    badge: 'Coming Soon - Pre-Book',
-    isAvailable: true,
-    availableCount: 20,
-    availabilityStatus: 'Available',
-    vehicleType: 'bike',
-  },
-  {
-    id: 'honda-activa-6g',
-    rawId: 'honda-activa-6g',
-    bikeId: 'honda-activa-6g',
-    name: 'Honda Activa 6G Scooty',
-    brand: 'Honda',
-    category: 'Scooter',
-    engine: '109.5 cc',
-    mileage: '55 km/l',
-    transmission: 'Automatic CVT',
-    pricePerDay: '₹549',
-    priceNumeric: 549,
-    deposit: '₹1,500',
-    depositNumeric: 1500,
-    image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262145/carzodrive/bikes/bike-main-1793262144481-2bbb612b.jpg',
-    badge: 'Coming Soon - Pre-Book',
-    isAvailable: true,
-    availableCount: 15,
-    availabilityStatus: 'Available',
-    vehicleType: 'bike',
-  },
-];
-
 export const BikeRideGrid = ({ onOpenQuickBook }) => {
   const [activeCategory, setActiveCategory] = useState('Available Now');
-  const [fleetBikes, setFleetBikes] = useState(FALLBACK_BIKES);
+  const [fleetBikes, setFleetBikes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -118,14 +74,17 @@ export const BikeRideGrid = ({ onOpenQuickBook }) => {
           setFleetBikes(sorted);
           setLoading(false);
         } else {
-          setFleetBikes(FALLBACK_BIKES);
+          setFleetBikes([]);
           setLoading(false);
         }
       })
       .catch((err) => {
         console.error('Failed to load bikes from DB:', err);
-        setFleetBikes(FALLBACK_BIKES);
-        setLoading(false);
+        if (isMounted) {
+          setFleetBikes([]);
+          setLoadError('Unable to load live two-wheelers from server. Please try again shortly.');
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -205,7 +164,9 @@ export const BikeRideGrid = ({ onOpenQuickBook }) => {
           </div>
         ) : filteredBikes.length === 0 ? (
           <div className="py-16 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-8">
-            <p className="text-slate-600 font-bold text-sm">No two-wheelers found in this category.</p>
+            <p className={`font-bold text-sm ${loadError ? 'text-rose-600' : 'text-slate-600'}`}>
+              {loadError || 'No two-wheelers found in this category.'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

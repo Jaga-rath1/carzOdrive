@@ -64,39 +64,6 @@ const SERVICE_META = {
   },
 };
 
-// Real Database & Cloudinary vehicles as instant high-resolution defaults
-const FALLBACK_CARS = [
-  { id: 'creta-sx', name: 'Hyundai Creta', category: 'suv', color: 'Knight Black', pricePerDay: 2499, priceDisplay: '₹2,499', seats: '5 Seats', quantity: 8, availableCount: 8, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001791/carzodrive/cars/car-main-1793001789245-86ca636d.jpg' },
-  { id: 'swift-new', name: 'Maruti Suzuki Swift', category: 'hatchback', color: 'Magma Grey', pricePerDay: 1499, priceDisplay: '₹1,499', seats: '5 Seats', quantity: 5, availableCount: 5, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001974/carzodrive/cars/car-main-1793001972073-6c682a6c.jpg' },
-  { id: 'thar-4x4', name: 'Mahindra Thar 4x4', category: 'luxury', color: 'Napoli Black', pricePerDay: 3299, priceDisplay: '₹3,299', seats: '4 Seats', quantity: 6, availableCount: 6, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792772183/carzodrive/cars/car-main-1792772159781-4249df0c.jpg' },
-  { id: 'kia-sonet', name: 'Kia Sonet', category: 'suv', color: 'Glacier White', pricePerDay: 1899, priceDisplay: '₹1,899', seats: '5 Seats', quantity: 8, availableCount: 8, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001904/carzodrive/cars/car-main-1793001901616-cda93cca.jpg' },
-  { id: 'tata-punch', name: 'Tata Punch', category: 'suv', color: 'Tropical Mist', pricePerDay: 1599, priceDisplay: '₹1,599', seats: '5 Seats', quantity: 8, availableCount: 8, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793001842/carzodrive/cars/car-main-1793001834294-0ebc139b.jpg' },
-  { id: 'fortuner-suv', name: 'Toyota Fortuner', category: 'luxury', color: 'Super White', pricePerDay: 4499, priceDisplay: '₹4,499', seats: '7 Seats', quantity: 4, availableCount: 4, isAvailable: true, image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792779598/carzodrive/cars/car-main-1792779591435-ee911a8b.jpg' },
-];
-
-const FALLBACK_BIKES = [
-  { id: 'hero-splendor-plus', name: 'Hero Splendor Plus XTEC', category: 'commuter', pricePerDay: 499, priceDisplay: '₹499', isAvailable: false, availableCount: 0, quantity: 0, availabilityStatus: 'Currently Unavailable', badge: 'Coming Soon', image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262291/carzodrive/bikes/bike-main-1793262290712-a8c0708c.jpg' },
-  { id: 'honda-activa-6g', name: 'Honda Activa 6G Scooty', category: 'scooter', pricePerDay: 549, priceDisplay: '₹549', isAvailable: false, availableCount: 0, quantity: 0, availabilityStatus: 'Currently Unavailable', badge: 'Coming Soon', image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1793262145/carzodrive/bikes/bike-main-1793262144481-2bbb612b.jpg' },
-];
-
-const FALLBACK_TOURS = [
-  {
-    id: 'puri-konark-heritage',
-    name: 'Golden Triangle: Puri, Konark & Chilika',
-    title: 'Golden Triangle: Puri, Konark & Chilika',
-    category: 'Heritage & Coast',
-    destination: 'Puri - Konark - Chilika',
-    priceNumeric: 4999,
-    pricePerDay: 4999,
-    startingPrice: '₹4,999',
-    priceDisplay: '₹4,999/day',
-    duration: '3D / 2N',
-    isAvailable: true,
-    availableCount: 10,
-    image: 'https://res.cloudinary.com/gjjtie9o/image/upload/v1792779598/carzodrive/cars/car-main-1792779591435-ee911a8b.jpg',
-  },
-];
-
 export const Hero = ({ onOpenQuickBook }) => {
   const navigate = useNavigate();
   const { isAuthenticated, openAuthModal } = useAuth();
@@ -123,16 +90,17 @@ export const Hero = ({ onOpenQuickBook }) => {
   // 1. Service Selection
   const [activeTab, setActiveTab] = useState('self-drive-car');
 
-  // 2. Dynamic Database Fleet State with instant Cloudinary fallbacks
-  const [dbCars, setDbCars] = useState(FALLBACK_CARS);
-  const [dbBikes, setDbBikes] = useState(FALLBACK_BIKES);
-  const [dbTours, setDbTours] = useState(FALLBACK_TOURS);
+  // 2. Dynamic Live Database Fleet State (Zero Hardcoded Fallback Records)
+  const [dbCars, setDbCars] = useState([]);
+  const [dbBikes, setDbBikes] = useState([]);
+  const [dbTours, setDbTours] = useState([]);
   const [dbDrivers, setDbDrivers] = useState([]);
+  const [isLoadingFleet, setIsLoadingFleet] = useState(true);
 
-  const [selectedCarId, setSelectedCarId] = useState(FALLBACK_CARS[0].id);
-  const [selectedChauffeurId, setSelectedChauffeurId] = useState(FALLBACK_CARS[0].id);
-  const [selectedBikeId, setSelectedBikeId] = useState(FALLBACK_BIKES[0].id);
-  const [selectedTourId, setSelectedTourId] = useState(FALLBACK_TOURS[0].id);
+  const [selectedCarId, setSelectedCarId] = useState('');
+  const [selectedChauffeurId, setSelectedChauffeurId] = useState('');
+  const [selectedBikeId, setSelectedBikeId] = useState('');
+  const [selectedTourId, setSelectedTourId] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -227,6 +195,10 @@ export const Hero = ({ onOpenQuickBook }) => {
         }
       } catch (err) {
         console.error('Failed to load hero fleet from DB:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingFleet(false);
+        }
       }
     }
     loadHeroFleet();
@@ -274,8 +246,9 @@ export const Hero = ({ onOpenQuickBook }) => {
   const currentSelectedItem = useMemo(() => {
     switch (activeTab) {
       case 'car-with-driver': {
-        const car = dbCars.find((c) => c.id === selectedChauffeurId) || dbCars[0] || FALLBACK_CARS[0];
-        const baseRate = Number(car?.pricePerDay) || Number(car?.priceNumeric) || 1499;
+        const car = dbCars.find((c) => c.id === selectedChauffeurId) || dbCars[0] || null;
+        if (!car) return null;
+        const baseRate = Number(car.pricePerDay) || Number(car.priceNumeric) || 1499;
         const totalWithDriver = baseRate + Number(driverSettings?.dailyRate || 799);
         const disc = calculateDiscount(totalWithDriver, 'car-with-driver');
         return {
@@ -311,8 +284,9 @@ export const Hero = ({ onOpenQuickBook }) => {
         };
       }
       case 'self-drive-bike': {
-        const bike = dbBikes.find((b) => b.id === selectedBikeId) || dbBikes[0] || FALLBACK_BIKES[0];
-        const baseRate = Number(bike?.pricePerDay) || Number(bike?.priceNumeric) || 499;
+        const bike = dbBikes.find((b) => b.id === selectedBikeId) || dbBikes[0] || null;
+        if (!bike) return null;
+        const baseRate = Number(bike.pricePerDay) || Number(bike.priceNumeric) || 499;
         const disc = calculateDiscount(baseRate, 'self-drive-bike');
         return {
           ...bike,
@@ -325,8 +299,9 @@ export const Hero = ({ onOpenQuickBook }) => {
         };
       }
       case 'tour-packages': {
-        const tour = dbTours.find((t) => t.id === selectedTourId) || dbTours[0] || FALLBACK_TOURS[0];
-        const baseRate = Number(tour?.priceNumeric) || Number(tour?.pricePerDay) || 4999;
+        const tour = dbTours.find((t) => t.id === selectedTourId) || dbTours[0] || null;
+        if (!tour) return null;
+        const baseRate = Number(tour.priceNumeric) || Number(tour.pricePerDay) || 4999;
         const disc = calculateDiscount(baseRate, 'tour-packages');
         return {
           ...tour,
@@ -341,8 +316,9 @@ export const Hero = ({ onOpenQuickBook }) => {
       }
       case 'self-drive-car':
       default: {
-        const car = dbCars.find((c) => c.id === selectedCarId) || dbCars[0] || FALLBACK_CARS[0];
-        const baseRate = Number(car?.pricePerDay) || Number(car?.priceNumeric) || 1499;
+        const car = dbCars.find((c) => c.id === selectedCarId) || dbCars[0] || null;
+        if (!car) return null;
+        const baseRate = Number(car.pricePerDay) || Number(car.priceNumeric) || 1499;
         const disc = calculateDiscount(baseRate, 'self-drive-car');
         return {
           ...car,
@@ -359,10 +335,10 @@ export const Hero = ({ onOpenQuickBook }) => {
 
   // Dynamic live service showcase mapped directly from Database & Cloudinary with real discount
   const serviceData = useMemo(() => {
-    const selfDriveCar = dbCars.find((c) => c.isAvailable) || dbCars[0] || FALLBACK_CARS[0];
-    const chauffeurCar = dbCars.find((c) => (c.category === 'luxury' || c.category === 'sedan') && c.isAvailable) || dbCars[1] || dbCars[0] || FALLBACK_CARS[0];
-    const bike = dbBikes.find((b) => b.isAvailable) || dbBikes[0] || FALLBACK_BIKES[0];
-    const tour = dbTours[0] || FALLBACK_TOURS[0];
+    const selfDriveCar = dbCars.find((c) => c.isAvailable) || dbCars[0] || null;
+    const chauffeurCar = dbCars.find((c) => (c.category === 'luxury' || c.category === 'sedan') && c.isAvailable) || dbCars[1] || dbCars[0] || null;
+    const bike = dbBikes.find((b) => b.isAvailable) || dbBikes[0] || null;
+    const tour = dbTours[0] || null;
 
     const carRate = Number(selfDriveCar?.pricePerDay) || 1499;
     const carDisc = calculateDiscount(carRate, 'self-drive-car');
@@ -386,7 +362,7 @@ export const Hero = ({ onOpenQuickBook }) => {
         title: selfDriveCar?.name || 'Self-Drive Fleet',
         tagline: 'Drive Your Way',
         badge: 'Live Fleet',
-        rate: `₹${carDisc.finalAmount.toLocaleString('en-IN')}/d`,
+        rate: selfDriveCar ? `₹${carDisc.finalAmount.toLocaleString('en-IN')}/d` : 'Live Fleet',
       },
       'car-with-driver': {
         image: '/images/services/car-with-driver.png',
@@ -394,7 +370,7 @@ export const Hero = ({ onOpenQuickBook }) => {
         title: chauffeurCar?.name || 'Car With Chauffeur',
         tagline: 'Rent & Ride',
         badge: 'Executive',
-        rate: `₹${chDisc.finalAmount.toLocaleString('en-IN')}/d`,
+        rate: chauffeurCar ? `₹${chDisc.finalAmount.toLocaleString('en-IN')}/d` : 'Executive Fleet',
       },
       'driver-only': {
         image: '/images/services/driver-only.png',
@@ -405,12 +381,12 @@ export const Hero = ({ onOpenQuickBook }) => {
       },
       'self-drive-bike': {
         image: '/images/services/self-drive-bike.png',
-        vehiclePhoto: bike?.image || FALLBACK_BIKES[0].image,
-        title: bike?.name || 'Splendor & Activa Scooty',
+        vehiclePhoto: bike?.image,
+        title: bike?.name || 'Two-Wheeler Fleet',
         tagline: hasAvailableBikes ? 'Ride the Freedom' : 'Coming Soon',
         badge: hasAvailableBikes ? 'Live Fleet' : 'Coming Soon',
         isComingSoon: !hasAvailableBikes,
-        rate: `₹${bikeDisc.finalAmount.toLocaleString('en-IN')}/d`,
+        rate: bike ? `₹${bikeDisc.finalAmount.toLocaleString('en-IN')}/d` : 'Two-Wheeler Fleet',
       },
       'tour-packages': {
         image: '/images/services/tour-packages.png',
@@ -418,7 +394,7 @@ export const Hero = ({ onOpenQuickBook }) => {
         title: tour?.name || tour?.title || 'Odisha Heritage & Coast',
         tagline: 'Custom Daily & Multi-Day Escapes',
         badge: 'Odisha Tours',
-        rate: `From ₹${tourDisc.finalAmount.toLocaleString('en-IN')}/day`,
+        rate: tour ? `From ₹${tourDisc.finalAmount.toLocaleString('en-IN')}/day` : 'Custom Packages',
       },
     };
   }, [dbCars, dbBikes, dbTours, driverSettings, calculateDiscount, hasAvailableBikes]);
@@ -530,6 +506,7 @@ export const Hero = ({ onOpenQuickBook }) => {
                 dbCars={dbCars}
                 dbBikes={dbBikes}
                 dbTours={dbTours}
+                isLoadingFleet={isLoadingFleet}
                 selectedCarId={selectedCarId}
                 setSelectedCarId={setSelectedCarId}
                 selectedChauffeurId={selectedChauffeurId}

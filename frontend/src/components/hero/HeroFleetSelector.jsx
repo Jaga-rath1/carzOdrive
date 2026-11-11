@@ -8,6 +8,7 @@ export const HeroFleetSelector = ({
   dbCars,
   dbBikes,
   dbTours,
+  isLoadingFleet = false,
   selectedCarId,
   setSelectedCarId,
   selectedChauffeurId,
@@ -79,12 +80,14 @@ export const HeroFleetSelector = ({
         </span>
         <span
           className={`text-[8px] sm:text-[8.5px] font-bold px-1.5 py-0.2 rounded-full border shrink-0 ${
-            isSelectedUnavailable
+            !selectedCarObj
+              ? 'text-slate-600 bg-slate-100 border-slate-200'
+              : isSelectedUnavailable
               ? 'text-rose-700 bg-rose-50 border-rose-200'
               : 'text-emerald-700 bg-emerald-50 border-emerald-200'
           }`}
         >
-          {isSelectedUnavailable ? '0 Available' : 'Live Fleet'}
+          {!selectedCarObj ? (isLoadingFleet ? 'Loading...' : 'Unavailable') : isSelectedUnavailable ? '0 Available' : 'Live Fleet'}
         </span>
       </label>
 
@@ -96,7 +99,9 @@ export const HeroFleetSelector = ({
             isSelectedUnavailable ? 'text-rose-600 opacity-60' : ''
           }`}
         >
-          {(dbCars || []).map((c) => {
+          {(!dbCars || dbCars.length === 0) ? (
+            <option value="">{isLoadingFleet ? 'Connecting to live fleet...' : 'No cars currently loaded from server'}</option>
+          ) : (dbCars || []).map((c) => {
             const count = c.availableCount !== undefined ? c.availableCount : (c.quantity ?? 1);
             const isAvail = c.isAvailable !== false && count > 0;
             const baseRate = Number(c.pricePerDay) || Number(c.priceNumeric) || 1499;
@@ -132,7 +137,9 @@ export const HeroFleetSelector = ({
             isSelectedUnavailable ? 'text-rose-600 opacity-60' : ''
           }`}
         >
-          {(dbCars || []).map((c) => {
+          {(!dbCars || dbCars.length === 0) ? (
+            <option value="">{isLoadingFleet ? 'Connecting to live fleet...' : 'No cars currently loaded from server'}</option>
+          ) : (dbCars || []).map((c) => {
             const count = c.availableCount !== undefined ? c.availableCount : (c.quantity ?? 1);
             const isAvail = c.isAvailable !== false && count > 0;
             const baseCarRate = Number(c.pricePerDay) || Number(c.priceNumeric) || 1499;
@@ -188,7 +195,9 @@ export const HeroFleetSelector = ({
             isSelectedUnavailable ? 'text-rose-600 opacity-60' : ''
           }`}
         >
-          {(dbBikes || []).map((b) => {
+          {(!dbBikes || dbBikes.length === 0) ? (
+            <option value="">{isLoadingFleet ? 'Connecting to live fleet...' : 'No bikes currently loaded from server'}</option>
+          ) : (dbBikes || []).map((b) => {
             const count = b.availableCount !== undefined ? b.availableCount : (b.quantity ?? 1);
             const isAvail = b.isAvailable !== false && count > 0;
             const baseBikeRate = Number(b.pricePerDay) || Number(b.priceNumeric) || 499;
@@ -222,7 +231,9 @@ export const HeroFleetSelector = ({
           onChange={(e) => setSelectedTourId(e.target.value)}
           className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate py-1 sm:py-0.5 min-h-[38px] sm:min-h-0"
         >
-          {(dbTours || []).map((t) => {
+          {(!dbTours || dbTours.length === 0) ? (
+            <option value="">{isLoadingFleet ? 'Connecting to live tours...' : 'No tours currently loaded from server'}</option>
+          ) : (dbTours || []).map((t) => {
             const baseTourRate = Number(t.priceNumeric) || Number(t.pricePerDay) || 4999;
             const disc = calculateDiscount(baseTourRate, 'tour-packages');
             const priceText = disc.isDiscountActive && disc.discountAmount > 0

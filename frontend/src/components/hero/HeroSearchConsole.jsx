@@ -22,6 +22,7 @@ export const HeroSearchConsole = ({
   dbCars,
   dbBikes,
   dbTours,
+  isLoadingFleet = false,
   selectedCarId,
   setSelectedCarId,
   selectedChauffeurId,
@@ -151,6 +152,7 @@ export const HeroSearchConsole = ({
             dbCars={dbCars}
             dbBikes={dbBikes}
             dbTours={dbTours}
+            isLoadingFleet={isLoadingFleet}
             selectedCarId={selectedCarId}
             setSelectedCarId={setSelectedCarId}
             selectedChauffeurId={selectedChauffeurId}
