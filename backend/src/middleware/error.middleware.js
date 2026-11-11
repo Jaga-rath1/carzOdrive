@@ -1,9 +1,22 @@
 const { env } = require('../config/env');
+const logger = require('../utils/logger');
 
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
   let statusCode = err.statusCode || err.status || 500;
   let message = err.message || 'Internal server error';
+
+  // Malformed JSON request payload
+  if (err.type === 'entity.parse.failed' || (err instanceof SyntaxError && err.status === 400 && 'body' in err)) {
+    statusCode = 400;
+    message = 'Invalid JSON request payload';
+  }
+
+  // Multer file upload errors (e.g. file too large or unexpected field)
+  if (err.name === 'MulterError') {
+    statusCode = 400;
+    message = err.code === 'LIMIT_FILE_SIZE' ? 'Uploaded file exceeds maximum allowed size limit' : err.message;
+  }
 
   // Mongoose validation error
   if (err.name === 'ValidationError') {
@@ -36,6 +49,13 @@ function errorHandler(err, req, res, next) {
   if (err.name === 'TokenExpiredError') {
     statusCode = 401;
     message = 'Token expired';
+  }
+
+  if (statusCode >= 500) {
+    logger.error(`[${req.id || '-'}] ${req.method} ${req.originalUrl} -> ${statusCode}:`, err);
+    if (env.nodeEnv === 'production') {
+      message = 'Internal server error';
+    }
   }
 
   const body = { success: false, message };

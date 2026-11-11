@@ -5,6 +5,7 @@ const { Payment } = require('../models/payment.model');
 const { Booking } = require('../models/booking.model');
 const { env } = require('../config/env');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
+const { buildSafeRegex } = require('../utils/regex');
 
 const CASHFREE_BASE =
   env.cashfree.environment === 'production' ? 'api.cashfree.com' : 'sandbox.cashfree.com';
@@ -530,7 +531,7 @@ async function listPayments(query) {
   if (query.customerId) filter.customerId = query.customerId;
 
   if (query.search || query.q) {
-    const s = new RegExp(query.search || query.q, 'i');
+    const s = buildSafeRegex(query.search || query.q);
     filter.$or = [
       { paymentNumber: s },
       { bookingNumber: s },

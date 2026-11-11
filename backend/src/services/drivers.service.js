@@ -4,6 +4,7 @@ const { User } = require('../models/user.model');
 const { DriverRegistrationSubmission } = require('../models/partner.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
 const cache = require('../utils/cache');
+const { buildSafeRegex } = require('../utils/regex');
 
 function invalidateDriverCache() {
   cache.invalidatePrefix('drivers:');
@@ -177,7 +178,7 @@ async function listDrivers(query = {}) {
       filter.isAvailable = query.isAvailable === 'true';
     }
     if (query.serviceArea) {
-      filter.serviceArea = { $in: [new RegExp(query.serviceArea, 'i')] };
+      filter.serviceArea = { $in: [buildSafeRegex(query.serviceArea)] };
     }
 
     // Fetch partner registrations with .lean() to eliminate Mongoose document overhead
@@ -477,7 +478,7 @@ async function getAvailableDrivers(city, startDate, endDate) {
   };
 
   if (city) {
-    filter.serviceArea = { $elemMatch: { $regex: new RegExp(city, 'i') } };
+    filter.serviceArea = { $elemMatch: { $regex: buildSafeRegex(city) } };
   }
 
   let drivers = await Driver.find(filter)

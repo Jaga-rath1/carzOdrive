@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { Booking } = require('../models/booking.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
+const { escapeRegex, buildSafeRegex } = require('../utils/regex');
 
 const ADMIN_ROLES = ['SUPER_ADMIN', 'OPERATIONS_ADMIN', 'SUPPORT_ADMIN', 'FINANCE_ADMIN', 'STAFF_ADMIN', 'ADMIN'];
 
@@ -984,12 +985,12 @@ async function listBookings(query, userId, userRole) {
       try {
         const user = await User().findById(userId).lean();
         if (user?.email) {
-          userConditions.push({ guestEmail: new RegExp(`^${user.email.trim()}$`, 'i') });
+          userConditions.push({ guestEmail: new RegExp(`^${escapeRegex(user.email.trim())}$`, 'i') });
         }
         if (user?.phone) {
           const digits = user.phone.replace(/[^0-9]/g, '').slice(-10);
           if (digits.length >= 6) {
-            userConditions.push({ guestPhone: new RegExp(digits, 'i') });
+            userConditions.push({ guestPhone: new RegExp(escapeRegex(digits), 'i') });
           }
         }
       } catch (_) {}
@@ -1003,7 +1004,7 @@ async function listBookings(query, userId, userRole) {
   if (query.paymentMode && query.paymentMode !== 'ALL') filter.paymentMode = query.paymentMode;
 
   if (query.search || query.q) {
-    const s = new RegExp(query.search || query.q, 'i');
+    const s = buildSafeRegex(query.search || query.q);
     andClauses.push({
       $or: [
         { bookingNumber: s },

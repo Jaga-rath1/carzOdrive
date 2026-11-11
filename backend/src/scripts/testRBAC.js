@@ -11,6 +11,7 @@ const jwt = require('jsonwebtoken');
 const app = require('../app');
 const { env } = require('../config/env');
 const { User } = require('../models/user.model');
+const { Setting } = require('../models/setting.model');
 
 let passedTests = 0;
 let totalTests = 0;
@@ -38,6 +39,9 @@ async function runRBACTests() {
   console.log('--- 1. Connecting to Database ---');
   await mongoose.connect(env.mongodbUri);
   assert(mongoose.connection.readyState === 1, 'MongoDB Atlas connection established');
+
+  const existingSiteSettings = await Setting.findOne({ key: 'site_settings' }).lean();
+  const originalDiscountSnapshot = existingSiteSettings?.discount ? { ...existingSiteSettings.discount } : null;
 
   // Define synthetic payloads for all platform roles
   const superAdminPayload = {
@@ -243,6 +247,14 @@ async function runRBACTests() {
     });
     // Even if password was known or unknown, customer role must never gain admin access
     assert([401, 403].includes(res.status), 'CUSTOMER rejected from /api/v1/auth/admin-login');
+  }
+
+  if (originalDiscountSnapshot) {
+    await Setting.findOneAndUpdate(
+      { key: 'site_settings' },
+      { $set: { discount: originalDiscountSnapshot } }
+    );
+    console.log('  🧹 Restored original production discount settings');
   }
 
   await mongoose.disconnect();

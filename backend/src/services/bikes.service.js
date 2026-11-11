@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Bike } = require('../models/bike.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
 const cache = require('../utils/cache');
+const { buildSafeRegex } = require('../utils/regex');
 
 const PUBLIC_BIKE_FIELDS = {
   id: 1,
@@ -87,22 +88,22 @@ async function listBikes(query) {
     }
 
     if (query.city) {
-      filter['location.city'] = new RegExp(query.city, 'i');
+      filter['location.city'] = buildSafeRegex(query.city);
     }
     if (query.bikeType) {
-      filter.bikeType = query.bikeType.toUpperCase();
+      filter.bikeType = String(query.bikeType).toUpperCase();
     }
     if (query.category) {
-      filter.category = new RegExp(query.category, 'i');
+      filter.category = buildSafeRegex(query.category);
     }
     if (query.brand) {
-      filter.brand = new RegExp(query.brand, 'i');
+      filter.brand = buildSafeRegex(query.brand);
     }
     if (query.isFeatured !== undefined) {
       filter.isFeatured = query.isFeatured === 'true' || query.isFeatured === true;
     }
     if (query.search || query.q) {
-      const searchRegex = new RegExp(query.search || query.q, 'i');
+      const searchRegex = buildSafeRegex(query.search || query.q);
       filter.$or = [
         { name: searchRegex },
         { brand: searchRegex },
@@ -146,7 +147,7 @@ async function listAdminBikes(query) {
 
   if (query.status) filter.status = query.status;
   if (query.vendorId) filter.vendorId = query.vendorId;
-  if (query.city) filter['location.city'] = new RegExp(query.city, 'i');
+  if (query.city) filter['location.city'] = buildSafeRegex(query.city);
   if (query.bikeType) filter.bikeType = query.bikeType;
 
   const [bikes, total] = await Promise.all([
@@ -173,7 +174,7 @@ async function getBikeById(bikeIdOrSlug) {
     let bike = await Bike.findOne(filter).lean();
     if (!bike && !isObjectId) {
       bike = await Bike.findOne({
-        $or: [{ slug: bikeIdOrSlug }, { id: bikeIdOrSlug }, { name: new RegExp(bikeIdOrSlug, 'i') }],
+        $or: [{ slug: bikeIdOrSlug }, { id: bikeIdOrSlug }, { name: buildSafeRegex(bikeIdOrSlug) }],
       }).lean();
     }
 

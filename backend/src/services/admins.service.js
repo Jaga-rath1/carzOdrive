@@ -1,5 +1,6 @@
 const { User, ROLES } = require('../models/user.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
+const { buildSafeRegex } = require('../utils/regex');
 
 const ADMIN_ROLES = [
   'SUPER_ADMIN',
@@ -149,10 +150,11 @@ async function listAdmins(query = {}) {
     filter.status = query.status;
   }
   if (query.search) {
+    const searchRegex = buildSafeRegex(query.search);
     filter.$or = [
-      { name: new RegExp(query.search, 'i') },
-      { email: new RegExp(query.search, 'i') },
-      { phone: new RegExp(query.search, 'i') },
+      { name: searchRegex },
+      { email: searchRegex },
+      { phone: searchRegex },
     ];
   }
 

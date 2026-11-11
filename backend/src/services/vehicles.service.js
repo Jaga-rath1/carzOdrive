@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Vehicle } = require('../models/vehicle.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
 const cache = require('../utils/cache');
+const { buildSafeRegex } = require('../utils/regex');
 
 // Selected public projection fields to eliminate over-fetching heavy documents over Atlas
 const PUBLIC_VEHICLE_FIELDS = {
@@ -109,22 +110,22 @@ async function listVehicles(query) {
       filter.isAvailable = query.isAvailable === 'true' || query.isAvailable === true;
     }
 
-    if (query.city) filter['location.city'] = { $regex: query.city, $options: 'i' };
-    if (query.vehicleType) filter.vehicleType = query.vehicleType.toUpperCase();
-    if (query.category) filter.category = query.category.toLowerCase();
-    if (query.brand) filter.brand = { $regex: query.brand, $options: 'i' };
-    if (query.seats) filter.seats = { $gte: parseInt(query.seats, 10) };
+    if (query.city) filter['location.city'] = buildSafeRegex(query.city);
+    if (query.vehicleType) filter.vehicleType = String(query.vehicleType).toUpperCase();
+    if (query.category) filter.category = String(query.category).toLowerCase();
+    if (query.brand) filter.brand = buildSafeRegex(query.brand);
+    if (query.seats) filter.seats = { $gte: parseInt(query.seats, 10) || 1 };
     if (query.serviceType) {
-      filter.serviceTypes = { $in: [query.serviceType, query.serviceType.toUpperCase(), query.serviceType.toLowerCase()] };
+      filter.serviceTypes = { $in: [query.serviceType, String(query.serviceType).toUpperCase(), String(query.serviceType).toLowerCase()] };
     }
-    if (query.fuelType) filter.fuelType = { $regex: query.fuelType, $options: 'i' };
-    if (query.transmission) filter.transmission = { $regex: query.transmission, $options: 'i' };
+    if (query.fuelType) filter.fuelType = buildSafeRegex(query.fuelType);
+    if (query.transmission) filter.transmission = buildSafeRegex(query.transmission);
     if (query.isFeatured !== undefined) {
       filter.isFeatured = query.isFeatured === 'true' || query.isFeatured === true;
     }
 
     if (query.search || query.q) {
-      const searchRegex = new RegExp(query.search || query.q, 'i');
+      const searchRegex = buildSafeRegex(query.search || query.q);
       filter.$or = [
         { name: searchRegex },
         { brand: searchRegex },
@@ -174,7 +175,7 @@ async function listAdminVehicles(query) {
   const filter = {};
   if (query.status) filter.status = query.status;
   if (query.vendorId) filter.vendorId = query.vendorId;
-  if (query.city) filter['location.city'] = { $regex: query.city, $options: 'i' };
+  if (query.city) filter['location.city'] = buildSafeRegex(query.city);
   if (query.vehicleType) filter.vehicleType = query.vehicleType;
 
   const [vehicles, total] = await Promise.all([
@@ -205,7 +206,7 @@ async function getVehicleById(vehicleIdOrSlug) {
     let vehicle = await Vehicle.findOne(filter).lean();
     if (!vehicle && !isObjectId) {
       vehicle = await Vehicle.findOne({
-        $or: [{ slug: vehicleIdOrSlug }, { id: vehicleIdOrSlug }, { name: new RegExp(vehicleIdOrSlug, 'i') }],
+        $or: [{ slug: vehicleIdOrSlug }, { id: vehicleIdOrSlug }, { name: buildSafeRegex(vehicleIdOrSlug) }],
       }).lean();
     }
 

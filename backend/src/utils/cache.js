@@ -5,9 +5,10 @@
  */
 
 class ProductionCache {
-  constructor(defaultTtlSeconds = 60) {
+  constructor(defaultTtlSeconds = 60, maxEntries = 1000) {
     this.store = new Map();
     this.defaultTtl = defaultTtlSeconds * 1000;
+    this.maxEntries = maxEntries;
     this.stats = { hits: 0, misses: 0, sets: 0, invalidations: 0 };
 
     // Auto-eviction sweep every 2 minutes for expired keys
@@ -41,6 +42,12 @@ class ProductionCache {
    * Set cached item with TTL in seconds
    */
   set(key, value, ttlSeconds) {
+    if (this.store.has(key)) {
+      this.store.delete(key);
+    } else if (this.store.size >= this.maxEntries) {
+      const oldestKey = this.store.keys().next().value;
+      if (oldestKey !== undefined) this.store.delete(oldestKey);
+    }
     const ttlMs = (ttlSeconds ? ttlSeconds * 1000 : this.defaultTtl);
     this.store.set(key, {
       value,

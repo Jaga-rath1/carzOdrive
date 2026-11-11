@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const TourPackage = require('../models/package.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
 const cache = require('../utils/cache');
+const { buildSafeRegex } = require('../utils/regex');
 
 function invalidatePackageCache() {
   cache.invalidatePrefix('packages:');
@@ -45,7 +46,7 @@ async function listPackages(query) {
     const filter = { status: 'APPROVED', isPublished: true };
 
     if (query.destination) {
-      filter.destination = new RegExp(query.destination, 'i');
+      filter.destination = buildSafeRegex(query.destination);
     }
 
     if (query.days) {
@@ -59,11 +60,11 @@ async function listPackages(query) {
     }
 
     if (query.category) {
-      filter.category = new RegExp(query.category, 'i');
+      filter.category = buildSafeRegex(query.category);
     }
 
     if (query.odishaTheme) {
-      filter.odishaTheme = new RegExp(query.odishaTheme, 'i');
+      filter.odishaTheme = buildSafeRegex(query.odishaTheme);
     }
 
     const [packages, total] = await Promise.all([
@@ -100,7 +101,7 @@ async function listAdminPackages(query) {
 
   if (query.status) filter.status = query.status;
   if (query.vendorId) filter.vendorId = query.vendorId;
-  if (query.destination) filter.destination = new RegExp(query.destination, 'i');
+  if (query.destination) filter.destination = buildSafeRegex(query.destination);
   if (query.isPublished !== undefined) filter.isPublished = query.isPublished === 'true';
 
   const [packages, total] = await Promise.all([

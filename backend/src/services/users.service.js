@@ -1,5 +1,6 @@
 const { User } = require('../models/user.model');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
+const { buildSafeRegex } = require('../utils/regex');
 
 async function getProfile(userId) {
   const user = await User.findById(userId);
@@ -32,10 +33,11 @@ async function listUsers(query) {
   if (query.status) filter.status = query.status;
   if (query.role) filter.role = query.role;
   if (query.search) {
+    const searchRegex = buildSafeRegex(query.search);
     filter.$or = [
-      { name: new RegExp(query.search, 'i') },
-      { email: new RegExp(query.search, 'i') },
-      { phone: new RegExp(query.search, 'i') },
+      { name: searchRegex },
+      { email: searchRegex },
+      { phone: searchRegex },
     ];
   }
   const [users, total] = await Promise.all([
